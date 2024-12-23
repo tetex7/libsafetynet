@@ -25,6 +25,18 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef enum
+{
+    SN_ERR_OK = 0,
+    SN_ERR_NULL_PTR = 5,
+    SN_ERR_NO_SIZE = 10,
+    SN_ERR_BAD_SIZE = 15,
+    SN_ERR_BAD_ALLOC = 20,
+    SN_ERR_NO_ADDER_FOUND = 30,
+    SN_WARN_DUB_FREE = 80
+} sn_error_codes_e;
+
 typedef size_t sn_mem_address_t;
 void* sn_malloc(size_t size);
 void  sn_free(void* const ptr);
@@ -32,19 +44,11 @@ void* sn_register(void* const ptr);
 size_t sn_query_size(void* const ptr);
 uint64_t sn_query_tid(void* const ptr);
 void* sn_register_size(void* ptr, size_t size);
+sn_error_codes_e sn_get_last_error();
+void sn_reset_last_error();
 
 #ifdef __cplusplus
 }
-#endif
-
-#ifdef __cplusplus
-#include <stdexcept>
-#undef new
-#undef delete
-void* operator new(size_t size);
-void operator delete(void* ptr) noexcept;
-void* operator new[](size_t size);
-void operator delete[](void* ptr) noexcept;
 #endif
 
 #endif

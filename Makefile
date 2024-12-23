@@ -37,7 +37,7 @@ endif
 SRC_DIR = src
 BIN_DIR = build
 OBJ_DIR = ${BIN_DIR}
-INCLUDE_DIR = ./include
+INCLUDE_DIR = -I./include -I./src
 
 # Source files and object files
 C_SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
@@ -45,10 +45,11 @@ CPP_SRC_FILES = $(wildcard $(SRC_DIR)/*.cpp)
 
 # Object files for C and C++ sources
 C_OBJ_FILES = $(C_SRC_FILES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.c.o)
-CPP_OBJ_FILES = $(CPP_SRC_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.cpp.o)
+#CPP_OBJ_FILES = $(CPP_SRC_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.cpp.o)
 
 # All object files
-OBJ_FILES = $(C_OBJ_FILES) $(CPP_OBJ_FILES)
+OBJ_FILES = $(C_OBJ_FILES) 
+#$(CPP_OBJ_FILES)
 TARGET = $(BIN_DIR)/libsafetynet.so
 
 # Default rule: build the target
@@ -57,16 +58,16 @@ all: $(TARGET)
 # Rule to link object files into the shared library
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(BIN_DIR)
-	$(CXX) $(LDFLAGS) $(OBJ_FILES) -o $(TARGET) $(LDLIBS)
+	$(CC) $(LDFLAGS) $(OBJ_FILES) -o $(TARGET) $(LDLIBS)
 
 # Rule to compile source files into object files
 $(OBJ_DIR)/%.c.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $(OBJ_DIR)/$*.c.o
+	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $(OBJ_DIR)/$*.c.o
 
 $(OBJ_DIR)/%.cpp.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
-	$(CXX) $(CPPFLAGS) -I$(INCLUDE_DIR) -c $< -o $(OBJ_DIR)/$*.cpp.o
+	$(CXX) $(CPPFLAGS) $(INCLUDE_DIRS) -c $< -o $(OBJ_DIR)/$*.cpp.o
 
 # Rule for cleaning up build artifacts
 clean:

@@ -21,8 +21,12 @@
 #include <stdlib.h>
 #include "pri_list.h"
 #include "pthread.h"
+#include "_pri_api.h"
 
 node_t* mem_list = NULL;
+
+sn_error_codes_e error_code = SN_ERR_OK;
+
 extern pthread_mutex_t list_mutex;
 void doexit()
 {
@@ -30,6 +34,7 @@ void doexit()
         list_free_all_with_data(mem_list);  // Free all the nodes and their data
         mem_list = NULL;  // Optionally set mem_list to NULL to prevent accidental use
         pthread_mutex_destroy(&list_mutex);
+        pthread_mutex_destroy(&last_error_mutex);
     }
 }
 

@@ -15,28 +15,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stdexcept>
-#undef new
-#undef delete
+#pragma once
+#ifndef _PRI_API_H
+#define _PRI_API_H
 #include "libsafetynet.h"
+#include "pthread.h"
+extern pthread_mutex_t last_error_mutex;
 
-
-void* operator new(size_t size) {
-    void* ptr = sn_malloc(size);  // Use custom malloc
-    if (!ptr) {
-        throw std::bad_alloc();
-    }
-    return ptr;
+extern sn_error_codes_e error_code;
+__inline void sn_set_last_error(sn_error_codes_e er_code)
+{
+    pthread_mutex_lock(&last_error_mutex);
+    error_code = er_code;
+    pthread_mutex_unlock(&last_error_mutex);
 }
 
-void operator delete(void* ptr) noexcept {
-    sn_free(ptr);  // Use custom free
-}
 
-void* operator new[](size_t size) {
-    return ::operator new(size);  // Can be expanded for array-specific handling
-}
-
-void operator delete[](void* ptr) noexcept {
-    ::operator delete(ptr);  // Can be expanded for array-specific handling
-}
+#endif
