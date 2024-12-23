@@ -20,6 +20,6 @@ int main()
 }
 ```
 
-Since you used the malloc that comes with the librarythat address      
+Since you used the malloc that comes with the library thah address      
 will be appended to a linked list and on exit if it's still there in the list it will free it     
 This also prevents double free's    

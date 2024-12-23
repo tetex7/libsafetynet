@@ -20,6 +20,7 @@
 #define LIB_SAFTY_NET_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,6 +30,8 @@ void* sn_malloc(size_t size);
 void  sn_free(void* const ptr);
 void* sn_register(void* const ptr);
 size_t sn_query_size(void* const ptr);
+uint64_t sn_query_tid(void* const ptr);
+void* sn_register_size(void* ptr, size_t size);
 
 #ifdef __cplusplus
 }

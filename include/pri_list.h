@@ -22,13 +22,15 @@
 #include <stddef.h>  // For size_t
 #include <stdlib.h>  // For malloc, free
 #include <stdbool.h>
+#include <stdint.h>
 
 // Define the linked list node structure
 typedef struct node_t {
-    struct node_t* previous;     // Pointer to the next node
-    void* data;            // Pointer to data (generic data type)
-    size_t size;             //size of the data
-    struct node_t* next;     // Pointer to the next node
+    struct node_t* previous;        // Pointer to the next node
+    void* data;                     // Pointer to data (generic data type)
+    size_t size;                    // size of the data
+    uint64_t tid;                   // The tid of the thread that allocated this chunk
+    struct node_t* next;            // Pointer to the next node
 } node_t;
 
 node_t* list_init();

@@ -18,6 +18,7 @@
 #include "libsafetynet.h"
 #include "pri_list.h"
 
+
 extern node_t* mem_list;
 
 void* sn_malloc(size_t size)
@@ -67,4 +68,28 @@ size_t sn_query_size(void* const ptr)
         return q->size;
     }
     return 0;
+}
+
+uint64_t sn_query_tid(void *const ptr)
+{
+    node_t* q = list_query(mem_list, ptr);
+    if (!q)
+    {
+        return q->tid;
+    }
+    return 0;
+}
+
+void* sn_register_size(void *ptr, size_t size)
+{
+    if (!ptr)
+        return NULL;
+    node_t* q = list_query(mem_list, ptr);
+    if (!q)
+    {
+        node_t* temp = list_add(mem_list, ptr);
+        temp->size = size;
+        return ptr;
+    }
+    return ptr;
 }

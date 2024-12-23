@@ -49,6 +49,7 @@ node_t* list_add(node_t* head, void* data)
     new_last->previous = last;
     new_last->data = data;
     new_last->size = 0;
+    new_last->tid = pthread_self();
     new_last->next = NULL;
 
     pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
