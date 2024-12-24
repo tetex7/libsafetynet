@@ -55,3 +55,10 @@ void library_cleanup() {
     //list_free_all(mem_list);
     doexit();
 }
+
+void sn_set_last_error(sn_error_codes_e er_code)
+{
+    pthread_mutex_lock(&last_error_mutex);
+    error_code = er_code;
+    pthread_mutex_unlock(&last_error_mutex);
+}

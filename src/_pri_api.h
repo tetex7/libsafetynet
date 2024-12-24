@@ -23,12 +23,6 @@
 extern pthread_mutex_t last_error_mutex;
 
 extern sn_error_codes_e error_code;
-__inline void sn_set_last_error(sn_error_codes_e er_code)
-{
-    pthread_mutex_lock(&last_error_mutex);
-    error_code = er_code;
-    pthread_mutex_unlock(&last_error_mutex);
-}
-
+void sn_set_last_error(sn_error_codes_e er_code);
 
 #endif

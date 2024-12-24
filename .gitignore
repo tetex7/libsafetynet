@@ -54,3 +54,5 @@ CMakeFiles/
 
 *.pkg.tar.zst
 /pkg
+
+/.idea

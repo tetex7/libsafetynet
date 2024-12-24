@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-#include "libsafetynet.h"
 #include "pri_list.h"
 #include "_pri_api.h"
 
@@ -24,7 +22,14 @@
 extern node_t* mem_list;
 pthread_mutex_t last_error_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void* sn_malloc(size_t size)
+
+/**
+ *
+ * @param size Size in bytes to be allocated
+ * @return a block Allocated or null on failure use sn_get_last_error() for more info
+ */
+SN_PUB_API_OPEN
+void* sn_malloc(const size_t size)
 {
     if (!size)
     {
@@ -45,6 +50,7 @@ void* sn_malloc(size_t size)
     return ret;
 }
 
+SN_PUB_API_OPEN
 void  sn_free(void* const ptr)
 {
     if (!ptr)
@@ -63,6 +69,7 @@ void  sn_free(void* const ptr)
     sn_set_last_error(SN_WARN_DUB_FREE);
 }
 
+SN_PUB_API_OPEN
 void* sn_register(void* const ptr)
 {
     sn_set_last_error(SN_ERR_NO_SIZE);
@@ -80,6 +87,7 @@ void* sn_register(void* const ptr)
     return ptr;
 }
 
+SN_PUB_API_OPEN
 size_t sn_query_size(void* const ptr)
 {
     if (!ptr)
@@ -98,6 +106,7 @@ size_t sn_query_size(void* const ptr)
     return 0;
 }
 
+SN_PUB_API_OPEN
 uint64_t sn_query_tid(void *const ptr)
 {
     if (!ptr)
@@ -115,6 +124,7 @@ uint64_t sn_query_tid(void *const ptr)
     return 0;
 }
 
+SN_PUB_API_OPEN
 void* sn_register_size(void *ptr, size_t size)
 {
     if (!size)
@@ -138,11 +148,13 @@ void* sn_register_size(void *ptr, size_t size)
     return NULL;
 }
 
+SN_PUB_API_OPEN
 sn_error_codes_e sn_get_last_error()
 {
     return error_code;
 }
 
+SN_PUB_API_OPEN
 void sn_reset_last_error()
 {
     pthread_mutex_lock(&last_error_mutex);

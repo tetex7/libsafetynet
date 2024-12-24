@@ -23,7 +23,7 @@ CXX = g++
 GCCFLAG = -Wall -fPIC  # -fPIC for Position Independent Code
 CFLAGS = ${GCCFLAG} -std=gnu99
 CPPFLAGS = ${GCCFLAG} -std=gnu++17
-LDFLAGS = -shared  # Link as a shared object
+LDFLAGS = -fvisibility=hidden -shared  # Link as a shared object
 LDLIBS =
 
 
@@ -37,7 +37,7 @@ endif
 SRC_DIR = src
 BIN_DIR = build
 OBJ_DIR = ${BIN_DIR}
-INCLUDE_DIR = -I./include -I./src
+INCLUDE_DIRS = -I./include -I./src
 
 # Source files and object files
 C_SRC_FILES = $(wildcard $(SRC_DIR)/*.c)

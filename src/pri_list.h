@@ -30,6 +30,8 @@ typedef struct node_t {
     void* data;                     // Pointer to data (generic data type)
     size_t size;                    // size of the data
     uint64_t tid;                   // The tid of the thread that allocated this chunk
+    uint8_t tto_order;              // Once reaches the integer limit wel'll then rollback to zero and reorder the list
+    uint8_t weight;                 // The amount of times this thing's been used since last the reorder
     struct node_t* next;            // Pointer to the next node
 } node_t;
 

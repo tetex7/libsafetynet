@@ -19,12 +19,91 @@
 
 pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+
+static void __pri_list_reset_weight__(node_t* head)
+{
+    node_t* current_node = head->next;
+    while(current_node != NULL)
+    {
+        current_node->weight = 0;
+        current_node = current_node->next;
+    }
+}
+
+static void __pri_list_reord__(node_t* head)
+{
+    if (head == NULL || head->next == NULL)
+        return; // Nothing to reorder
+
+    node_t* current = head;
+    while (current != NULL)
+    {
+        node_t* next = current;
+        if ((next != NULL && current->weight < next->weight) && current != head)
+        {
+            // Swap current and next nodes
+            if (current->previous != NULL)
+            {
+                current->previous->next = next;
+            }
+            next->previous = current->previous;
+
+            if (next->next != NULL)
+            {
+                next->next->previous = current;
+            }
+            current->next = next->next;
+
+            next->next = current;
+            current->previous = next;
+
+            // If head is part of the swap, update it
+            if (current == head)
+            {
+                head = next;
+            }
+
+            // Go back to the previous node to check again
+            current = next;
+        }
+        else
+        {
+            // Move forward
+            current = current->next;
+        }
+    }
+    __pri_list_reset_weight__(head);
+}
+
+static void inc_time(node_t* node)
+{
+    if (node->tto_order == INT8_MAX)
+    {
+        node->tto_order = 0;
+        //__pri_list_reord__(node);
+    }
+    node->tto_order++;
+}
+
+static void inc_weight(node_t* head, node_t* node)
+{
+    if (node->weight < INT8_MAX-20)
+    {
+        node->weight++;
+        return;
+    }
+    __pri_list_reord__(head);
+}
+
 node_t* list_init()
 {
     node_t* ou = malloc(sizeof(node_t));
     ou->previous = NULL;
     ou->data = NULL;
     ou->size = 0;
+    ou->tid = 0;
+    ou->tto_order = 0;
+    ou->weight = UINT8_MAX;
     ou->next = NULL;
     return ou;
 }
@@ -50,6 +129,8 @@ node_t* list_add(node_t* head, void* data)
     new_last->data = data;
     new_last->size = 0;
     new_last->tid = (uint64_t)pthread_self();
+    new_last->tto_order = 0;
+    new_last->weight = 0;
     new_last->next = NULL;
 
     pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
@@ -109,10 +190,13 @@ void list_free(node_t* node)
 node_t* list_query(node_t* head, void* data)
 {
     pthread_mutex_lock(&list_mutex);  // Lock the mutex
+    
     for (node_t* current_node = head; current_node != NULL; current_node=current_node->next)
     {
         if (current_node->data == data)
         {
+            inc_weight(head, current_node);
+            inc_time(head);
             pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
             return current_node; // Found a match; exit early
         }
