@@ -45,11 +45,10 @@ CPP_SRC_FILES = $(wildcard $(SRC_DIR)/*.cpp)
 
 # Object files for C and C++ sources
 C_OBJ_FILES = $(C_SRC_FILES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.c.o)
-#CPP_OBJ_FILES = $(CPP_SRC_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.cpp.o)
+CPP_OBJ_FILES = $(CPP_SRC_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.cpp.o)
 
 # All object files
-OBJ_FILES = $(C_OBJ_FILES) 
-#$(CPP_OBJ_FILES)
+OBJ_FILES = $(C_OBJ_FILES) $(CPP_OBJ_FILES)
 TARGET = $(BIN_DIR)/libsafetynet.so
 
 # Default rule: build the target

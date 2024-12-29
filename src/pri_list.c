@@ -80,7 +80,7 @@ static void inc_time(node_t* node)
     if (node->tto_order == INT8_MAX)
     {
         node->tto_order = 0;
-        //__pri_list_reord__(node);
+        __pri_list_reord__(node);
     }
     node->tto_order++;
 }

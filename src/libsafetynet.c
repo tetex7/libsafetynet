@@ -161,3 +161,33 @@ void sn_reset_last_error()
     error_code = SN_ERR_OK;
     pthread_mutex_unlock(&last_error_mutex);
 }
+
+static const char* human_readable_messages[] = {
+    [SN_ERR_OK] = "everything is AOK",
+    [SN_ERR_NULL_PTR] = "Nullprinter provided to function",
+    [SN_ERR_NO_SIZE] = "no size Metadata Provided or available",
+    [SN_ERR_BAD_SIZE] = "Invalid size provided",
+    [SN_ERR_BAD_ALLOC] = "libc malloc Returned null",
+    [SN_ERR_NO_ADDER_FOUND] = "no adder provided or available",
+    [SN_WARN_DUB_FREE] = "Possible double free but it could not be in the registry though"
+};
+
+
+/**
+ * Provide you a human-readable error message
+ * @param err The error code
+ * @return A pointer to the string containing the error message Can return null on failure to find message (Do not manipulate the string Treat it as immutable)
+ */
+SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err)
+{
+    switch (err)
+    {
+        case SN_ERR_OK: return human_readable_messages[SN_ERR_OK];
+        case SN_ERR_NULL_PTR: return human_readable_messages[SN_ERR_NULL_PTR];
+        case SN_ERR_BAD_SIZE: return human_readable_messages[SN_ERR_BAD_SIZE];
+        case SN_ERR_BAD_ALLOC: return human_readable_messages[SN_ERR_BAD_ALLOC];
+        case SN_ERR_NO_ADDER_FOUND: return human_readable_messages[SN_ERR_NO_ADDER_FOUND];
+        case SN_WARN_DUB_FREE: return human_readable_messages[SN_WARN_DUB_FREE];
+        default: return NULL;
+    }
+}

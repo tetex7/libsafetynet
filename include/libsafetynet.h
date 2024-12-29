@@ -16,13 +16,15 @@
  */
 
 #pragma once
-#ifndef LIB_SAFTY_NET_H
-#define LIB_SAFTY_NET_H
+#ifndef LIB_SAFETY_NET_H
+#define LIB_SAFETY_NET_H
 
 #include <stddef.h>
 #include <stdint.h>
 
 #define SN_PUB_API_OPEN __attribute__((visibility("default")))
+#define SN_API_PREFIX(name) sn_##name
+#define SN_GET_ARR_SIZE(byte_size, type_size) ((size_t)(byte_size / type_size))
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,34 +48,34 @@ typedef size_t sn_mem_address_t;
  * @param size The size of the memory block to allocate.
  * @return Pointer to the allocated memory, or NULL on failure.
  */
-SN_PUB_API_OPEN void* sn_malloc(size_t size);
+SN_PUB_API_OPEN void* SN_API_PREFIX(malloc)(size_t size);
 
 /**
 * Frees a tracked memory block.
 * @param ptr Pointer to the memory block.
 */
-SN_PUB_API_OPEN void  sn_free(void* const ptr);
+SN_PUB_API_OPEN void  SN_API_PREFIX(free)(void* const ptr);
 
 /**
  * Registers a memory block for tracking.
  * @param ptr Pointer to the memory block.
  * @return The same pointer, or NULL on failure.
  */
-SN_PUB_API_OPEN void* sn_register(void* const ptr);
+SN_PUB_API_OPEN void* SN_API_PREFIX(register)(void* const ptr);
 
 /**
- * Queries the size of a tracked memory block.
+ * Queries the size in Bytes of a tracked memory block.
  * @param ptr Pointer to the memory block.
  * @return The size of the memory block, or 0 on failure.
  */
-SN_PUB_API_OPEN size_t sn_query_size(void* const ptr);
+SN_PUB_API_OPEN size_t SN_API_PREFIX(query_size)(void* const ptr);
 
 /**
 * Queries the thread ID associated with a memory block.
 * @param ptr Pointer to the memory block.
 * @return The thread ID, or 0 on failure.
 */
-SN_PUB_API_OPEN uint64_t sn_query_tid(void* const ptr);
+SN_PUB_API_OPEN uint64_t SN_API_PREFIX(query_tid)(void* const ptr);
 
 /**
  * Registers a memory block with a specified size for tracking.
@@ -81,18 +83,25 @@ SN_PUB_API_OPEN uint64_t sn_query_tid(void* const ptr);
  * @param size Size of the memory block.
  * @return The same pointer, or NULL on failure.
  */
-SN_PUB_API_OPEN void* sn_register_size(void* ptr, size_t size);
+SN_PUB_API_OPEN void* SN_API_PREFIX(register_size)(void* ptr, size_t size);
 
 /**
 * Retrieves the last error code.
 * @return The last error code.
 */
-SN_PUB_API_OPEN sn_error_codes_e sn_get_last_error();
+SN_PUB_API_OPEN sn_error_codes_e SN_API_PREFIX(get_last_error)();
 
 /**
 * Resets the last error code to SN_ERR_OK.
 */
-SN_PUB_API_OPEN void sn_reset_last_error();
+SN_PUB_API_OPEN void SN_API_PREFIX(reset_last_error)();
+
+/**
+ * Provide you a human-readable error message
+ * @param err The error code
+ * @return A pointer to the string containing the error message Can return null on failure to find message (Do not manipulate the string Treat it as immutable)
+ */
+SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err);
 
 #ifdef __cplusplus
 }

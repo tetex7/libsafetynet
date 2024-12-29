@@ -45,14 +45,11 @@ void library_init() {
     //atexit(doexit);
 }
 
-
-
 // Destructor: Called when the library is unloaded
 __attribute__((destructor))
 void library_cleanup() {
     // Perform any necessary cleanup, such as freeing global memory or other resources.
     // This function is called when the shared library is unloaded.
-    //list_free_all(mem_list);
     doexit();
 }
 
