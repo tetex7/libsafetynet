@@ -1,18 +1,18 @@
 #
-#Copyright (C) 2024  tete
+# Copyright (C) 2024  tete
 #
-#This program is free software: you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
-#(at your option) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public License
-#along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
 DEBUG ?= 1
@@ -20,7 +20,7 @@ DEBUG ?= 1
 # Compiler and flags
 CC = gcc
 CXX = g++
-GCCFLAG = -Wall -fPIC  # -fPIC for Position Independent Code
+GCCFLAG = -Wall -fno-strict-aliasing -fPIC  # -fPIC for Position Independent Code
 CFLAGS = ${GCCFLAG} -std=gnu99
 CPPFLAGS = ${GCCFLAG} -std=gnu++17
 LDFLAGS = -fvisibility=hidden -shared  # Link as a shared object
@@ -71,6 +71,9 @@ $(OBJ_DIR)/%.cpp.o: $(SRC_DIR)/%.cpp
 # Rule for cleaning up build artifacts
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+mem_test: all
+	./test.sh
 
 # Rule to remove only object files
 clean-obj:
