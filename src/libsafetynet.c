@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#define __SN_WIP_CALLS__
 #include "pri_list.h"
 #include "_pri_api.h"
 
@@ -145,6 +146,7 @@ void* sn_register_size(void *ptr, size_t size)
         temp->size = size;
         return ptr;
     }
+    sn_set_last_error(SN_ERR_NO_ADDER_FOUND);
     return NULL;
 }
 
@@ -190,4 +192,21 @@ SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e 
         case SN_WARN_DUB_FREE: return human_readable_messages[SN_WARN_DUB_FREE];
         default: return NULL;
     }
+}
+
+SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void *ptr)
+{
+
+    if (!ptr)
+    {
+        sn_set_last_error(SN_ERR_NULL_PTR);
+        return NULL;
+    }
+    node_t* q = list_query(mem_list, ptr);
+    if (q)
+    {
+        return (sn_mem_metadata_t*)&q->data;
+    }
+    sn_set_last_error(SN_ERR_NO_ADDER_FOUND);
+    return NULL;
 }

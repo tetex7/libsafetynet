@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+
+
 typedef enum
 {
     SN_ERR_OK = 0,          /**< No error */
@@ -102,6 +104,23 @@ SN_PUB_API_OPEN void SN_API_PREFIX(reset_last_error)();
  * @return A pointer to the string containing the error message Can return null on failure to find message (Do not manipulate the string Treat it as immutable)
  */
 SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err);
+
+#ifdef __SN_WIP_CALLS__
+typedef struct SN_API_PREFIX(mem_metadata_t)
+{
+    const void* const data;               // Pointer to data (generic data type)
+    const size_t size;                    // size of the data
+    const uint64_t tid;                   // The tid of the thread that allocated this chunk
+} SN_API_PREFIX(mem_metadata_t);
+
+/**
+ * This function provides a Read only view of the metadata structure for this memory block
+ * @param ptr A pointer to a register block memory
+ * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
+ */
+SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void *ptr);
+
+#endif
 
 #ifdef __cplusplus
 }

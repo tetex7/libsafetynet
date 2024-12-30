@@ -16,16 +16,23 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# Set the source file and output binary names
 OUTPUT_BINARY="temp_test_temp"  # Name of the compiled binary
 LOG_FILE="valgrind_output.log" # Log file for Valgrind output
+OID_LIB_PATH=$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${PWD}/build:$LD_LIBRARY_PATH
+
+function cli_exit() {
+    LD_LIBRARY_PATH=$OID_LIB_PATH
+    exit $1
+}
 
 # Compile the source code
 echo "Compiling test code"
-gcc -g -std=gnu99 -O0 -L./build -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
+gcc -g -std=gnu99 -O0 -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
 #include <stdio.h>
 #include <stdlib.h>
-#include <libsafetynet.h>
+#define __SN_WIP_CALLS__
+#include "libsafetynet.h"
 
 
 #include <stddef.h>
@@ -55,6 +62,14 @@ int main()
         printf("buff[%lu] = %i\n", i, buff[i]);
     }
 
+    const sn_mem_metadata_t* const metadata = sn_query_metadata(buff);
+
+    printf("\n\nmetadata\n");
+    printf("data: %p\n", metadata->data);
+    printf("size: %lu\n", metadata->size);
+    printf("rsize: %lu\n", SN_GET_ARR_SIZE(metadata->size, sizeof(int32_t)));
+    printf("tid: %lu\n", metadata->tid);
+
     return 0;
 }
 EOF
@@ -62,7 +77,7 @@ EOF
 # Check if compilation was successful
 if [ $? -ne 0 ]; then
   echo "Compilation failed! Exiting."
-  exit 44
+  cli_exit 44
 fi
 
 # Run the program with Valgrind and log errors if any
@@ -82,5 +97,6 @@ else
   ecode=1
 fi
 
+
 rm -f ${OUTPUT_BINARY}
-exit $ecode
+cli_exit $ecode
