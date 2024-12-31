@@ -57,12 +57,6 @@ static void __pri_list_reord__(node_t* head)
             next->next = current;
             current->previous = next;
 
-            // If head is part of the swap, update it
-            if (current == head)
-            {
-                head = next;
-            }
-
             // Go back to the previous node to check again
             current = next;
         }
