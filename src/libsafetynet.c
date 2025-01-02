@@ -165,7 +165,7 @@ void sn_reset_last_error()
     pthread_mutex_unlock(&last_error_mutex);
 }
 
-static const char* human_readable_messages[] = {
+static const char* const human_readable_messages[] = {
     [SN_ERR_OK] = "everything is AOK",
     [SN_ERR_NULL_PTR] = "Nullprinter provided to function",
     [SN_ERR_NO_SIZE] = "no size Metadata Provided or available",
@@ -179,7 +179,7 @@ static const char* human_readable_messages[] = {
 /**
  * Provide you a human-readable error message
  * @param err The error code
- * @return A pointer to the string containing the error message Can return null on failure to find message (Do not manipulate the string Treat it as immutable)
+ * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
  */
 SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err)
 {
@@ -191,7 +191,7 @@ SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e 
         case SN_ERR_BAD_ALLOC: return human_readable_messages[SN_ERR_BAD_ALLOC];
         case SN_ERR_NO_ADDER_FOUND: return human_readable_messages[SN_ERR_NO_ADDER_FOUND];
         case SN_WARN_DUB_FREE: return human_readable_messages[SN_WARN_DUB_FREE];
-        default: return NULL;
+        default: return "Unknown error";
     }
 }
 
@@ -210,4 +210,24 @@ SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void *ptr
     }
     sn_set_last_error(SN_ERR_NO_ADDER_FOUND);
     return NULL;
+}
+
+/**
+ * @brief Checks if a block is being tracked by the safety net system;
+ * @param ptr Pointer to the block of memory
+ * @return A flag to which it exists (a bool)
+ */
+SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr)
+{
+    if (!ptr)
+    {
+        sn_set_last_error(SN_ERR_NULL_PTR);
+        return 0;
+    }
+    node_t* q = list_query(mem_list, ptr);
+    if (q)
+    {
+        return 1;
+    }
+    return 0;
 }

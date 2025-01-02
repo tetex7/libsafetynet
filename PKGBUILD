@@ -37,7 +37,11 @@ make clean
 
 build () {
     cd ..
-    make DEBUG=1 VER=${pkgver}
+    if [ -z "${PK_DEBUG}" ]; then
+        make DEBUG=0 VER=${pkgver}
+    else
+        make DEBUG=${PK_DEBUG} VER=${pkgver}
+    fi
 
     ./test.sh
     if [ ${?} == 0 ]; then

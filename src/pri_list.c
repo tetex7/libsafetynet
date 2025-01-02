@@ -181,7 +181,7 @@ void list_free(node_t* node)
 }
 
 
-node_t* list_query(node_t* head, void* data)
+node_t* list_query(node_t* head, const void* const data)
 {
     pthread_mutex_lock(&list_mutex);  // Lock the mutex
     

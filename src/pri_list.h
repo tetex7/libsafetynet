@@ -36,7 +36,7 @@ typedef struct node_t {
 } node_t;
 
 node_t* list_init();
-node_t* list_query(node_t* head, void* data);
+node_t* list_query(node_t* head, const void* const data);
 size_t  list_len(node_t* head);
 node_t* list_index_to_last(node_t* head);
 node_t* list_add(node_t* head, void* data);

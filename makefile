@@ -17,21 +17,20 @@
 
 DEBUG ?= 1
 
+ifeq ($(DEBUG),1)
+  DEBUG_FLAGS += -g -O0
+else
+  DEBUG_FLAGS += -O1 -g
+endif
+
 # Compiler and flags
 CC = gcc
 CXX = g++
-GCCFLAG = -Wall -fno-strict-aliasing -fPIC  # -fPIC for Position Independent Code
+GCCFLAG = ${DEBUG_FLAGS} -Wall -fno-strict-aliasing -fPIC  # -fPIC for Position Independent Code
 CFLAGS = ${GCCFLAG} -std=gnu99
 CPPFLAGS = ${GCCFLAG} -std=gnu++17
-LDFLAGS = -fvisibility=hidden -shared  # Link as a shared object
+LDFLAGS = ${DEBUG_FLAGS} -Wall -fno-strict-aliasing -fvisibility=hidden -shared  # Link as a shared object
 LDLIBS =
-
-
-ifeq ($(DEBUG),1)
-  CFLAGS += -g -O0
-else
-  CFLAGS += -O2
-endif
 
 # Directories
 SRC_DIR = src

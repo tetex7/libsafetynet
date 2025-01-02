@@ -23,14 +23,27 @@
 #include <stdint.h>
 
 #define SN_PUB_API_OPEN __attribute__((visibility("default")))
+#define SN_VERY_VOLATILE __attribute__((optimize("O0")))
 #define SN_API_PREFIX(name) sn_##name
 #define SN_GET_ARR_SIZE(byte_size, type_size) ((size_t)(byte_size / type_size))
+//#define SN_NO_STD_BOOL
+
+#if defined(SN_NO_STD_BOOL) || !__has_include(<stdbool.h>)
+typedef uint8_t SN_BOOL;
+typedef uint8_t SN_FLAG;
+#define SN_TRUE 1
+#define SN_FALSE 0
+#else
+#include <stdbool.h>
+typedef bool SN_BOOL;
+typedef bool SN_FLAG;
+#define SN_TRUE 1
+#define SN_FALSE 0
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
 
 typedef enum
 {
@@ -46,41 +59,41 @@ typedef enum
 typedef size_t sn_mem_address_t;
 
 /**
- * Allocates memory and tracks it for cleanup at program exit.
+ * @brief Allocates memory and tracks it for cleanup at program exit.
  * @param size The size of the memory block to allocate.
  * @return Pointer to the allocated memory, or NULL on failure.
  */
 SN_PUB_API_OPEN void* SN_API_PREFIX(malloc)(size_t size);
 
 /**
-* Frees a tracked memory block.
+* @brief Frees a tracked memory block.
 * @param ptr Pointer to the memory block.
 */
-SN_PUB_API_OPEN void  SN_API_PREFIX(free)(void* const ptr);
+SN_PUB_API_OPEN void SN_API_PREFIX(free)(void* const ptr);
 
 /**
- * Registers a memory block for tracking.
+ * @brief Registers a memory block for tracking.
  * @param ptr Pointer to the memory block.
  * @return The same pointer, or NULL on failure.
  */
 SN_PUB_API_OPEN void* SN_API_PREFIX(register)(void* const ptr);
 
 /**
- * Queries the size in Bytes of a tracked memory block.
+ * @brief Queries the size in Bytes of a tracked memory block.
  * @param ptr Pointer to the memory block.
  * @return The size of the memory block, or 0 on failure.
  */
 SN_PUB_API_OPEN size_t SN_API_PREFIX(query_size)(void* const ptr);
 
 /**
-* Queries the thread ID associated with a memory block.
+* @brief Queries the thread ID associated with a memory block.
 * @param ptr Pointer to the memory block.
 * @return The thread ID, or 0 on failure.
 */
 SN_PUB_API_OPEN uint64_t SN_API_PREFIX(query_tid)(void* const ptr);
 
 /**
- * Registers a memory block with a specified size for tracking.
+ * @brief Registers a memory block with a specified size for tracking.
  * @param ptr Pointer to the memory block.
  * @param size Size of the memory block.
  * @return The same pointer, or NULL on failure.
@@ -88,20 +101,27 @@ SN_PUB_API_OPEN uint64_t SN_API_PREFIX(query_tid)(void* const ptr);
 SN_PUB_API_OPEN void* SN_API_PREFIX(register_size)(void* ptr, size_t size);
 
 /**
-* Retrieves the last error code.
+* @brief Retrieves the last error code.
 * @return The last error code.
 */
 SN_PUB_API_OPEN sn_error_codes_e SN_API_PREFIX(get_last_error)();
 
 /**
-* Resets the last error code to SN_ERR_OK.
+* @brief Resets the last error code to SN_ERR_OK.
 */
 SN_PUB_API_OPEN void SN_API_PREFIX(reset_last_error)();
 
 /**
- * Provide you a human-readable error message
+ * @brief Checks if a block is being tracked by the safety net system;
+ * @param ptr Pointer to the block of memory
+ * @return A flag to which it exists (a bool)
+ */
+SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr);
+
+/**
+ * @brief Provide you a human-readable error message
  * @param err The error code
- * @return A pointer to the string containing the error message Can return null on failure to find message (Do not manipulate the string Treat it as immutable)
+ * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
  */
 SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err);
 
@@ -114,7 +134,7 @@ typedef struct SN_API_PREFIX(mem_metadata_t)
 } SN_API_PREFIX(mem_metadata_t);
 
 /**
- * This function provides a Read only view of the metadata structure for this memory block
+ * @brief This function provides a Read only view of the metadata structure for this memory block
  * @param ptr A pointer to a register block memory
  * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
  */
