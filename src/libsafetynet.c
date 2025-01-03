@@ -222,12 +222,12 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr)
     if (!ptr)
     {
         sn_set_last_error(SN_ERR_NULL_PTR);
-        return 0;
+        return SN_FLAG_UNSET;
     }
     node_t* q = list_query(mem_list, ptr);
     if (q)
     {
-        return 1;
+        return SN_FLAG_SET;
     }
-    return 0;
+    return SN_FLAG_UNSET;
 }

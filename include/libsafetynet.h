@@ -26,6 +26,7 @@
 #define SN_VERY_VOLATILE __attribute__((optimize("O0")))
 #define SN_API_PREFIX(name) sn_##name
 #define SN_GET_ARR_SIZE(byte_size, type_size) ((size_t)(byte_size / type_size))
+#define sn_readonly const
 //#define SN_NO_STD_BOOL
 
 #if defined(SN_NO_STD_BOOL) || !__has_include(<stdbool.h>)
@@ -33,12 +34,16 @@ typedef uint8_t SN_BOOL;
 typedef uint8_t SN_FLAG;
 #define SN_TRUE 1
 #define SN_FALSE 0
+#define SN_FLAG_SET 1
+#define SN_FLAG_UNSET 0
 #else
 #include <stdbool.h>
 typedef bool SN_BOOL;
 typedef bool SN_FLAG;
 #define SN_TRUE 1
 #define SN_FALSE 0
+#define SN_FLAG_SET 1
+#define SN_FLAG_UNSET 0
 #endif
 
 #ifdef __cplusplus
@@ -57,6 +62,10 @@ typedef enum
 } sn_error_codes_e;
 
 typedef size_t sn_mem_address_t;
+
+// These are work in progress typedefs
+typedef void* (*SN_API_PREFIX(malloc_call_t))(size_t size);
+typedef void  (*SN_API_PREFIX(free_call_t))(void* ptr);
 
 /**
  * @brief Allocates memory and tracks it for cleanup at program exit.
@@ -124,6 +133,14 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr);
  * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
  */
 SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err);
+
+// Warning: Even if you uncomment this function you will not be able to link it to anything because it does not exist
+/**
+ * @brief Allows set up custom allocators
+ * @param malloc_call A pointer to the allocation call
+ * @param free_call A pointer to the free call
+ */
+/*SN_PUB_API_OPEN void SN_API_PREFIX(bind_alloc_calls)(sn_malloc_call_t malloc_call, sn_free_call_t free_call);*/
 
 #ifdef __SN_WIP_CALLS__
 typedef struct SN_API_PREFIX(mem_metadata_t)
