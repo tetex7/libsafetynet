@@ -25,7 +25,7 @@ provides=()
 arch=('x86_64')
 PACKAGER="TRS"
 license=('GPL3')
-makedepends=()
+makedepends=('gcc' 'binutils' 'valgrind')
 depends=('glibc')
 options=('!strip' 'docs' 'libtool' 'staticlibs' 'emptydirs' 'zipman' '!purge' '!debug' '!lto')
 
