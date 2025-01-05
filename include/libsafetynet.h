@@ -163,4 +163,32 @@ SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void *ptr
 }
 #endif
 
+#if defined(__cplusplus) && (__cplusplus >= 201703L)
+#include <stdexcept>
+
+__inline void* operator new(size_t size)
+{
+    void* p = sn_malloc(size);
+    if (!p) throw std::bad_alloc();
+    return p;
+}
+
+__inline void operator delete(void* p) noexcept
+{
+    sn_free(p);
+}
+
+__inline void* operator new[](size_t size)
+{
+    void* p = sn_malloc(size);
+    if (!p) throw std::bad_alloc();
+    return p;
+}
+
+__inline void operator delete[](void* p) noexcept
+{
+    sn_free(p);
+}
+#endif
+
 #endif
