@@ -20,6 +20,7 @@
 #define _PRI_API_H
 #include "libsafetynet.h"
 #include "pthread.h"
+#include <stdlib.h>
 extern pthread_mutex_t last_error_mutex;
 
 extern sn_error_codes_e error_code;
