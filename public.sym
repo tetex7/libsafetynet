@@ -1,0 +1,10 @@
+sn_malloc
+sn_free
+sn_register
+sn_query_size
+sn_query_tid
+sn_register_size
+sn_get_last_error
+sn_reset_last_error
+sn_is_tracked_block
+sn_query_metadata

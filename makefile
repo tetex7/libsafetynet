@@ -72,7 +72,7 @@ clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
 mem_test: all
-	./test.sh
+	@./test.sh
 
 # Rule to remove only object files
 clean-obj:
@@ -83,8 +83,7 @@ clean-bin:
 	rm -rf $(BIN_DIR)/$(notdir $(TARGET))
 
 # Rule to build and run tests (if you add tests in the future)
-test: $(TARGET)
-	./$(TARGET)
+test: mem_test
 
 # Phony targets (not actual files)
 .PHONY: all clean clean-obj clean-bin test
