@@ -1,0 +1,89 @@
+.\" Copyright (C) 2024  Tete
+.\"
+.\" This program is free software: you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation, either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+.TH sn_malloc 3 2025-01-06 "libsafetynet manual"
+
+.SH NAME
+sn_malloc \- Allocate's memory using system libc malloc and place it into the memory list for tracking and cleanup
+.SH LIBRARY
+libsafetynet
+.RI ( libsafetynet ", " \-lsafetynet )
+.SH SYNOPSIS
+.nf
+.B #include <ibsafetynet.h>
+.P
+.BI "void* sn_malloc(size_t size)"
+.fi
+
+.SH DESCRIPTION
+the 
+.BR sn_malloc()
+function returns A pointer to an allocated block of memory
+The size determined by
+.IR size ,
+And adding it to the internal tracking list for cleanup and metadata
+
+.SH RETURN VALUE
+The
+.BR sn_malloc ()
+function returns
+A pointer to a allocated and tracked block memory of
+.IR size ,
+This pointer can be used as a key with other library functions to receive metadata (see
+.BR sn_query_size (3) 
+or
+.BR sn_query_tid (3))
+For example on how to use that pointer as a key
+or for deallocation (see
+.BR sn_free (3))
+
+
+.SH ERRORS
+If this call returns null please (consult with 
+.BR sn_get_last_error (3))
+But only returns null if system libc malloc returns null
+
+.SH ATTRIBUTES
+For an explanation of the terms used in this section, see
+.BR attributes (7).
+.TS
+allbox;
+lbx lb lb
+l l l.
+Interface	Attribute	Value
+T{
+.na
+.nh
+.BR  sn_malloc ()
+T}	Thread safety	MT-Safe
+.TE
+NOTE: Thread safety is achieved via a global mutex, which may impact performance in highly concurrent environments.
+
+.SH VERSIONS
+Barely modified over the development of the library only the error system was added upon it see above error section
+
+.SH HISTORY
+This function has seen minimal changes since the library's initial implementation, apart from the addition of the error system.
+
+.SH DISCLAIMER
+This is my first foray into Writing man pages quality might not be that good
+
+.SH SEE ALSO
+.BR sn_free (3)
+.BR sn_query_tid (3)
+.BR sn_query_size (3)
+.BR sn_is_tracked_block (3)
+.BR sn_get_last_error (3)
+

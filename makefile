@@ -56,7 +56,7 @@ all: $(TARGET)
 # Rule to link object files into the shared library
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(BIN_DIR)
-	$(CXX) $(LDFLAGS) $(OBJ_FILES) -o $(TARGET) $(LDLIBS)
+	$(CC) $(LDFLAGS) $(OBJ_FILES) -o $(TARGET) $(LDLIBS)
 
 # Rule to compile source files into object files
 $(OBJ_DIR)/%.c.o: $(SRC_DIR)/%.c

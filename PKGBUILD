@@ -62,6 +62,12 @@ package() {
     eminverN=$(echo "${pkgver}" | head -c 3)
     install -Dm755 ./build/libsafetynet.so "${pkgdir}/usr/lib/libsafetynet.so.${pkgver}"
     install -Dm644 "./include/libsafetynet.h" "${pkgdir}/usr/include/libsafetynet.h"
+
+    for i in $(ls ./manpages); do
+        install -Dm644 "./manpages/$i" "${pkgdir}/usr/man/man3/${i}"
+    done
+
+
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so"
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so.${minverN}"
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so.${eminverN}"

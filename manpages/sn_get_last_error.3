@@ -1,0 +1,114 @@
+.\" Copyright (C) 2024  Tete
+.\"
+.\" This program is free software: you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation, either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+.TH sn_get_last_error 3 2025-01-06 "libsafetynet manual"
+
+.SH NAME
+sn_get_last_error \- returns an enum value related to the last error occurred
+.SH LIBRARY
+libsafetynet
+.RI ( libsafetynet ", " \-lsafetynet )
+.SH SYNOPSIS
+.nf
+.B #include <ibsafetynet.h>
+.P
+.BI "sn_error_codes_e sn_get_last_error()"
+.fi
+
+.SH DESCRIPTION
+the 
+.BR sn_get_error()
+function returns A Enum value of the last error that occurred
+
+.SH RETURN VALUE
+The
+.BR sn_get_error ()
+function returns In enum value
+.TS
+allbox;
+lb lb lb
+l l l.
+Value\ Name	Description	Ordinal
+T{
+.na
+.nh
+.BR SN_ERR_OK
+T}	everything\ is\ AOK	0
+T{
+.na
+.nh
+.BR SN_ERR_NULL_PTR
+T}	Nullprinter\ provided\ to\ function	5
+T{
+.na
+.nh
+.BR SN_ERR_NO_SIZE
+T}	no\ size\ Metadata\ Provided\ or\ available	10
+T{
+.na
+.nh
+.BR SN_ERR_BAD_SIZE
+T}	Invalid\ size\ provided	15
+T{
+.na
+.nh
+.BR SN_ERR_BAD_ALLOC
+T}	libc\ malloc\ Returned\ null	20
+T{
+.na
+.nh
+.BR SN_ERR_NO_ADDER_FOUND
+T}	no\ adder\ provided\ or\ available	30
+T{
+.na
+.nh
+.BR SN_WARN_DUB_FREE
+T}	Possible\ double\ free\ but\ it\ could\ not\ be\ in\ the\ registry\ though\ \ 	80
+.TE
+To reset the error status  (see
+.BR sn_reset_last_error (3))
+to Reset it to
+.BR SN_ERR_OK
+
+.SH ERRORS
+No error state applicablethe only time this should give you garbage values if I mess up when writing the library
+
+.SH ATTRIBUTES
+For an explanation of the terms used in this section, see
+.BR attributes (7).
+.TS
+allbox;
+lbx lb lb
+l l l.
+Interface	Attribute	Value
+T{
+.na
+.nh
+.BR  sn_get_error ()
+T}	Thread safety	MT-Safe
+.TE
+NOTE: Thread safety is achieved via a global mutex, which may impact performance in highly concurrent environments.
+
+.SH VERSIONS
+Was only implemented a few months ago around I think the version number was 1.5.0
+
+.SH HISTORY
+A latest a later addition to the library the idea was "inspire" by win\3\2 api
+
+.SH DISCLAIMER
+This is my first foray into Writing man pages quality might not be that good
+
+.SH SEE ALSO
+.BR sn_reset_last_error (3)
