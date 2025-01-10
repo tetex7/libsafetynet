@@ -47,6 +47,10 @@ typedef bool SN_FLAG;
 #endif
 
 #ifdef __cplusplus
+#   ifdef SN_ENABLE_CPP_NAMESPACE
+namespace safetynet
+{
+#   endif
 extern "C" {
 #endif
 
@@ -161,11 +165,14 @@ SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void *ptr
 
 #ifdef __cplusplus
 }
+#   ifdef SN_ENABLE_CPP_NAMESPACE
+}
+#   endif
 #endif
 
-#if defined(__cplusplus) && (__cplusplus >= 201703L)
+#if defined(__cplusplus) && (__cplusplus >= 201703L) && defined(SN_ENABLE_NEW_CALLS)
 #include <stdexcept>
-namespace libsafetynet
+namespace safetynet
 {
     __inline void* operator new(size_t size)
     {
