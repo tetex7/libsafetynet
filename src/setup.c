@@ -60,18 +60,3 @@ void sn_set_last_error(sn_error_codes_e er_code)
     error_code = er_code;
     pthread_mutex_unlock(&last_error_mutex);
 }
-
-SN_PUB_API_OPEN sn_extension_t SN_API_PREFIX(get_extension_data)()
-{
-    return {
-        (sn_node_t*)mem_list,
-        list_init,
-        list_query,
-        list_len,
-        list_index_to_last,
-        list_add,
-        list_free_all,
-        list_free,
-        list_free_all_with_data
-    };
-}
