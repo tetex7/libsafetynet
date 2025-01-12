@@ -34,7 +34,6 @@ gcc -g -std=c99 -O0 -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c -
 
 #define __SN_WIP_CALLS__
 #include "libsafetynet.h"
-void sn_set_last_error(sn_error_codes_e er_code);
 #include <time.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -81,9 +80,6 @@ int main()
     {
         printf("buff[%lu] = %i\n", i, buff[i]);
     }
-
-    sn_set_last_error(SN_WARN_DUB_FREE);
-    printf("ERROR: %s", sn_get_error_msg(sn_get_last_error()));
 
     const sn_mem_metadata_t* const metadata = sn_query_metadata(buff);
 
