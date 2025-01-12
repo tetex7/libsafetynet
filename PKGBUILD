@@ -54,6 +54,10 @@ build () {
         exit 1
     fi
 
+    if [[ -z "${PK_DEBUG}" || "${PK_DEBUG}" == "0" ]]; then
+        echo "striping debug syms"
+        strip -v --strip-debug -o ./build/libsafetynet.so ./build/libsafetynet.so
+    fi
 }
 
 package() {
@@ -67,9 +71,7 @@ package() {
         install -Dm644 "./manpages/$i" "${pkgdir}/usr/man/man3/${i}"
     done
 
-
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so"
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so.${minverN}"
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so.${eminverN}"
-    
 }

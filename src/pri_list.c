@@ -96,6 +96,7 @@ node_t* list_init()
     ou->data = NULL;
     ou->size = 0;
     ou->tid = 0;
+    ou->extended_data = NULL;
     ou->tto_order = 0;
     ou->weight = UINT8_MAX;
     ou->next = NULL;
@@ -123,6 +124,7 @@ node_t* list_add(node_t* head, void* data)
     new_last->data = data;
     new_last->size = 0;
     new_last->tid = (uint64_t)pthread_self();
+    new_last->extended_data = NULL;
     new_last->tto_order = 0;
     new_last->weight = 0;
     new_last->next = NULL;

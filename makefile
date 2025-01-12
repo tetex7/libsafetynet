@@ -26,7 +26,7 @@ endif
 # Compiler and flags
 CC = gcc
 CXX = g++
-GCCFLAG = ${DEBUG_FLAGS} -Wall -fno-strict-aliasing -fPIC  # -fPIC for Position Independent Code
+GCCFLAG = ${DEBUG_FLAGS} -Wall -fno-strict-aliasing -fvisibility=hidden -fPIC  # -fPIC for Position Independent Code
 CFLAGS = ${GCCFLAG} -std=gnu99
 CPPFLAGS = ${GCCFLAG} -std=gnu++17
 LDFLAGS = ${DEBUG_FLAGS} -Wall -fno-strict-aliasing -fvisibility=hidden -shared  # Link as a shared object

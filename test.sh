@@ -28,18 +28,24 @@ function cli_exit() {
 
 # Compile the source code
 echo "Compiling test code"
-gcc -g -std=gnu99 -O0 -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
+gcc -g -std=c99 -O0 -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
 #include <stdio.h>
 #include <stdlib.h>
+
 #define __SN_WIP_CALLS__
 #include "libsafetynet.h"
-
-
+void sn_set_last_error(sn_error_codes_e er_code);
+#include <time.h>
 #include <stddef.h>
 #include <stdint.h>
 
 int main()
 {
+    for (volatile size_t i = 0; i < 400; i++)
+    {
+        sn_malloc(sizeof(size_t));
+    }
+
     int32_t* buff = sn_malloc(sizeof(int32_t) * 10);
 
     if (!buff)
@@ -50,7 +56,21 @@ int main()
 
     size_t buff_size = SN_GET_ARR_SIZE(sn_query_size(buff), sizeof(int32_t));
 
+    clock_t start, end;
+    double cpu_time_used;
+
+    // Start the clock
+    start = clock();
+
     printf("Allocated buffer of %lu\n", sn_query_size(buff));
+
+    // End the clock
+    end = clock();
+
+    // Calculate elapsed time
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+
+    printf("Size query Time: %f seconds\n", cpu_time_used);
 
     for (size_t i = 0; i < buff_size; i++)
     {
@@ -61,6 +81,9 @@ int main()
     {
         printf("buff[%lu] = %i\n", i, buff[i]);
     }
+
+    sn_set_last_error(SN_WARN_DUB_FREE);
+    printf("ERROR: %s", sn_get_error_msg(sn_get_last_error()));
 
     const sn_mem_metadata_t* const metadata = sn_query_metadata(buff);
 

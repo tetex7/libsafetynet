@@ -22,11 +22,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define SN_PUB_API_OPEN __attribute__((visibility("default")))
-#define SN_VERY_VOLATILE __attribute__((optimize("O0")))
-#define SN_API_PREFIX(name) sn_##name
+#ifndef SN_PUB_API_OPEN
+#   define SN_PUB_API_OPEN __attribute__((visibility("default")))
+#endif
+#ifndef SN_VERY_VOLATILE
+#   define SN_VERY_VOLATILE __attribute__((optimize("O0")))
+#endif
+#ifndef SN_API_PREFIX
+#   define SN_API_PREFIX(name) sn_##name
+#endif
 #define SN_GET_ARR_SIZE(byte_size, type_size) ((size_t)(byte_size / type_size))
-#define sn_readonly const
+#define SN_READONLY const
 //#define SN_NO_STD_BOOL
 
 #if defined(SN_NO_STD_BOOL) || !__has_include(<stdbool.h>)
@@ -56,13 +62,13 @@ extern "C" {
 
 typedef enum
 {
-    SN_ERR_OK = 0,          /**< No error */
-    SN_ERR_NULL_PTR = 5,    /**< Null pointer passed to function */
-    SN_ERR_NO_SIZE = 10,    /**< Memory block has no size information */
-    SN_ERR_BAD_SIZE = 15,   /**< Invalid memory size */
-    SN_ERR_BAD_ALLOC = 20,  /**< Memory allocation failed */
+    SN_ERR_OK = 0,              /**< No error */
+    SN_ERR_NULL_PTR = 5,        /**< Null pointer passed to function */
+    SN_ERR_NO_SIZE = 10,        /**< Memory block has no size information */
+    SN_ERR_BAD_SIZE = 15,       /**< Invalid memory size */
+    SN_ERR_BAD_ALLOC = 20,      /**< Memory allocation failed */
     SN_ERR_NO_ADDER_FOUND = 30, /**< No adder found in system */
-    SN_WARN_DUB_FREE = 80   /**< Double free detected (warning) */
+    SN_WARN_DUB_FREE = 80       /**< Double free detected (warning) */
 } sn_error_codes_e;
 
 typedef size_t sn_mem_address_t;

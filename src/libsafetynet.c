@@ -53,7 +53,7 @@ void* sn_malloc(const size_t size)
 }
 
 SN_PUB_API_OPEN
-void  sn_free(void* const ptr)
+void sn_free(void* const ptr)
 {
     if (!ptr)
     {

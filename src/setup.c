@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include <libsafetynet_extension.h>
 #include <stdio.h>
 
 #include "libsafetynet.h"
@@ -32,7 +33,7 @@ void doexit()
 {
     if (mem_list != NULL) {
         list_free_all_with_data(mem_list);  // Free all the nodes and their data
-        mem_list = NULL;  // Optionally set mem_list to NULL to prevent accidental use
+        mem_list = NULL;
         pthread_mutex_destroy(&list_mutex);
         pthread_mutex_destroy(&last_error_mutex);
     }
@@ -58,4 +59,19 @@ void sn_set_last_error(sn_error_codes_e er_code)
     pthread_mutex_lock(&last_error_mutex);
     error_code = er_code;
     pthread_mutex_unlock(&last_error_mutex);
+}
+
+SN_PUB_API_OPEN sn_extension_t SN_API_PREFIX(get_extension_data)()
+{
+    return {
+        (sn_node_t*)mem_list,
+        list_init,
+        list_query,
+        list_len,
+        list_index_to_last,
+        list_add,
+        list_free_all,
+        list_free,
+        list_free_all_with_data
+    };
 }
