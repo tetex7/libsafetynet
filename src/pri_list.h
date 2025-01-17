@@ -19,6 +19,7 @@
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 
+#include <libsafetynet.h>
 #include <stddef.h>  // For size_t
 #include <stdlib.h>  // For malloc, free
 #include <stdbool.h>
@@ -30,7 +31,8 @@ typedef struct node_t {
     void* data;                     // Pointer to data (generic data type)
     size_t size;                    // size of the data
     uint64_t tid;                   // The tid of the thread that allocated this chunk
-    void* extended_data;            // Extended optional data to be allocated separately
+    SN_FLAG cached;                 // is mem block cached
+    uint8_t* extended_data;         // Extended optional data to be allocated separately
     uint8_t tto_order;              // Once reaches the integer limit wel'll then rollback to zero and reorder the list
     uint8_t weight;                 // The amount of times this thing's been used since last the reorder
     struct node_t* next;            // Pointer to the next node
@@ -45,6 +47,8 @@ void list_free_all(node_t *head);
 void list_free(node_t* node);
 void list_free_all_with_data(node_t* head);
 
-
+extern pthread_mutex_t list_mutex;
+extern SN_FLAG list_caching;
+extern SN_FLAG list_cache_lock;
 
 #endif // LINKED_LIST_H

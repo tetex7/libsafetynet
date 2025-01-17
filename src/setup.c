@@ -15,13 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "libsafetynet.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include "pri_list.h"
 #include "pthread.h"
 #include "_pri_api.h"
+#include "extended_data.h"
 
 node_t* mem_list = NULL;
 

@@ -28,11 +28,10 @@ function cli_exit() {
 
 # Compile the source code
 echo "Compiling test code"
-gcc -g -std=c99 -O0 -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
+gcc -g -std=c99 -O0 -D__SN_WIP_CALLS__= -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
 #include <stdio.h>
 #include <stdlib.h>
 
-#define __SN_WIP_CALLS__
 #include "libsafetynet.h"
 #include <time.h>
 #include <stddef.h>
@@ -40,13 +39,15 @@ gcc -g -std=c99 -O0 -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c -
 
 int main()
 {
+    //sn_lock_fast_cache();
     for (volatile size_t i = 0; i < 400; i++)
     {
         sn_malloc(sizeof(size_t));
     }
 
-    int32_t* buff = sn_malloc(sizeof(int32_t) * 10);
 
+    int32_t* buff = sn_malloc(sizeof(int32_t) * 10);
+    //sn_request_fast_caching(buff);
     if (!buff)
     {
         printf("ERROR: %s", sn_get_error_msg(sn_get_last_error()));

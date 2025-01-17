@@ -15,7 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#define __SN_WIP_CALLS__
 #include "pri_list.h"
 #include "_pri_api.h"
 
@@ -183,16 +182,12 @@ static const char* const human_readable_messages[] = {
  */
 SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err)
 {
-    switch (err)
+    const char* str = human_readable_messages[err];
+    if (!str)
     {
-        case SN_ERR_OK: return human_readable_messages[SN_ERR_OK];
-        case SN_ERR_NULL_PTR: return human_readable_messages[SN_ERR_NULL_PTR];
-        case SN_ERR_BAD_SIZE: return human_readable_messages[SN_ERR_BAD_SIZE];
-        case SN_ERR_BAD_ALLOC: return human_readable_messages[SN_ERR_BAD_ALLOC];
-        case SN_ERR_NO_ADDER_FOUND: return human_readable_messages[SN_ERR_NO_ADDER_FOUND];
-        case SN_WARN_DUB_FREE: return human_readable_messages[SN_WARN_DUB_FREE];
-        default: return "Unknown error";
+        return "Unknown error";
     }
+    return str;
 }
 
 SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void *ptr)
@@ -224,10 +219,106 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr)
         sn_set_last_error(SN_ERR_NULL_PTR);
         return SN_FLAG_UNSET;
     }
-    node_t* q = list_query(mem_list, ptr);
+    const node_t* q = list_query(mem_list, ptr);
     if (q)
     {
         return SN_FLAG_SET;
     }
     return SN_FLAG_UNSET;
+}
+
+SN_FLAG add_cache_node(node_t* head, const void* const ptr);
+
+
+SN_PUB_API_OPEN const SN_FLAG SN_API_PREFIX(request_to_fast_cache)(const void* ptr)
+{
+    if (!ptr)
+    {
+        sn_set_last_error(SN_ERR_NULL_PTR);
+        return SN_FLAG_UNSET;
+    }
+
+    if (!list_query(mem_list, ptr))
+    {
+        sn_set_last_error(SN_ERR_NO_ADDER_FOUND);
+    }
+
+    return add_cache_node(mem_list, ptr);
+}
+
+SN_PUB_API_OPEN void SN_API_PREFIX(do_fast_caching)(SN_FLAG val)
+{
+    pthread_mutex_lock(&list_mutex);
+    list_caching = val;
+    pthread_mutex_unlock(&list_mutex);
+}
+
+SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size)
+{
+    if (!ptr)
+    {
+        sn_set_last_error(SN_ERR_NULL_PTR);
+        return NULL;
+    }
+
+    node_t* n = list_query(mem_list, ptr);
+    if (!n)
+    {
+        sn_get_last_error(SN_ERR_NO_ADDER_FOUND);
+        return NULL;
+    }
+
+    if (!new_size)
+    {
+        sn_set_last_error(SN_ERR_BAD_SIZE);
+        return NULL;
+    }
+
+    void* ret = realloc(ptr, new_size);
+
+    if (!ret)
+    {
+        sn_set_last_error(SN_ERR_BAD_ALLOC);
+        return NULL;
+    }
+
+
+    n->data = ret;
+    n->size = new_size;
+    return ret;
+}
+
+SN_PUB_API_OPEN void* SN_API_PREFIX(calloc)(size_t num, size_t size)
+{
+    if (!size)
+    {
+        sn_set_last_error(SN_ERR_BAD_SIZE);
+        return NULL;
+    }
+
+    void* ret = calloc(num, size);
+
+    if (!ret)
+    {
+        sn_set_last_error(SN_ERR_BAD_ALLOC);
+        return NULL;
+    }
+
+    node_t* n = list_add(mem_list, ret);
+    n->size = size;
+    return ret;
+}
+
+SN_PUB_API_OPEN void SN_API_PREFIX(lock_fast_cache)()
+{
+    pthread_mutex_lock(&list_mutex);
+    list_cache_lock = SN_FLAG_SET;
+    pthread_mutex_unlock(&list_mutex);
+}
+
+SN_PUB_API_OPEN void SN_API_PREFIX(unlock_fast_cache)()
+{
+    pthread_mutex_lock(&list_mutex);
+    list_cache_lock = SN_FLAG_UNSET;
+    pthread_mutex_unlock(&list_mutex);
 }

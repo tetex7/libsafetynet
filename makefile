@@ -27,7 +27,7 @@ endif
 CC = gcc
 CXX = g++
 GCCFLAG = ${DEBUG_FLAGS} -Wall -fno-strict-aliasing -fvisibility=hidden -fPIC  # -fPIC for Position Independent Code
-CFLAGS = ${GCCFLAG} -std=gnu99
+CFLAGS = ${GCCFLAG} -std=gnu99 -D__SN_WIP_CALLS__=
 CPPFLAGS = ${GCCFLAG} -std=gnu++17
 LDFLAGS = ${DEBUG_FLAGS} -Wall -fno-strict-aliasing -fvisibility=hidden -shared  # Link as a shared object
 LDLIBS =
@@ -41,11 +41,12 @@ INCLUDE_DIRS = -I./include -I./src
 # Source files and object files
 C_SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
 CPP_SRC_FILES = $(wildcard $(SRC_DIR)/*.cpp)
+ASM_SRC_FILES = $(wildcard $(SRC_DIR)/*.S)
 
 # Object files for C and C++ sources
 C_OBJ_FILES = $(C_SRC_FILES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.c.o)
 CPP_OBJ_FILES = $(CPP_SRC_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.cpp.o)
-
+S_OBJ_FILES = $(CPP_SRC_FILES:$(SRC_DIR)/%.S=$(OBJ_DIR)/%.S.o)
 # All object files
 OBJ_FILES = $(C_OBJ_FILES) $(CPP_OBJ_FILES)
 TARGET = $(BIN_DIR)/libsafetynet.so
@@ -66,6 +67,10 @@ $(OBJ_DIR)/%.c.o: $(SRC_DIR)/%.c
 $(OBJ_DIR)/%.cpp.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDE_DIRS) -c $< -o $(OBJ_DIR)/$*.cpp.o
+
+$(OBJ_DIR)/%.S.o: $(SRC_DIR)/%.S
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $(OBJ_DIR)/$*.S.o
 
 # Rule for cleaning up build artifacts
 clean:

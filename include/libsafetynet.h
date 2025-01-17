@@ -74,8 +74,8 @@ typedef enum
 typedef size_t sn_mem_address_t;
 
 // These are work in progress typedefs
-typedef void* (*SN_API_PREFIX(malloc_call_t))(size_t size);
-typedef void  (*SN_API_PREFIX(free_call_t))(void* ptr);
+/*typedef void* (*SN_API_PREFIX(malloc_call_t))(size_t size);
+typedef void  (*SN_API_PREFIX(free_call_t))(void* ptr);*/
 
 /**
  * @brief Allocates memory and tracks it for cleanup at program exit.
@@ -83,6 +83,14 @@ typedef void  (*SN_API_PREFIX(free_call_t))(void* ptr);
  * @return Pointer to the allocated memory, or NULL on failure.
  */
 SN_PUB_API_OPEN void* SN_API_PREFIX(malloc)(size_t size);
+
+/**
+ * @brief Allocates memory and track it for an array of num objects of size and initializes it to all bits zero
+ * @param num number of objects
+ * @param size size of each object
+ * @return Pointer to the allocated memory, or NULL on failure.
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(calloc)(size_t num, size_t size);
 
 /**
 * @brief Frees a tracked memory block.
@@ -158,6 +166,7 @@ typedef struct SN_API_PREFIX(mem_metadata_t)
     const void* const data;               // Pointer to data (generic data type)
     const size_t size;                    // size of the data
     const uint64_t tid;                   // The tid of the thread that allocated this chunk
+    const SN_FLAG cached;                 // is mem block cached
 } SN_API_PREFIX(mem_metadata_t);
 
 /**
@@ -165,7 +174,43 @@ typedef struct SN_API_PREFIX(mem_metadata_t)
  * @param ptr A pointer to a register block memory
  * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
  */
-SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void *ptr);
+SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void* ptr);
+
+/**
+ * @brief Adds the metadata associated with this block of memory to the fast cache
+ * @param ptr A pointer to a Tracked block memory
+ * @return Returns 1 if successfully added to fast cash 0 if it did not
+ */
+SN_PUB_API_OPEN const SN_FLAG SN_API_PREFIX(request_to_fast_cache)(const void* ptr);
+
+/**
+ * @brief Disables automatic fast caching of tracking metadata But the fast cash is still Queryed
+ */
+SN_PUB_API_OPEN void SN_API_PREFIX(lock_fast_cache)();
+
+/**
+ * @brief enables automatic fast caching of tracking metadata But the fast cash is still Queryed
+ */
+SN_PUB_API_OPEN void SN_API_PREFIX(unlock_fast_cache)();
+
+SN_PUB_API_OPEN void SN_API_PREFIX(do_fast_caching)(SN_FLAG val);
+
+SN_PUB_API_OPEN void SN_API_PREFIX(fast_cache_clear)();
+
+/**
+ * @brief reAllocates memory and tracks it for cleanup at program exit.
+ * @param ptr a pre Allocated block that's tracked
+ * @param new_size The size of the memory block to reallocate.
+ * @return Pointer to the allocated memory, or NULL on failure.
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size);
+
+/**
+ *
+ * @param path Path to a non-existing file
+ * @return a Pointer to the mapped file. the size of block is the file size
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(map_new_file)(const char* path);
 
 #endif
 

@@ -15,10 +15,109 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "pri_list.h"
+
+#include <extended_data.h>
 #include <pthread.h>
+#include <_pri_api.h>
 
 pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
+SN_FLAG list_cache_lock = SN_FLAG_UNSET;
+static uint8_t count_cache = 0;
+SN_FLAG list_caching = SN_FLAG_SET;
 
+
+typedef struct node_pair_t
+{
+    const void* ptr_key;
+    node_t* node;
+} node_pair_t;
+
+#define NODE_PAIR_INIT ((node_pair_t){NULL, NULL})
+
+node_pair_t caching_nodes[6] = {
+    NODE_PAIR_INIT,
+    NODE_PAIR_INIT,
+    NODE_PAIR_INIT,
+    NODE_PAIR_INIT,
+    NODE_PAIR_INIT,
+    NODE_PAIR_INIT,
+};
+
+
+void cache_clear()
+{
+    pthread_mutex_lock(&list_mutex);
+    for (size_t i = 0; i < 6; i++)
+    {
+        if (caching_nodes[i].ptr_key != NULL)
+        {
+            caching_nodes[i].node->cached = SN_FLAG_UNSET;
+            caching_nodes[i].node = NULL;
+            caching_nodes[i].ptr_key = NULL;
+        }
+    }
+    count_cache = 0;
+    pthread_mutex_unlock(&list_mutex);
+}
+
+SN_FLAG add_cache_node(node_t* head, const void* const ptr)
+{
+    if (!list_caching) return SN_FLAG_UNSET;
+    pthread_mutex_lock(&list_mutex);
+    if (caching_nodes[count_cache].node == NULL)
+    {
+        node_t* qp = list_query(head, ptr);
+        if (qp != NULL)
+        {
+            caching_nodes[count_cache].ptr_key = ptr;
+            caching_nodes[count_cache].node = qp;
+            caching_nodes[count_cache].node->weight = 0;
+            caching_nodes[count_cache].node->cached = SN_FLAG_SET;
+            (count_cache == 6) ? count_cache = 0 : count_cache++;
+            return SN_FLAG_SET;
+        }
+    }
+    pthread_mutex_unlock(&list_mutex);
+    return SN_FLAG_UNSET;
+}
+
+static void remove_cached_ptr(const void* ptr)
+{
+    for (size_t i = 0; i < 6; i++)
+    {
+        if (caching_nodes[i].ptr_key != ptr)
+        {
+            caching_nodes[i].node->cached = SN_FLAG_UNSET;
+            caching_nodes[i].node = NULL;
+            caching_nodes[i].ptr_key = NULL;
+        }
+    }
+}
+
+static node_t* get_caching_node(const void* const ptr)
+{
+    if (!list_caching) return NULL;
+    for (size_t i = 0; i < 6; i++)
+    {
+        if (caching_nodes[i].ptr_key == ptr)
+        {
+            return caching_nodes[i].node;
+        }
+    }
+    return NULL;
+}
+
+static void remove_cache_node(const node_t* const node)
+{
+    for (size_t i = 0; i < 6; i++)
+    {
+        if (caching_nodes[i].node == node)
+        {
+            caching_nodes[i].node = NULL;
+            caching_nodes[i].ptr_key = NULL;
+        }
+    }
+}
 
 static void __pri_list_reset_weight__(node_t* head)
 {
@@ -30,43 +129,37 @@ static void __pri_list_reset_weight__(node_t* head)
     }
 }
 
-static void __pri_list_reord__(node_t* head)
+static void __pri_list_caching__(node_t* head)
 {
-    if (head == NULL || head->next == NULL)
-        return; // Nothing to reorder
-
-    node_t* current = head;
-    while (current != NULL)
+    if (!list_caching || list_cache_lock)
     {
-        node_t* next = current;
-        if ((next != NULL && current->weight < next->weight) && current != head)
+        __pri_list_reset_weight__(head);
+        return;
+    }
+
+    if (head == NULL || head->next == NULL) return;
+
+    for (size_t i = 0; i < 6; i++)
+    {
+        caching_nodes[i].node->weight = 0;
+    }
+
+    for (node_t* current_node = head; current_node != NULL; current_node=current_node->next)
+    {
+        if (current_node->weight < 54)
         {
-            // Swap current and next nodes
-            if (current->previous != NULL)
+            if (caching_nodes[count_cache].node != NULL)
             {
-                current->previous->next = next;
+                caching_nodes[count_cache].node->cached = SN_FLAG_UNSET;
             }
-            next->previous = current->previous;
-
-            if (next->next != NULL)
-            {
-                next->next->previous = current;
-            }
-            current->next = next->next;
-
-            next->next = current;
-            current->previous = next;
-
-            // Go back to the previous node to check again
-            current = next;
-        }
-        else
-        {
-            // Move forward
-            current = current->next;
+            caching_nodes[count_cache].node = current_node;
+            caching_nodes[count_cache].ptr_key = current_node->data;
+            caching_nodes[count_cache].node->weight = 0;
+            caching_nodes[count_cache].node->cached = SN_FLAG_SET;
+            (count_cache == 6) ? count_cache = 0 : count_cache++;
         }
     }
-    __pri_list_reset_weight__(head);
+
 }
 
 static void inc_time(node_t* node)
@@ -74,19 +167,19 @@ static void inc_time(node_t* node)
     if (node->tto_order == INT8_MAX)
     {
         node->tto_order = 0;
-        __pri_list_reord__(node);
+        __pri_list_caching__(node);
     }
     node->tto_order++;
 }
 
 static void inc_weight(node_t* head, node_t* node)
 {
-    if (node->weight < INT8_MAX-20)
+    if (node->weight < 60)
     {
         node->weight++;
         return;
     }
-    __pri_list_reord__(head);
+    __pri_list_caching__(head);
 }
 
 node_t* list_init()
@@ -96,6 +189,7 @@ node_t* list_init()
     ou->data = NULL;
     ou->size = 0;
     ou->tid = 0;
+    ou->cached = SN_FLAG_UNSET;
     ou->extended_data = NULL;
     ou->tto_order = 0;
     ou->weight = UINT8_MAX;
@@ -124,6 +218,7 @@ node_t* list_add(node_t* head, void* data)
     new_last->data = data;
     new_last->size = 0;
     new_last->tid = (uint64_t)pthread_self();
+    new_last->cached = SN_FLAG_UNSET;
     new_last->extended_data = NULL;
     new_last->tto_order = 0;
     new_last->weight = 0;
@@ -139,7 +234,7 @@ void list_free_all(node_t *head)
     while (head != NULL)
     {
         node_t* next = head->next; // Save the next node
-        free(head);               // Free the current node
+        list_free(head);               // Free the current node
         head = next;              // Move to the next node
     }
     pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
@@ -160,8 +255,7 @@ size_t  list_len(node_t* head)
 
 void list_free(node_t* node)
 {
-    if (node == NULL)
-        return;
+    if (node == NULL) return;
 
     pthread_mutex_lock(&list_mutex);  // Lock the mutex
 
@@ -178,6 +272,10 @@ void list_free(node_t* node)
     }
 
     // Free the node itself
+    remove_cache_node(node);
+    if (node->extended_data != NULL)
+        ((sn_ext_data_generic_section_t*)node->extended_data)->free_obj(node->extended_data);
+
     free(node);
     pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
 }
@@ -186,7 +284,13 @@ void list_free(node_t* node)
 node_t* list_query(node_t* head, const void* const data)
 {
     pthread_mutex_lock(&list_mutex);  // Lock the mutex
-    
+    node_t* cag = get_caching_node(data);
+    if (cag)
+    {
+        pthread_mutex_unlock(&list_mutex);
+        return cag;
+    }
+
     for (node_t* current_node = head; current_node != NULL; current_node=current_node->next)
     {
         if (current_node->data == data)
@@ -218,7 +322,7 @@ void list_free_all_with_data(node_t* head)
         }
 
         // Free the current node itself
-        free(current_node);  // Free the node
+        list_free(current_node);  // Free the node
 
         current_node = next_node;  // Move to the next node
     }
