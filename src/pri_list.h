@@ -24,6 +24,7 @@
 #include <stdlib.h>  // For malloc, free
 #include <stdbool.h>
 #include <stdint.h>
+#include <pthread.h>
 
 // Define the linked list node structure
 typedef struct node_t {
