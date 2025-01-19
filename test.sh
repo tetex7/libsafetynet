@@ -39,7 +39,7 @@ gcc -g -std=c99 -O0 -D__SN_WIP_CALLS__= -L./build -I./include -lsafetynet -o "$O
 
 int main()
 {
-    //sn_lock_fast_cache();
+    sn_lock_fast_cache();
     for (volatile size_t i = 0; i < 400; i++)
     {
         sn_malloc(sizeof(size_t));
@@ -47,7 +47,7 @@ int main()
 
 
     int32_t* buff = sn_malloc(sizeof(int32_t) * 10);
-    //sn_request_fast_caching(buff);
+    //sn_request_to_fast_cache(buff);
     if (!buff)
     {
         printf("ERROR: %s", sn_get_error_msg(sn_get_last_error()));
@@ -79,8 +79,10 @@ int main()
 
     for (size_t i = 0; i < buff_size; i++)
     {
-        printf("buff[%lu] = %i\n", i, buff[i]);
+        printf("buff[%lu] = %i\n\n", i, buff[i]);
     }
+
+    printf("%lu bytes allocated\n", sn_query_total_memory_usage());
 
     const sn_mem_metadata_t* const metadata = sn_query_metadata(buff);
 

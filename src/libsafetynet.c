@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
+
 #include "pri_list.h"
 #include "_pri_api.h"
 
@@ -309,6 +311,17 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(calloc)(size_t num, size_t size)
     return ret;
 }
 
+SN_PUB_API_OPEN void* SN_API_PREFIX(malloc_pre_initialized)(size_t size, uint8_t initial_byte_value)
+{
+    uint8_t* buff = sn_malloc(size);
+
+    if (!buff) return NULL;
+
+    memset(buff, initial_byte_value, size);
+
+    return buff;
+}
+
 SN_PUB_API_OPEN void SN_API_PREFIX(lock_fast_cache)()
 {
     pthread_mutex_lock(&list_mutex);
@@ -321,4 +334,33 @@ SN_PUB_API_OPEN void SN_API_PREFIX(unlock_fast_cache)()
     pthread_mutex_lock(&list_mutex);
     list_cache_lock = SN_FLAG_UNSET;
     pthread_mutex_unlock(&list_mutex);
+}
+
+SN_PUB_API_OPEN size_t SN_API_PREFIX(query_thread_memory_usage)(uint64_t tid)
+{
+    pthread_mutex_lock(&list_mutex);  // Lock the mutex
+    size_t tid_memory_usage = 0;
+
+    for (node_t* current_node = mem_list; current_node != NULL; current_node=current_node->next)
+    {
+        if (current_node->tid == tid)
+        {
+            tid_memory_usage+=current_node->size;
+        }
+    }
+    pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+    return tid_memory_usage;
+}
+
+SN_PUB_API_OPEN size_t SN_API_PREFIX(query_total_memory_usage)()
+{
+    pthread_mutex_lock(&list_mutex);  // Lock the mutex
+    size_t total_memory_usage = 0;
+
+    for (node_t* current_node = mem_list; current_node != NULL; current_node=current_node->next)
+    {
+        total_memory_usage+=current_node->size;
+    }
+    pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+    return total_memory_usage;
 }

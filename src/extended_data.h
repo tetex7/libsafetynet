@@ -52,8 +52,8 @@ typedef struct sn_file_ext_data_t
     void* map_block;
 } __attribute__((aligned(8))) sn_file_ext_data_t;
 
-void ext_map_file_data_free(void* ptr);
-void ext_obj_map_file_free(void* ptr);
+void ext_map_file_data_free(sn_file_ext_data_t* ext);
+void ext_obj_map_file_free(sn_file_ext_data_t* ptr);
 
 #define FILE_MAP_EXT_DATA_INIT(_size, path, file_handle, mmap_handle, map_block) ((sn_file_ext_data_t){ SN_GENER_EXT_DATA_INIT(SN_MMAP_DATA, sn_mmap_ext_data_t, size, &ext_obj_map_file_free, &ext_map_file_data_free), _size, path, file_handle, mmap_handle, map_block })
 

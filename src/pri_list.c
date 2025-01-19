@@ -18,6 +18,7 @@
 
 #include <extended_data.h>
 #include <pthread.h>
+#include <string.h>
 #include <_pri_api.h>
 
 pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -66,7 +67,9 @@ SN_FLAG add_cache_node(node_t* head, const void* const ptr)
     pthread_mutex_lock(&list_mutex);
     if (caching_nodes[count_cache].node == NULL)
     {
+        pthread_mutex_unlock(&list_mutex);
         node_t* qp = list_query(head, ptr);
+        pthread_mutex_lock(&list_mutex);
         if (qp != NULL)
         {
             caching_nodes[count_cache].ptr_key = ptr;
@@ -234,7 +237,9 @@ void list_free_all(node_t *head)
     while (head != NULL)
     {
         node_t* next = head->next; // Save the next node
-        list_free(head);               // Free the current node
+        pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+        list_free(head);  // Free the node
+        pthread_mutex_unlock(&list_mutex);  // lock the mutex
         head = next;              // Move to the next node
     }
     pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
@@ -322,7 +327,9 @@ void list_free_all_with_data(node_t* head)
         }
 
         // Free the current node itself
+        pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
         list_free(current_node);  // Free the node
+        pthread_mutex_unlock(&list_mutex);  // lock the mutex
 
         current_node = next_node;  // Move to the next node
     }
