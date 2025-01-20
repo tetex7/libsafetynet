@@ -17,13 +17,13 @@
 
 # Maintainer: tete <tetex7@outlook.com>
 pkgname=libsafetynet
-pkgver=1.3.0
+pkgver=1.3.2
 pkgrel=1
 pkgdesc='Passive garbage collector for C and C++'
 url='www.github.com/tetex7/libsafetynet'
 provides=()
 arch=('x86_64')
-PACKAGER="TRS"
+#PACKAGER="${USER}"
 license=('GPL3')
 makedepends=('gcc' 'binutils' 'valgrind')
 depends=('glibc')

@@ -77,6 +77,7 @@ SN_FLAG add_cache_node(node_t* head, const void* const ptr)
             caching_nodes[count_cache].node->weight = 0;
             caching_nodes[count_cache].node->cached = SN_FLAG_SET;
             (count_cache == 6) ? count_cache = 0 : count_cache++;
+            pthread_mutex_unlock(&list_mutex);
             return SN_FLAG_SET;
         }
     }
@@ -103,6 +104,20 @@ static node_t* get_caching_node(const void* const ptr)
     for (size_t i = 0; i < 6; i++)
     {
         if (caching_nodes[i].ptr_key == ptr)
+        {
+            return caching_nodes[i].node;
+        }
+    }
+    return NULL;
+}
+
+
+static node_t* get_caching_node_by_id(uint16_t id)
+{
+    if (!list_caching) return NULL;
+    for (size_t i = 0; i < 6; i++)
+    {
+        if (caching_nodes[i].node->block_id == id)
         {
             return caching_nodes[i].node;
         }
@@ -194,6 +209,7 @@ node_t* list_init()
     ou->tid = 0;
     ou->cached = SN_FLAG_UNSET;
     ou->extended_data = NULL;
+    ou->block_id = 0;
     ou->tto_order = 0;
     ou->weight = UINT8_MAX;
     ou->next = NULL;
@@ -223,6 +239,7 @@ node_t* list_add(node_t* head, void* data)
     new_last->tid = (uint64_t)pthread_self();
     new_last->cached = SN_FLAG_UNSET;
     new_last->extended_data = NULL;
+    new_last->block_id = 0;
     new_last->tto_order = 0;
     new_last->weight = 0;
     new_last->next = NULL;
@@ -279,7 +296,7 @@ void list_free(node_t* node)
     // Free the node itself
     remove_cache_node(node);
     if (node->extended_data != NULL)
-        ((sn_ext_data_generic_section_t*)node->extended_data)->free_obj(node->extended_data);
+        free(node->extended_data); //((sn_ext_data_generic_section_t*)node->extended_data)->free_obj(node->extended_data);
 
     free(node);
     pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
@@ -299,6 +316,31 @@ node_t* list_query(node_t* head, const void* const data)
     for (node_t* current_node = head; current_node != NULL; current_node=current_node->next)
     {
         if (current_node->data == data)
+        {
+            inc_weight(head, current_node);
+            inc_time(head);
+            pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+            return current_node; // Found a match; exit early
+        }
+    }
+    pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+    return NULL;
+}
+
+
+node_t* list_query_by_id(node_t* head, uint16_t id)
+{
+    pthread_mutex_lock(&list_mutex);  // Lock the mutex
+    node_t* cag = get_caching_node_by_id(id);
+    if (cag)
+    {
+        pthread_mutex_unlock(&list_mutex);
+        return cag;
+    }
+
+    for (node_t* current_node = head; current_node != NULL; current_node=current_node->next)
+    {
+        if (current_node->block_id == id)
         {
             inc_weight(head, current_node);
             inc_time(head);

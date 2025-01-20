@@ -76,10 +76,12 @@ typedef enum
     SN_ERR_BAD_ALLOC = 20,           /**< Memory allocation failed */
     SN_ERR_NO_ADDER_FOUND = 30,      /**< No adder found in system */
     SN_ERR_NO_TID_FOUND = 40,        /**< No tid found in system */
+    SN_ERR_BAD_BLOCK_ID = 50,        /**< block id is not above 20 */
     SN_WARN_DUB_FREE = 80            /**< Double free detected (warning) */
 } sn_error_codes_e;
 
 typedef size_t sn_mem_address_t;
+typedef void* sn_ext_data_t;
 
 /**
  * @brief Allocates memory and tracks it for cleanup at program exit.
@@ -164,22 +166,6 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr);
  */
 SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err);
 
-#ifdef __SN_WIP_CALLS__
-typedef struct SN_API_PREFIX(mem_metadata_t)
-{
-    const void* const data;               // Pointer to data (generic data type)
-    const size_t size;                    // size of the data
-    const uint64_t tid;                   // The tid of the thread that allocated this chunk
-    const SN_FLAG cached;                 // is mem block cached
-} SN_API_PREFIX(mem_metadata_t);
-
-/**
- * @brief This function provides a Read only view of the metadata structure for this memory block
- * @param ptr A pointer to a register block memory
- * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
- */
-SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void* ptr);
-
 /**
  * @brief Adds the metadata associated with this block of memory to the fast cache
  * @param ptr A pointer to a Tracked block memory
@@ -201,6 +187,7 @@ SN_PUB_API_OPEN void SN_API_PREFIX(unlock_fast_cache)();
 /**
  * @brief Disables/enables the fast caching system entirely
  * @param val Is set to 1 enables it if set to 0 disables it
+ * @note This system is on by default
  */
 SN_PUB_API_OPEN void SN_API_PREFIX(do_fast_caching)(SN_FLAG val);
 
@@ -231,6 +218,54 @@ SN_PUB_API_OPEN size_t SN_API_PREFIX(query_thread_memory_usage)(uint64_t tid);
  */
 SN_PUB_API_OPEN size_t SN_API_PREFIX(query_total_memory_usage)();
 
+/**
+ * @brief Disables/enables the auto free on exit system (Library memory will be freed though)
+ * @param val If 0 turns off this feature or 1 turns it on
+ * @note This system is on by default
+ */
+SN_PUB_API_OPEN void SN_API_PREFIX(do_auto_free_at_exit)(SN_FLAG val);
+
+
+/**
+ *
+ * @param id An integer ID for the block
+ * @return
+ */
+SN_PUB_API_OPEN void SN_API_PREFIX(set_block_id)(void* block, uint16_t id);
+
+/**
+ * @brief Get The Associated ID with a tracked block of memory
+ * @param block A pointer to a tracked block memory
+ * @return Returns the ID associated with the block
+ */
+SN_PUB_API_OPEN uint16_t SN_API_PREFIX(get_block_id)(void* block);
+
+/**
+ * @brief query by id to get a pointer to block of tracked memory
+ * @param id An id for a block of tracked memory
+ * @return A pointer to the block of tracked memory
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(query_block_id)(uint16_t id);
+
+#ifdef __SN_WIP_CALLS__
+typedef struct SN_API_PREFIX(mem_metadata_s)
+{
+    const void* const data;               // Pointer to data (generic data type)
+    const size_t size;                    // size of the data
+    const uint64_t tid;                   // The tid of the thread that allocated this chunk
+    const SN_FLAG cached;                 // is mem block cached
+    const uint16_t block_id;              // An optional block id
+} SN_API_PREFIX(mem_metadata_t);
+
+/**
+ * @brief This function provides a Read only view of the metadata structure for this memory block
+ * @param ptr A pointer to a register block memory
+ * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
+ */
+SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void* ptr);
+
+//TODO: Implement eventually
+//SN_PUB_API_OPEN void SN_API_PREFIX(set_alloc_limit)(size_t limit);
 #endif
 
 #ifdef __cplusplus

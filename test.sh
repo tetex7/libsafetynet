@@ -39,15 +39,19 @@ gcc -g -std=c99 -O0 -D__SN_WIP_CALLS__= -L./build -I./include -lsafetynet -o "$O
 
 int main()
 {
-    sn_lock_fast_cache();
+    //sn_lock_fast_cache();
     for (volatile size_t i = 0; i < 400; i++)
     {
+        printf("Allocating Garbage block %lu\n", i);
         sn_malloc(sizeof(size_t));
     }
 
-
+    printf("Allocating test block\n");
     int32_t* buff = sn_malloc(sizeof(int32_t) * 10);
-    //sn_request_to_fast_cache(buff);
+    printf("seting id\n");
+    sn_set_block_id(buff, 84);
+    printf("request_to_fast_cache\n");
+    sn_request_to_fast_cache(buff);
     if (!buff)
     {
         printf("ERROR: %s", sn_get_error_msg(sn_get_last_error()));
@@ -91,6 +95,8 @@ int main()
     printf("size: %lu\n", metadata->size);
     printf("rsize: %lu\n", SN_GET_ARR_SIZE(metadata->size, sizeof(int32_t)));
     printf("tid: %lu\n", metadata->tid);
+    printf("cached: %i\n", metadata->cached);
+    printf("block id: %iu\n", metadata->block_id);
 
     return 0;
 }
@@ -120,5 +126,5 @@ else
 fi
 
 
-rm -f ${OUTPUT_BINARY}
+#rm -f ${OUTPUT_BINARY}
 cli_exit $ecode

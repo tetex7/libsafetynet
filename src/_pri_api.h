@@ -26,6 +26,7 @@
 extern pthread_mutex_t last_error_mutex;
 
 extern sn_error_codes_e error_code;
+extern SN_FLAG do_free_exit;
 void sn_set_last_error(sn_error_codes_e er_code);
 
 typedef enum

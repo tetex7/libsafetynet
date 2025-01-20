@@ -33,6 +33,7 @@ typedef struct node_t {
     size_t size;                    // size of the data
     uint64_t tid;                   // The tid of the thread that allocated this chunk
     SN_FLAG cached;                 // is mem block cached
+    uint16_t block_id;              // An optional block id
     uint8_t* extended_data;         // Extended optional data to be allocated separately
     uint8_t tto_order;              // Once reaches the integer limit wel'll then rollback to zero and reorder the list
     uint8_t weight;                 // The amount of times this thing's been used since last the reorder
@@ -47,6 +48,8 @@ node_t* list_add(node_t* head, void* data);
 void list_free_all(node_t *head);
 void list_free(node_t* node);
 void list_free_all_with_data(node_t* head);
+node_t* list_query_by_id(node_t* head, uint16_t id);
+SN_FLAG add_cache_node(node_t* head, const void* const ptr);
 
 extern pthread_mutex_t list_mutex;
 extern SN_FLAG list_caching;

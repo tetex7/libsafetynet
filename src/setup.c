@@ -24,14 +24,22 @@
 #include "extended_data.h"
 
 node_t* mem_list = NULL;
+SN_FLAG do_free_exit = SN_FLAG_SET;
 
 sn_error_codes_e error_code = SN_ERR_OK;
 
-extern pthread_mutex_t list_mutex;
 void doexit()
 {
-    if (mem_list != NULL) {
-        list_free_all_with_data(mem_list);  // Free all the nodes and their data
+    if (mem_list != NULL)
+    {
+        if (do_free_exit)
+        {
+            list_free_all_with_data(mem_list);  // Free all the nodes and their data
+        }
+        else
+        {
+            list_free_all(mem_list); // Free all the nodes
+        }
         mem_list = NULL;
         pthread_mutex_destroy(&list_mutex);
         pthread_mutex_destroy(&last_error_mutex);
@@ -40,14 +48,15 @@ void doexit()
 
 // Constructor: Called when the library is loaded
 __attribute__((constructor))
-void library_init() {
+void library_init()
+{
     mem_list = list_init();
-    //atexit(doexit);
 }
 
 // Destructor: Called when the library is unloaded
 __attribute__((destructor))
-void library_cleanup() {
+void library_cleanup()
+{
     // Perform any necessary cleanup, such as freeing global memory or other resources.
     // This function is called when the shared library is unloaded.
     doexit();

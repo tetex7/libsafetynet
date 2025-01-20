@@ -173,6 +173,8 @@ static const char* const human_readable_messages[] = {
     [SN_ERR_BAD_SIZE] = "Invalid size provided",
     [SN_ERR_BAD_ALLOC] = "libc malloc Returned null",
     [SN_ERR_NO_ADDER_FOUND] = "no adder provided or available",
+    [SN_ERR_NO_TID_FOUND] = "No tid found in system",
+    [SN_ERR_BAD_BLOCK_ID] = "block id is not above 20",
     [SN_WARN_DUB_FREE] = "Possible double free but it could not be in the registry though"
 };
 
@@ -229,8 +231,6 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr)
     return SN_FLAG_UNSET;
 }
 
-SN_FLAG add_cache_node(node_t* head, const void* const ptr);
-
 
 SN_PUB_API_OPEN const SN_FLAG SN_API_PREFIX(request_to_fast_cache)(const void* ptr)
 {
@@ -266,7 +266,7 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size)
     node_t* n = list_query(mem_list, ptr);
     if (!n)
     {
-        sn_get_last_error(SN_ERR_NO_ADDER_FOUND);
+        sn_set_last_error(SN_ERR_NO_ADDER_FOUND);
         return NULL;
     }
 
@@ -363,4 +363,80 @@ SN_PUB_API_OPEN size_t SN_API_PREFIX(query_total_memory_usage)()
     }
     pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
     return total_memory_usage;
+}
+
+
+SN_PUB_API_OPEN void sn_set_block_id(void* block, uint16_t id)
+{
+    pthread_mutex_lock(&list_mutex);  // Lock the mutex
+    if (!block)
+    {
+        sn_set_last_error(SN_ERR_NULL_PTR);
+        pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+        return;
+    }
+
+    if (id < 20)
+    {
+        sn_set_last_error(SN_ERR_BAD_BLOCK_ID);
+        pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+        return;
+    }
+
+    pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+    node_t* n = list_query(mem_list, block);
+    pthread_mutex_lock(&list_mutex);  // Lock the mutex
+    if (!n)
+    {
+        sn_set_last_error(SN_ERR_NO_ADDER_FOUND);
+        pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+        return;
+    }
+    n->block_id = id;
+    pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+}
+
+
+SN_PUB_API_OPEN uint16_t SN_API_PREFIX(get_block_id)(void* block)
+{
+    pthread_mutex_lock(&list_mutex);  // Lock the mutex
+
+    pthread_mutex_lock(&list_mutex);  // Lock the mutex
+    node_t* n = list_query(mem_list, block);
+    pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+    if (!n)
+    {
+        sn_set_last_error(SN_ERR_NO_ADDER_FOUND);
+        pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+        return 0;
+    }
+    pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+    return n->block_id;
+}
+
+SN_PUB_API_OPEN void* SN_API_PREFIX(query_block_id)(uint16_t id)
+{
+
+    if (id < 20)
+    {
+        sn_set_last_error(SN_ERR_BAD_BLOCK_ID);
+        pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+        return NULL;
+    }
+
+    node_t* n = list_query_by_id(mem_list, id);
+    if (!n)
+    {
+        sn_set_last_error(SN_ERR_NO_ADDER_FOUND);
+        pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
+        return NULL;
+    }
+    return n->data;
+}
+
+SN_PUB_API_OPEN void SN_API_PREFIX(do_auto_free_at_exit)(SN_FLAG val)
+{
+    pthread_mutex_lock(&last_error_mutex);
+    do_free_exit = val;
+    pthread_mutex_unlock(&last_error_mutex);
 }
