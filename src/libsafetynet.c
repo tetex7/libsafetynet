@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include "pri_list.h"
@@ -168,14 +169,21 @@ void sn_reset_last_error()
 
 static const char* const human_readable_messages[] = {
     [SN_ERR_OK] = "everything is AOK",
-    [SN_ERR_NULL_PTR] = "Nullprinter provided to function",
+    [SN_ERR_NULL_PTR] = "Null-Pointer provided to function",
     [SN_ERR_NO_SIZE] = "no size Metadata Provided or available",
     [SN_ERR_BAD_SIZE] = "Invalid size provided",
     [SN_ERR_BAD_ALLOC] = "libc malloc Returned null",
     [SN_ERR_NO_ADDER_FOUND] = "no adder provided or available",
     [SN_ERR_NO_TID_FOUND] = "No tid found in system",
     [SN_ERR_BAD_BLOCK_ID] = "block id is not above 20",
-    [SN_WARN_DUB_FREE] = "Possible double free but it could not be in the registry though"
+    [SN_ERR_DUMP_FILE_PREEXIST] = "Dump file path provided already exists",
+    [SN_ERR_MSYNC_CALL_FAILED] = "posix call to MSYNC failed",
+    [SN_ERR_MMAP_CALL_FAILED] = "posix call to mmap failed",
+    [SN_ERR_MUNMAP_CALL_FAILED] = "posix call to munmap failed",
+    [SN_ERR_FTRUNCATE_CALL_FAILED] = "posix call to MSYNC failed",
+    [SN_ERR_FILE_NOT_EXIST] = "file Does not exist",
+    [SN_WARN_DUB_FREE] = "Possible double free, but not found in registry",
+    [SN_INFO_PLACEHOLDER] = "Undefined error Error code implementation coming soon"
 };
 
 
@@ -187,11 +195,21 @@ static const char* const human_readable_messages[] = {
 SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err)
 {
     const char* str = human_readable_messages[err];
+    const size_t tab_size = (sizeof(human_readable_messages) / sizeof(*human_readable_messages));
+
+    if ((err < 0) || err >= tab_size)
+    {
+        goto E1;
+    }
+
     if (!str)
     {
-        return "Unknown error";
+        goto E1;
     }
     return str;
+
+E1:
+    return "Unknown error";
 }
 
 SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void *ptr)
@@ -439,4 +457,176 @@ SN_PUB_API_OPEN void SN_API_PREFIX(do_auto_free_at_exit)(SN_FLAG val)
     pthread_mutex_lock(&last_error_mutex);
     do_free_exit = val;
     pthread_mutex_unlock(&last_error_mutex);
+}
+
+SN_PUB_API_OPEN uint64_t SN_API_PREFIX(calculate_checksum)(void* block)
+{
+    if (!block)
+    {
+        sn_set_last_error(SN_ERR_NULL_PTR);
+        return 0;
+    }
+
+    node_t* n = list_query(mem_list, block);
+    if (!n)
+    {
+        sn_set_last_error(SN_ERR_NO_ADDER_FOUND);
+        return 0;
+    }
+
+    if (!n->size)
+    {
+        sn_set_last_error(SN_ERR_NO_SIZE);
+        return 0;
+    }
+
+    const uint8_t* const data = block;
+
+    if (n->size == 1)
+    {
+        return *data ^ 0xFF;
+    }
+
+    uint64_t checksum = 0;
+    const uint8_t first_value = *data;
+    const uint8_t last_value = data[n->size - 1];
+    const uint8_t mid_value = data[n->size/2];
+    const uint8_t mixer = ~(first_value ^ last_value) ^ mid_value;
+    for (size_t i = 0; i < n->size; i++)
+    {
+        checksum += (((data[i] ^ mixer) + mid_value) * last_value) + (*(uint8_t*)&i);
+    }
+    return checksum;
+}
+
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <stdio.h>
+#include <sys/stat.h>
+/**
+ * @brief Dumps the contents of a track block memory to a file
+ * @param file Path to a nonexistent file
+ * @param block A pointer to a tracked block of memory
+ * @return If 0 failure, if 1 successful
+ */
+SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(dump_to_file)(const char* file, void* block)
+{
+    if (!block)
+    {
+        sn_set_last_error(SN_ERR_NULL_PTR);
+        return 0;
+    }
+
+    if (!file)
+    {
+        sn_set_last_error(SN_ERR_NULL_PTR);
+        return 0;
+    }
+
+    node_t* n = list_query(mem_list, block);
+    if (!n)
+    {
+        sn_set_last_error(SN_ERR_NO_ADDER_FOUND);
+        return 0;
+    }
+
+    if (!n->size)
+    {
+        sn_set_last_error(SN_ERR_NO_SIZE);
+        return 0;
+    }
+
+    if (access(file, F_OK) == 0)
+    {
+        sn_set_last_error(SN_ERR_DUMP_FILE_PREEXIST);
+        return 0;
+    }
+
+    const int dump_file = open(file, O_CREAT | O_RDWR, 0644);
+
+    if (ftruncate(dump_file, n->size) < 0)
+    {
+        sn_set_last_error(SN_ERR_FTRUNCATE_CALL_FAILED);
+        close(dump_file);
+        return 0;
+    }
+
+    void* file_buff = mmap(NULL, n->size, PROT_READ | PROT_WRITE, MAP_SHARED, dump_file, 0);
+
+    if (file_buff == MAP_FAILED)
+    {
+        sn_set_last_error(SN_ERR_MMAP_CALL_FAILED);
+        close(dump_file);
+        return 0;
+    }
+
+    memcpy(file_buff, block, n->size);
+
+    if (msync(file_buff, n->size, MS_SYNC) < 0)
+    {
+        sn_set_last_error(SN_ERR_MSYNC_CALL_FAILED);
+    }
+
+    if (munmap(file_buff, n->size) < 0) {
+        sn_set_last_error(SN_ERR_MUNMAP_CALL_FAILED);
+    }
+    close(dump_file);
+
+    return 1;
+}
+
+/**
+ * @brief It copies a files data to block memory of the same size
+ * @param file Path to a preexisting file (This file will be treated as read only)
+ * @return A pointer to a Pre-allocated tracked block of memory
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(mount_file_to_ram)(const char* file)
+{
+    if (!file)
+    {
+        sn_set_last_error(SN_ERR_NULL_PTR);
+        return NULL;
+    }
+
+    struct stat fileStat;
+
+    if (stat(file, &fileStat) != 0)
+    {
+        sn_set_last_error(SN_ERR_FILE_NOT_EXIST);
+        return NULL;
+    }
+
+    const int file_obj = open(file, O_CREAT | O_RDONLY, 0644);
+    const size_t file_size = fileStat.st_size;
+
+    void* buff = sn_malloc(file_size);
+    if (!buff)
+    {
+        close(file_obj);
+        return NULL;
+    }
+
+    void* file_buff = mmap(NULL, file_size, PROT_READ, MAP_SHARED, file_obj, 0);
+
+    if (file_buff == MAP_FAILED)
+    {
+        sn_set_last_error(SN_ERR_MMAP_CALL_FAILED);
+        close(file_obj);
+        return 0;
+    }
+
+    memcpy(buff, file_buff, file_size);
+
+    if (msync(file_buff, file_size, MS_SYNC) < 0)
+    {
+        sn_set_last_error(SN_ERR_MSYNC_CALL_FAILED);
+    }
+
+    if (munmap(file_buff, file_size) < 0) {
+        sn_set_last_error(SN_ERR_MUNMAP_CALL_FAILED);
+    }
+    close(file_obj);
+
+    return buff;
 }

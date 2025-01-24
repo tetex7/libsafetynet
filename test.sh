@@ -28,7 +28,7 @@ function cli_exit() {
 
 # Compile the source code
 echo "Compiling test code"
-gcc -g -std=c99 -O0 -D__SN_WIP_CALLS__= -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
+gcc -g -Wall -Werror -std=c99 -O0 -D__SN_WIP_CALLS__= -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -36,13 +36,17 @@ gcc -g -std=c99 -O0 -D__SN_WIP_CALLS__= -L./build -I./include -lsafetynet -o "$O
 #include <time.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
+
+const char* dump_file = "${PWD}/test.bin";
 
 int main()
 {
-    //sn_lock_fast_cache();
+    sn_lock_fast_cache();
+    srand(time(NULL));
     for (volatile size_t i = 0; i < 400; i++)
     {
-        printf("Allocating Garbage block %lu\n", i);
+        //printf("Allocating Garbage block %lu\n", i);
         sn_malloc(sizeof(size_t));
     }
 
@@ -96,7 +100,28 @@ int main()
     printf("rsize: %lu\n", SN_GET_ARR_SIZE(metadata->size, sizeof(int32_t)));
     printf("tid: %lu\n", metadata->tid);
     printf("cached: %i\n", metadata->cached);
-    printf("block id: %iu\n", metadata->block_id);
+    printf("block id: %i\n", metadata->block_id);
+    printf("checksum: %lx\n", sn_calculate_checksum(buff));
+
+    uint16_t* test_val = sn_malloc(sizeof(uint16_t));
+    *test_val = (uint16_t)rand();
+
+    printf("\n\nchecksum16: %lx\n", sn_calculate_checksum(test_val));
+    sn_dump_to_file(dump_file, buff);
+    void* mfile = sn_mount_file_to_ram(dump_file);
+    if (!mfile)
+    {
+        printf("ERROR: %s", sn_get_error_msg(sn_get_last_error()));
+        exit(1);
+    }
+    if (!memcmp(buff, mfile, metadata->size))
+    {
+        printf("Test failed memcmp buff != sn_mount_file_to_ram(dump_file)\n");
+    }
+    else
+    {
+        printf("Test pass memcmp buff == sn_mount_file_to_ram(dump_file)\n");
+    }
 
     return 0;
 }
@@ -126,5 +151,6 @@ else
 fi
 
 
-#rm -f ${OUTPUT_BINARY}
+rm -f ${OUTPUT_BINARY}
+rm -f test.bin
 cli_exit $ecode

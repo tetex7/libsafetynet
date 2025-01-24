@@ -69,15 +69,22 @@ extern "C" {
 
 typedef enum
 {
-    SN_ERR_OK = 0,                   /**< No error */
-    SN_ERR_NULL_PTR = 5,             /**< Null pointer passed to function */
-    SN_ERR_NO_SIZE = 10,             /**< Memory block has no size information */
-    SN_ERR_BAD_SIZE = 15,            /**< Invalid memory size */
-    SN_ERR_BAD_ALLOC = 20,           /**< Memory allocation failed */
-    SN_ERR_NO_ADDER_FOUND = 30,      /**< No adder found in system */
-    SN_ERR_NO_TID_FOUND = 40,        /**< No tid found in system */
-    SN_ERR_BAD_BLOCK_ID = 50,        /**< block id is not above 20 */
-    SN_WARN_DUB_FREE = 80            /**< Double free detected (warning) */
+    SN_ERR_OK = 0,                       /**< No error */
+    SN_ERR_NULL_PTR = 5,                 /**< Null pointer passed to function */
+    SN_ERR_NO_SIZE = 10,                 /**< Memory block has no size information */
+    SN_ERR_BAD_SIZE = 15,                /**< Invalid memory size */
+    SN_ERR_BAD_ALLOC = 20,               /**< Memory allocation failed */
+    SN_ERR_NO_ADDER_FOUND = 30,          /**< No adder found in system */
+    SN_ERR_NO_TID_FOUND = 40,            /**< No tid found in system */
+    SN_ERR_BAD_BLOCK_ID = 50,            /**< block id is not above 20 */
+    SN_ERR_DUMP_FILE_PREEXIST = 60,      /**< Dump file path provided already exists */
+    SN_ERR_MSYNC_CALL_FAILED = 70,       /**< posix call to MSYNC failed */
+    SN_ERR_MMAP_CALL_FAILED = 80,        /**< posix call to mmap failed */
+    SN_ERR_MUNMAP_CALL_FAILED = 90,      /**< posix call to munmap failed */
+    SN_ERR_FTRUNCATE_CALL_FAILED = 100,  /**< posix call to MSYNC failed */
+    SN_ERR_FILE_NOT_EXIST = 110,         /**< file Does not exist */
+    SN_WARN_DUB_FREE = 180,              /**< Double free detected (warning) */
+    SN_INFO_PLACEHOLDER = 190,           /**< This is a generic placeholder For Yet undefined errors */
 } sn_error_codes_e;
 
 typedef size_t sn_mem_address_t;
@@ -247,6 +254,13 @@ SN_PUB_API_OPEN uint16_t SN_API_PREFIX(get_block_id)(void* block);
  */
 SN_PUB_API_OPEN void* SN_API_PREFIX(query_block_id)(uint16_t id);
 
+/**
+ * @brief calculates a checksum for the block of tracked memory
+ * @param block pointer to a block of tracked memory
+ * @return a checksum
+ */
+SN_PUB_API_OPEN uint64_t SN_API_PREFIX(calculate_checksum)(void* block);
+
 #ifdef __SN_WIP_CALLS__
 typedef struct SN_API_PREFIX(mem_metadata_s)
 {
@@ -263,6 +277,21 @@ typedef struct SN_API_PREFIX(mem_metadata_s)
  * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
  */
 SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void* ptr);
+
+/**
+ * @brief Dumps the contents of a track block memory to a file
+ * @param file Path to a nonexistent file
+ * @param block A pointer to a tracked block of memory
+ * @return If 0 failure, if 1 successful
+ */
+SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(dump_to_file)(const char* file, void* block);
+
+/**
+ * @brief It copies a files data to block memory of the same size
+ * @param file Path to a preexisting file (This file will be treated as read only)
+ * @return A pointer to a Pre-allocated tracked block of memory
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(mount_file_to_ram)(const char* file);
 
 //TODO: Implement eventually
 //SN_PUB_API_OPEN void SN_API_PREFIX(set_alloc_limit)(size_t limit);
