@@ -23,10 +23,6 @@ else
   DEBUG_FLAGS += -O1 -g
 endif
 
-ifeq ($(OS),Windows_NT)
-PREFIX = x86_64-w64-mingw32-
-endif
-
 # Compiler and flags
 CC = ${PREFIX}gcc
 CXX = ${PREFIX}g++
