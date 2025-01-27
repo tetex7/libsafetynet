@@ -35,7 +35,6 @@ typedef struct node_t {
     SN_FLAG cached;                 // is mem block cached
     uint16_t block_id;              // An optional block id
     uint8_t* extended_data;         // Extended optional data to be allocated separately
-    uint8_t tto_order;              // Once reaches the integer limit wel'll then rollback to zero and reorder the list
     uint8_t weight;                 // The amount of times this thing's been used since last the reorder
     struct node_t* next;            // Pointer to the next node
 } node_t;

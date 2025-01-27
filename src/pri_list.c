@@ -25,6 +25,7 @@ pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 SN_FLAG list_cache_lock = SN_FLAG_UNSET;
 static uint8_t count_cache = 0;
 SN_FLAG list_caching = SN_FLAG_SET;
+uint8_t tto_order = 0;              // Once reaches the integer limit wel'll then rollback to zero and reorder the list
 
 
 typedef struct node_pair_t
@@ -182,12 +183,12 @@ static void __pri_list_caching__(node_t* head)
 
 static void inc_time(node_t* node)
 {
-    if (node->tto_order == INT8_MAX)
+    if (tto_order == INT8_MAX)
     {
-        node->tto_order = 0;
+        tto_order = 0;
         __pri_list_caching__(node);
     }
-    node->tto_order++;
+    tto_order++;
 }
 
 static void inc_weight(node_t* head, node_t* node)
@@ -210,7 +211,6 @@ node_t* list_init()
     ou->cached = SN_FLAG_UNSET;
     ou->extended_data = NULL;
     ou->block_id = 0;
-    ou->tto_order = 0;
     ou->weight = UINT8_MAX;
     ou->next = NULL;
     return ou;
@@ -240,7 +240,6 @@ node_t* list_add(node_t* head, void* data)
     new_last->cached = SN_FLAG_UNSET;
     new_last->extended_data = NULL;
     new_last->block_id = 0;
-    new_last->tto_order = 0;
     new_last->weight = 0;
     new_last->next = NULL;
 

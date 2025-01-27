@@ -25,6 +25,22 @@
 
 extern node_t* mem_list;
 pthread_mutex_t last_error_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t alloc_mutex = PTHREAD_MUTEX_INITIALIZER;
+static size_t bytes_alloc = 0;
+static size_t alloc_limit = 0;
+
+static SN_BOOL can_aloc(size_t size)
+{
+    if (!alloc_limit)
+    {
+        return SN_TRUE;
+    }
+    if ((bytes_alloc == alloc_limit) || ((size + bytes_alloc) < alloc_limit))
+    {
+        return SN_FALSE;
+    }
+    return SN_TRUE;
+}
 
 
 /**
@@ -41,6 +57,12 @@ void* sn_malloc(const size_t size)
         return NULL;
     }
 
+    if (!can_aloc(size))
+    {
+        sn_set_last_error(SN_ERR_ALLOC_LIMIT_HIT);
+        return NULL;
+    }
+
     void* ret = malloc(size);
 
     if (!ret)
@@ -50,7 +72,10 @@ void* sn_malloc(const size_t size)
     }
 
     node_t* n = list_add(mem_list, ret);
+    pthread_mutex_lock(&alloc_mutex);
     n->size = size;
+    bytes_alloc += size;
+    pthread_mutex_unlock(&alloc_mutex);
     return ret;
 }
 
@@ -67,6 +92,7 @@ void sn_free(void* const ptr)
     if (node)
     {
         free(node->data);
+        bytes_alloc -= node->size;
         list_free(node);
         return;
     }
@@ -494,9 +520,9 @@ SN_PUB_API_OPEN uint64_t SN_API_PREFIX(calculate_checksum)(void* block)
     const uint8_t mixer = ~(first_value ^ last_value) ^ mid_value;
     for (size_t i = 0; i < n->size; i++)
     {
-        checksum += (((data[i] ^ mixer) + mid_value) * last_value) + (*(uint8_t*)&i);
+        checksum = ((((data[i] ^ mixer) + mid_value) * last_value) + (*(uint8_t*)&i)) ^ checksum;
     }
-    return checksum;
+    return (checksum);
 }
 
 #include <unistd.h>

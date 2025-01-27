@@ -59,3 +59,4 @@ temp_*_temp
 /.idea
 compile_commands.json
 /.cache
+test.bin

@@ -43,6 +43,7 @@ void doexit()
         mem_list = NULL;
         pthread_mutex_destroy(&list_mutex);
         pthread_mutex_destroy(&last_error_mutex);
+        pthread_mutex_destroy(&alloc_mutex);
     }
 }
 
