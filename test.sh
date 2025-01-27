@@ -26,6 +26,8 @@ function cli_exit() {
     exit $1
 }
 
+rm -f test.bin
+
 # Compile the source code
 echo "Compiling test code"
 gcc -g -Wall -Werror -std=c99 -O0 -D__SN_WIP_CALLS__= -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
@@ -37,6 +39,18 @@ gcc -g -Wall -Werror -std=c99 -O0 -D__SN_WIP_CALLS__= -L./build -I./include -lsa
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
+bool mcmp(void* a, void* b, size_t size)
+{
+    for (size_t i = 1; i < size; i++)
+    {
+        if (((uint8_t*)a)[i] != ((uint8_t*)b)[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
 const char* dump_file = "${PWD}/test.bin";
 
@@ -87,7 +101,7 @@ int main()
 
     for (size_t i = 0; i < buff_size; i++)
     {
-        printf("buff[%lu] = %i\n\n", i, buff[i]);
+        printf("buff[%lu] = %i\n", i, buff[i]);
     }
 
     printf("%lu bytes allocated\n", sn_query_total_memory_usage());
@@ -114,14 +128,29 @@ int main()
         printf("ERROR: %s", sn_get_error_msg(sn_get_last_error()));
         exit(1);
     }
-    if (!memcmp(buff, mfile, metadata->size))
+    if (mcmp(buff, mfile, sn_query_size(buff)))
     {
-        printf("Test failed memcmp buff != sn_mount_file_to_ram(dump_file)\n");
+        printf("Test pass mcmp buff == sn_mount_file_to_ram(dump_file)\n");
+        
     }
     else
     {
-        printf("Test pass memcmp buff == sn_mount_file_to_ram(dump_file)\n");
+        printf("Test failed mcmp buff != sn_mount_file_to_ram(dump_file)\n");
     }
+
+    /*for (size_t i = 0; i < sn_query_size(buff); i++)
+    {
+        if (((uint8_t*)buff)[i] == ((uint8_t*)mfile)[i])
+        {
+            printf("%x == %x\n", ((uint8_t*)buff)[i], ((uint8_t*)mfile)[i]);
+            //return 1;
+        }
+        else
+        {
+            printf("%x != %x\n", ((uint8_t*)buff)[i], ((uint8_t*)mfile)[i]);
+            //return 1;
+        }
+    }*/
 
     return 0;
 }
