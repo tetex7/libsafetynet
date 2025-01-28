@@ -25,6 +25,12 @@
 #ifndef SN_PUB_API_OPEN
 #   define SN_PUB_API_OPEN __attribute__((visibility("default")))
 #endif
+#ifndef SN_DEPRECATED
+#   define SN_DEPRECATED __attribute__ ((deprecated))
+#endif
+#ifndef SN_MSG_DEPRECATED
+#   define SN_MSG_DEPRECATED(msg) __attribute__ ((deprecated(msg)))
+#endif
 #ifndef SN_VERY_VOLATILE
 #   define SN_VERY_VOLATILE __attribute__((optimize("O0")))
 #endif
@@ -124,8 +130,9 @@ SN_PUB_API_OPEN void SN_API_PREFIX(free)(void* const ptr);
  * @brief Registers a memory block for tracking.
  * @param ptr Pointer to the memory block.
  * @return The same pointer, or NULL on failure.
+ * @deprecated
  */
-SN_PUB_API_OPEN void* SN_API_PREFIX(register)(void* const ptr);
+SN_PUB_API_OPEN SN_MSG_DEPRECATED("unsafiy doto lake of size") void* SN_API_PREFIX(register)(void* const ptr);
 
 /**
  * @brief Queries the size in Bytes of a tracked memory block.
