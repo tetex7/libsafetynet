@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "libsafetynet.h"
+#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -35,7 +37,7 @@ static SN_BOOL can_aloc(size_t size)
     {
         return SN_TRUE;
     }
-    if ((bytes_alloc == alloc_limit) || ((size + bytes_alloc) < alloc_limit))
+    if ((bytes_alloc+1 == alloc_limit) || ((size + bytes_alloc) > alloc_limit))
     {
         return SN_FALSE;
     }
@@ -208,6 +210,7 @@ static const char* const human_readable_messages[] = {
     [SN_ERR_MUNMAP_CALL_FAILED] = "posix call to munmap failed",
     [SN_ERR_FTRUNCATE_CALL_FAILED] = "posix call to MSYNC failed",
     [SN_ERR_FILE_NOT_EXIST] = "file Does not exist",
+    [SN_ERR_ALLOC_LIMIT_HIT] = "User defined alloc limit has been hit",
     [SN_WARN_DUB_FREE] = "Possible double free, but not found in registry",
     [SN_INFO_PLACEHOLDER] = "Undefined error Error code implementation coming soon"
 };
@@ -307,6 +310,11 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size)
         return NULL;
     }
 
+    if (!can_aloc(new_size))
+    {
+        sn_set_last_error(SN_ERR_ALLOC_LIMIT_HIT);
+    }
+
     node_t* n = list_query(mem_list, ptr);
     if (!n)
     {
@@ -339,6 +347,12 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(calloc)(size_t num, size_t size)
     if (!size)
     {
         sn_set_last_error(SN_ERR_BAD_SIZE);
+        return NULL;
+    }
+
+    if (!can_aloc(size*num))
+    {
+        sn_set_last_error(SN_ERR_ALLOC_LIMIT_HIT);
         return NULL;
     }
 
@@ -655,4 +669,11 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(mount_file_to_ram)(const char* file)
     close(file_obj);
 
     return buff;
+}
+
+SN_PUB_API_OPEN void sn_set_alloc_limit(size_t limit)
+{
+    pthread_mutex_lock(&alloc_mutex);
+    alloc_limit = limit;
+    pthread_mutex_unlock(&alloc_mutex);
 }

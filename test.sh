@@ -58,23 +58,31 @@ int main()
 {
     sn_lock_fast_cache();
     srand(time(NULL));
+    sn_set_alloc_limit(sizeof(size_t) * 200);
     for (volatile size_t i = 0; i < 400; i++)
     {
         //printf("Allocating Garbage block %lu\n", i);
         sn_malloc(sizeof(size_t));
+        if (sn_get_last_error() != SN_ERR_OK)
+        {
+            printf("ERROR[%lu]: %s\n", i, sn_get_error_msg(sn_get_last_error()));
+            break;
+        }
     }
+    sn_set_alloc_limit(0);
 
     printf("Allocating test block\n");
     int32_t* buff = sn_malloc(sizeof(int32_t) * 10);
+    if (!buff)
+    {
+        printf("ERROR: %s\n", sn_get_error_msg(sn_get_last_error()));
+        exit(1);
+    }
     printf("seting id\n");
     sn_set_block_id(buff, 84);
     printf("request_to_fast_cache\n");
     sn_request_to_fast_cache(buff);
-    if (!buff)
-    {
-        printf("ERROR: %s", sn_get_error_msg(sn_get_last_error()));
-        exit(1);
-    }
+    
 
     size_t buff_size = SN_GET_ARR_SIZE(sn_query_size(buff), sizeof(int32_t));
 
@@ -125,7 +133,7 @@ int main()
     void* mfile = sn_mount_file_to_ram(dump_file);
     if (!mfile)
     {
-        printf("ERROR: %s", sn_get_error_msg(sn_get_last_error()));
+        printf("ERROR: %s\n", sn_get_error_msg(sn_get_last_error()));
         exit(1);
     }
     if (mcmp(buff, mfile, sn_query_size(buff)))

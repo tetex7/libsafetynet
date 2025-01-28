@@ -294,8 +294,8 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(dump_to_file)(const char* file, void* bloc
  */
 SN_PUB_API_OPEN void* SN_API_PREFIX(mount_file_to_ram)(const char* file);
 
-//TODO: Implement eventually
-//SN_PUB_API_OPEN void SN_API_PREFIX(set_alloc_limit)(size_t limit);
+
+SN_PUB_API_OPEN void SN_API_PREFIX(set_alloc_limit)(size_t limit);
 #endif
 
 #ifdef __cplusplus
