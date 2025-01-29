@@ -130,9 +130,9 @@ SN_PUB_API_OPEN void SN_API_PREFIX(free)(void* const ptr);
  * @brief Registers a memory block for tracking.
  * @param ptr Pointer to the memory block.
  * @return The same pointer, or NULL on failure.
- * @deprecated
+ * @deprecated unsafe due to yourself lack of The definition of size
  */
-SN_PUB_API_OPEN SN_MSG_DEPRECATED("unsafiy doto lake of size") void* SN_API_PREFIX(register)(void* const ptr);
+SN_PUB_API_OPEN SN_MSG_DEPRECATED("unsafe due to lack of The definition of size") void* SN_API_PREFIX(register)(void* const ptr);
 
 /**
  * @brief Queries the size in Bytes of a tracked memory block.
