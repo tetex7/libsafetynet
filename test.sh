@@ -73,6 +73,7 @@ int main()
 
     printf("Allocating test block\n");
     int32_t* buff = sn_malloc(sizeof(int32_t) * 10);
+    
     if (!buff)
     {
         printf("ERROR: %s\n", sn_get_error_msg(sn_get_last_error()));
@@ -82,6 +83,7 @@ int main()
     sn_set_block_id(buff, 84);
     printf("request_to_fast_cache\n");
     sn_request_to_fast_cache(buff);
+    sn_malloc(0);
     
 
     size_t buff_size = SN_GET_ARR_SIZE(sn_query_size(buff), sizeof(int32_t));
@@ -188,6 +190,6 @@ else
 fi
 
 
-rm -f ${OUTPUT_BINARY}
+#rm -f ${OUTPUT_BINARY}
 rm -f test.bin
 cli_exit $ecode

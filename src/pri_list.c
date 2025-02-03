@@ -28,14 +28,6 @@ SN_FLAG list_caching = SN_FLAG_SET;
 uint8_t tto_order = 0;              // Once reaches the integer limit wel'll then rollback to zero and reorder the list
 
 
-typedef struct node_pair_t
-{
-    const void* ptr_key;
-    node_t* node;
-} node_pair_t;
-
-#define NODE_PAIR_INIT ((node_pair_t){NULL, NULL})
-
 node_pair_t caching_nodes[6] = {
     NODE_PAIR_INIT,
     NODE_PAIR_INIT,
@@ -247,7 +239,7 @@ node_t* list_add(node_t* head, void* data)
     return new_last;
 }
 
-void list_free_all(node_t *head)
+void list_free_all(node_t* head)
 {
     pthread_mutex_lock(&list_mutex);
     while (head != NULL)

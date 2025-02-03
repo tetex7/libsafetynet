@@ -39,6 +39,16 @@ typedef struct node_t {
     struct node_t* next;            // Pointer to the next node
 } node_t;
 
+
+
+typedef struct node_pair_t
+{
+    const void* ptr_key;
+    node_t* node;
+} node_pair_t;
+
+#define NODE_PAIR_INIT ((node_pair_t){NULL, NULL})
+
 node_t* list_init();
 node_t* list_query(node_t* head, const void* const data);
 size_t  list_len(node_t* head);
@@ -53,5 +63,6 @@ SN_FLAG add_cache_node(node_t* head, const void* const ptr);
 extern pthread_mutex_t list_mutex;
 extern SN_FLAG list_caching;
 extern SN_FLAG list_cache_lock;
+extern node_pair_t caching_nodes[6];
 
 #endif // LINKED_LIST_H

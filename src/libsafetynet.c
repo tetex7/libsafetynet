@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "crash.h"
 #include "pri_list.h"
 #include "_pri_api.h"
 
@@ -55,7 +56,8 @@ void* sn_malloc(const size_t size)
 {
     if (!size)
     {
-        sn_set_last_error(SN_ERR_BAD_SIZE);
+        //sn_set_last_error(SN_ERR_BAD_SIZE);
+        crash(SN_ERR_BAD_SIZE);
         return NULL;
     }
 
@@ -195,7 +197,7 @@ void sn_reset_last_error()
     pthread_mutex_unlock(&last_error_mutex);
 }
 
-static const char* const human_readable_messages[] = {
+const char* const human_readable_messages[] = {
     [SN_ERR_OK] = "everything is AOK",
     [SN_ERR_NULL_PTR] = "Null-Pointer provided to function",
     [SN_ERR_NO_SIZE] = "no size Metadata Provided or available",
@@ -208,11 +210,31 @@ static const char* const human_readable_messages[] = {
     [SN_ERR_MSYNC_CALL_FAILED] = "posix call to MSYNC failed",
     [SN_ERR_MMAP_CALL_FAILED] = "posix call to mmap failed",
     [SN_ERR_MUNMAP_CALL_FAILED] = "posix call to munmap failed",
-    [SN_ERR_FTRUNCATE_CALL_FAILED] = "posix call to MSYNC failed",
+    [SN_ERR_FTRUNCATE_CALL_FAILED] = "posix call to FTRUNCATE failed",
     [SN_ERR_FILE_NOT_EXIST] = "file Does not exist",
     [SN_ERR_ALLOC_LIMIT_HIT] = "User defined alloc limit has been hit",
     [SN_WARN_DUB_FREE] = "Possible double free, but not found in registry",
     [SN_INFO_PLACEHOLDER] = "Undefined error Error code implementation coming soon"
+};
+
+const char* const err_name_tap[] = {
+    [SN_ERR_OK] = "SN_ERR_OK",
+    [SN_ERR_NULL_PTR] = "SN_ERR_NULL_PTR",
+    [SN_ERR_NO_SIZE] = "SN_ERR_NO_SIZE",
+    [SN_ERR_BAD_SIZE] = "SN_ERR_BAD_SIZE",
+    [SN_ERR_BAD_ALLOC] = "SN_ERR_BAD_ALLOC",
+    [SN_ERR_NO_ADDER_FOUND] = "SN_ERR_NO_ADDER_FOUND",
+    [SN_ERR_NO_TID_FOUND] = "SN_ERR_NO_TID_FOUND",
+    [SN_ERR_BAD_BLOCK_ID] = "SN_ERR_BAD_BLOCK_ID",
+    [SN_ERR_DUMP_FILE_PREEXIST] = "SN_ERR_DUMP_FILE_PREEXIST",
+    [SN_ERR_MSYNC_CALL_FAILED] = "SN_ERR_MSYNC_CALL_FAILED",
+    [SN_ERR_MMAP_CALL_FAILED] = "SN_ERR_MMAP_CALL_FAILED",
+    [SN_ERR_MUNMAP_CALL_FAILED] = "SN_ERR_MUNMAP_CALL_FAILED",
+    [SN_ERR_FTRUNCATE_CALL_FAILED] = "SN_ERR_FTRUNCATE_CALL_FAILED",
+    [SN_ERR_FILE_NOT_EXIST] = "SN_ERR_FILE_NOT_EXIST",
+    [SN_ERR_ALLOC_LIMIT_HIT] = "SN_ERR_ALLOC_LIMIT_HIT",
+    [SN_WARN_DUB_FREE] = "SN_WARN_DUB_FREE",
+    [SN_INFO_PLACEHOLDER] = "SN_INFO_PLACEHOLDER"
 };
 
 
@@ -222,14 +244,15 @@ static const char* const human_readable_messages[] = {
  * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
  */
 SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err)
-{
-    const char* str = human_readable_messages[err];
+{    
     const size_t tab_size = (sizeof(human_readable_messages) / sizeof(*human_readable_messages));
 
     if ((err < 0) || err >= tab_size)
     {
         goto E1;
     }
+
+    const char* str = human_readable_messages[err];
 
     if (!str)
     {
@@ -587,9 +610,8 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(dump_to_file)(const char* file, void* bloc
 
     if (ftruncate(dump_file, n->size) < 0)
     {
-        sn_set_last_error(SN_ERR_FTRUNCATE_CALL_FAILED);
         close(dump_file);
-        return 0;
+        crash(SN_ERR_FTRUNCATE_CALL_FAILED);
     }
 
     void* file_buff = mmap(NULL, n->size, PROT_READ | PROT_WRITE, MAP_SHARED, dump_file, 0);

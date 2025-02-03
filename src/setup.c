@@ -22,6 +22,7 @@
 #include "pthread.h"
 #include "_pri_api.h"
 #include "extended_data.h"
+#include "crash.h"
 
 node_t* mem_list = NULL;
 SN_FLAG do_free_exit = SN_FLAG_SET;

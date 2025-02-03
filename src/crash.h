@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024  Tete
+ * Copyright (C) 2025  Tete
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,34 +16,12 @@
  */
 
 #pragma once
-#ifndef _PRI_API_H
-#define _PRI_API_H
+#ifndef CRASH_H
+#define CRASH_H
 #include "libsafetynet.h"
-#include <pthread.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdint.h>
-extern pthread_mutex_t last_error_mutex;
-extern pthread_mutex_t alloc_mutex;
-extern pthread_mutex_t list_mutex;
-extern sn_error_codes_e error_code;
-extern SN_FLAG do_free_exit;
-extern const char* const err_name_tap[];
-extern const char* const human_readable_messages[];
-void sn_set_last_error(sn_error_codes_e er_code);
 
+void __sn_pri__crash(sn_error_codes_e err, uint32_t line, const char* file);
 
-typedef enum
-{
-    SN_MMAP_DATA = (uint8_t)10
-} sn_ext_data_type_e;
-
-#define SN_EXT_DATA_PREFORM \
-uint8_t type; \
-size_t data_size; \
-uint16_t offset;
-
-
-
+#define crash(err) __sn_pri__crash(err, __LINE__, __FILE_NAME__)
 
 #endif
