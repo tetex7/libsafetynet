@@ -20,8 +20,8 @@
 #define CRASH_H
 #include "libsafetynet.h"
 
-void __sn_pri__crash(sn_error_codes_e err, uint32_t line, const char* file);
+SN_VERY_OPTIMIZED void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file); //__attribute__ ((__noreturn__));
 
-#define crash(err) __sn_pri__crash(err, __LINE__, __FILE_NAME__)
+#define crash(err) __sn__pri__crash__(err, __LINE__, __FILE__)
 
 #endif

@@ -618,20 +618,24 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(dump_to_file)(const char* file, void* bloc
 
     if (file_buff == MAP_FAILED)
     {
-        sn_set_last_error(SN_ERR_MMAP_CALL_FAILED);
+        //sn_set_last_error(SN_ERR_MMAP_CALL_FAILED);
         close(dump_file);
-        return 0;
+        crash(SN_ERR_MMAP_CALL_FAILED);
     }
 
     memcpy(file_buff, block, n->size);
 
     if (msync(file_buff, n->size, MS_SYNC) < 0)
     {
-        sn_set_last_error(SN_ERR_MSYNC_CALL_FAILED);
+        close(dump_file);
+        crash(SN_ERR_MSYNC_CALL_FAILED);
+
     }
 
-    if (munmap(file_buff, n->size) < 0) {
-        sn_set_last_error(SN_ERR_MUNMAP_CALL_FAILED);
+    if (munmap(file_buff, n->size) < 0)
+    {
+        close(dump_file);
+        crash(SN_ERR_MUNMAP_CALL_FAILED);
     }
     close(dump_file);
 
@@ -673,20 +677,22 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(mount_file_to_ram)(const char* file)
 
     if (file_buff == MAP_FAILED)
     {
-        sn_set_last_error(SN_ERR_MMAP_CALL_FAILED);
         close(file_obj);
-        return 0;
+        crash(SN_ERR_MMAP_CALL_FAILED);
     }
 
     memcpy(buff, file_buff, file_size);
 
     if (msync(file_buff, file_size, MS_SYNC) < 0)
     {
-        sn_set_last_error(SN_ERR_MSYNC_CALL_FAILED);
+        close(file_obj);
+        crash(SN_ERR_MSYNC_CALL_FAILED);
     }
 
-    if (munmap(file_buff, file_size) < 0) {
-        sn_set_last_error(SN_ERR_MUNMAP_CALL_FAILED);
+    if (munmap(file_buff, file_size) < 0)
+    {
+        close(file_obj);
+        crash(SN_ERR_MUNMAP_CALL_FAILED);
     }
     close(file_obj);
 

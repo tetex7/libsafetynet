@@ -26,7 +26,7 @@ SN_FLAG list_cache_lock = SN_FLAG_UNSET;
 static uint8_t count_cache = 0;
 SN_FLAG list_caching = SN_FLAG_SET;
 uint8_t tto_order = 0;              // Once reaches the integer limit wel'll then rollback to zero and reorder the list
-
+const node_t* last_access_node = NULL;
 
 node_pair_t caching_nodes[6] = {
     NODE_PAIR_INIT,
@@ -310,6 +310,7 @@ node_t* list_query(node_t* head, const void* const data)
         {
             inc_weight(head, current_node);
             inc_time(head);
+            last_access_node = current_node;
             pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
             return current_node; // Found a match; exit early
         }
@@ -335,6 +336,7 @@ node_t* list_query_by_id(node_t* head, uint16_t id)
         {
             inc_weight(head, current_node);
             inc_time(head);
+            last_access_node = current_node;
             pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
             return current_node; // Found a match; exit early
         }

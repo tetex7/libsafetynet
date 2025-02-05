@@ -64,5 +64,6 @@ extern pthread_mutex_t list_mutex;
 extern SN_FLAG list_caching;
 extern SN_FLAG list_cache_lock;
 extern node_pair_t caching_nodes[6];
+extern const node_t* last_access_node;
 
 #endif // LINKED_LIST_H

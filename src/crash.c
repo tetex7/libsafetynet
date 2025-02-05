@@ -22,10 +22,10 @@
 #include <stdlib.h>
 #include "pri_list.h"
 
-SN_BOOL (*crash_trap)(sn_error_codes_e err, uint32_t line, const char* file) = NULL;
+sn_crash_trap_t crash_trap = NULL;
 
 
-static int print_node(node_t* node)
+static int print_node(const node_t* node)
 {
     if (!node) return 0;
 
@@ -63,16 +63,24 @@ E1:
     return "SN_SERR_UNKNOWN";
 }
 
-void __sn_pri__crash(sn_error_codes_e err, uint32_t line, const char* file)
+SN_VERY_OPTIMIZED void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file)
 {
     if (crash_trap)
     {
         if (crash_trap(err, line, file)) return;
     }
+
     printf("Crash in libsafetynet/%s:%i :-(\n\n", file, line);
     printf("ERROR: %i\n", err);
     printf("ERROR_NAME: %s\n", get_err_name(err));
     printf("ERROR_MSG: %s\n", sn_get_error_msg(err));
+    printf("crash on tid %lu\n\n", pthread_self());
+    printf("Memory tracking list state:\n");
+    printf("list fast caching: %i\n", list_caching);
+    printf("list fast caching lock: %i\n", list_cache_lock);
+    printf("\nlast_access_node:\n");
+    print_node(last_access_node);
+    printf("\n\n");
 
     for (size_t i = 0; i < 6; i++)
     {

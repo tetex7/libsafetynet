@@ -31,8 +31,14 @@
 #ifndef SN_MSG_DEPRECATED
 #   define SN_MSG_DEPRECATED(msg) __attribute__ ((deprecated(msg)))
 #endif
+#ifndef SN_FORCE_INLINE
+#   define SN_FORCE_INLINE __attribute__((always_inline)) __inline
+#endif
 #ifndef SN_VERY_VOLATILE
 #   define SN_VERY_VOLATILE __attribute__((optimize("O0")))
+#endif
+#ifndef SN_VERY_OPTIMIZED
+#   define SN_VERY_OPTIMIZED __attribute__((optimize("O3")))
 #endif
 #ifndef SN_API_PREFIX
 #   define SN_API_PREFIX(name) sn_##name
@@ -96,6 +102,8 @@ typedef enum
 
 typedef size_t sn_mem_address_t;
 typedef void* sn_ext_data_t;
+
+typedef SN_BOOL (*sn_crash_trap_t)(sn_error_codes_e err, uint32_t line, const char* file);
 
 /**
  * @brief Allocates memory and tracks it for cleanup at program exit.
