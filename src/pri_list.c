@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "pri_list.h"
+#include "crash.h"
 
 #include <extended_data.h>
 #include <pthread.h>
@@ -196,6 +197,7 @@ static void inc_weight(node_t* head, node_t* node)
 node_t* list_init()
 {
     node_t* ou = malloc(sizeof(node_t));
+    if (ou != NULL) crash(SN_ERR_SYS_FAIL);
     ou->previous = NULL;
     ou->data = NULL;
     ou->size = 0;

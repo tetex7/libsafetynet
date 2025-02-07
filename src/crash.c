@@ -25,7 +25,7 @@
 sn_crash_trap_t crash_trap = NULL;
 
 
-static int print_node(const node_t* node)
+static SN_VERY_OPTIMIZED int print_node(const node_t* node)
 {
     if (!node) return 0;
 
@@ -46,7 +46,7 @@ static const char* get_err_name(const sn_error_codes_e err)
 {
     const size_t tab_size = SN_INFO_PLACEHOLDER;
 
-    if ((err < 0) || err >= tab_size)
+    if ((err < 0) || (err >= tab_size))
     {
         goto E1;
     }
@@ -75,6 +75,8 @@ SN_VERY_OPTIMIZED void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, c
     printf("ERROR_NAME: %s\n", get_err_name(err));
     printf("ERROR_MSG: %s\n", sn_get_error_msg(err));
     printf("crash on tid %lu\n\n", pthread_self());
+    if (err == SN_ERR_SYS_FAIL) goto EX1;
+    
     printf("Memory tracking list state:\n");
     printf("list fast caching: %i\n", list_caching);
     printf("list fast caching lock: %i\n", list_cache_lock);
@@ -91,5 +93,6 @@ SN_VERY_OPTIMIZED void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, c
             printf("\n");
         } else printf("fast_cache[%lu] = NULL\n", i);
     }
+EX1:
     exit(err);
 }

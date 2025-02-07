@@ -45,12 +45,6 @@ static SN_BOOL can_aloc(size_t size)
     return SN_TRUE;
 }
 
-
-/**
- *
- * @param size Size in bytes to be allocated
- * @return a block Allocated or null on failure use sn_get_last_error() for more info
- */
 SN_PUB_API_OPEN
 void* sn_malloc(const size_t size)
 {
@@ -214,6 +208,7 @@ const char* const human_readable_messages[] = {
     [SN_ERR_FILE_NOT_EXIST] = "file Does not exist",
     [SN_ERR_ALLOC_LIMIT_HIT] = "User defined alloc limit has been hit",
     [SN_WARN_DUB_FREE] = "Possible double free, but not found in registry",
+    [SN_ERR_SYS_FAIL] = "generic system failure",
     [SN_INFO_PLACEHOLDER] = "Undefined error Error code implementation coming soon"
 };
 
@@ -234,6 +229,7 @@ const char* const err_name_tap[] = {
     [SN_ERR_FILE_NOT_EXIST] = "SN_ERR_FILE_NOT_EXIST",
     [SN_ERR_ALLOC_LIMIT_HIT] = "SN_ERR_ALLOC_LIMIT_HIT",
     [SN_WARN_DUB_FREE] = "SN_WARN_DUB_FREE",
+    [SN_ERR_SYS_FAIL] = "SN_ERR_SYS_FAIL",
     [SN_INFO_PLACEHOLDER] = "SN_INFO_PLACEHOLDER"
 };
 
@@ -243,7 +239,7 @@ const char* const err_name_tap[] = {
  * @param err The error code
  * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
  */
-SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err)
+SN_PUB_API_OPEN const char* const sn_get_error_msg(sn_error_codes_e err)
 {    
     const size_t tab_size = (sizeof(human_readable_messages) / sizeof(*human_readable_messages));
 
@@ -264,7 +260,7 @@ E1:
     return "Unknown error";
 }
 
-SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void *ptr)
+SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_metadata(void *ptr)
 {
 
     if (!ptr)
@@ -286,7 +282,7 @@ SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void *ptr
  * @param ptr Pointer to the block of memory
  * @return A flag to which it exists (a bool)
  */
-SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr)
+SN_PUB_API_OPEN SN_FLAG sn_is_tracked_block(const void* const ptr)
 {
     if (!ptr)
     {
@@ -302,7 +298,7 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr)
 }
 
 
-SN_PUB_API_OPEN const SN_FLAG SN_API_PREFIX(request_to_fast_cache)(const void* ptr)
+SN_PUB_API_OPEN const SN_FLAG sn_request_to_fast_cache(const void* ptr)
 {
     if (!ptr)
     {
@@ -318,14 +314,14 @@ SN_PUB_API_OPEN const SN_FLAG SN_API_PREFIX(request_to_fast_cache)(const void* p
     return add_cache_node(mem_list, ptr);
 }
 
-SN_PUB_API_OPEN void SN_API_PREFIX(do_fast_caching)(SN_FLAG val)
+SN_PUB_API_OPEN void sn_do_fast_caching(SN_FLAG val)
 {
     pthread_mutex_lock(&list_mutex);
     list_caching = val;
     pthread_mutex_unlock(&list_mutex);
 }
 
-SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size)
+SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
 {
     if (!ptr)
     {
@@ -333,10 +329,13 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size)
         return NULL;
     }
 
-    if (!can_aloc(new_size))
+    if (!new_size)
     {
-        sn_set_last_error(SN_ERR_ALLOC_LIMIT_HIT);
+        sn_set_last_error(SN_ERR_BAD_SIZE);
+        return NULL;
     }
+
+    
 
     node_t* n = list_query(mem_list, ptr);
     if (!n)
@@ -345,9 +344,15 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size)
         return NULL;
     }
 
-    if (!new_size)
+    pthread_mutex_lock(&alloc_mutex);
+    bytes_alloc -= n->size;
+    pthread_mutex_unlock(&alloc_mutex);
+    if (!can_aloc(new_size))
     {
-        sn_set_last_error(SN_ERR_BAD_SIZE);
+        sn_set_last_error(SN_ERR_ALLOC_LIMIT_HIT);
+        pthread_mutex_lock(&alloc_mutex);
+        bytes_alloc += n->size;
+        pthread_mutex_unlock(&alloc_mutex);
         return NULL;
     }
 
@@ -359,13 +364,13 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size)
         return NULL;
     }
 
-
+    bytes_alloc += new_size;
     n->data = ret;
     n->size = new_size;
     return ret;
 }
 
-SN_PUB_API_OPEN void* SN_API_PREFIX(calloc)(size_t num, size_t size)
+SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size)
 {
     if (!size)
     {
@@ -388,11 +393,14 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(calloc)(size_t num, size_t size)
     }
 
     node_t* n = list_add(mem_list, ret);
+    pthread_mutex_lock(&alloc_mutex);
+    bytes_alloc += (size*num);
+    pthread_mutex_unlock(&alloc_mutex);
     n->size = size;
     return ret;
 }
 
-SN_PUB_API_OPEN void* SN_API_PREFIX(malloc_pre_initialized)(size_t size, uint8_t initial_byte_value)
+SN_PUB_API_OPEN void* sn_malloc_pre_initialized(size_t size, uint8_t initial_byte_value)
 {
     uint8_t* buff = sn_malloc(size);
 
@@ -403,21 +411,21 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(malloc_pre_initialized)(size_t size, uint8_t
     return buff;
 }
 
-SN_PUB_API_OPEN void SN_API_PREFIX(lock_fast_cache)()
+SN_PUB_API_OPEN void sn_lock_fast_cache()
 {
     pthread_mutex_lock(&list_mutex);
     list_cache_lock = SN_FLAG_SET;
     pthread_mutex_unlock(&list_mutex);
 }
 
-SN_PUB_API_OPEN void SN_API_PREFIX(unlock_fast_cache)()
+SN_PUB_API_OPEN void sn_unlock_fast_cache()
 {
     pthread_mutex_lock(&list_mutex);
     list_cache_lock = SN_FLAG_UNSET;
     pthread_mutex_unlock(&list_mutex);
 }
 
-SN_PUB_API_OPEN size_t SN_API_PREFIX(query_thread_memory_usage)(uint64_t tid)
+SN_PUB_API_OPEN size_t sn_query_thread_memory_usage(uint64_t tid)
 {
     pthread_mutex_lock(&list_mutex);  // Lock the mutex
     size_t tid_memory_usage = 0;
@@ -433,17 +441,17 @@ SN_PUB_API_OPEN size_t SN_API_PREFIX(query_thread_memory_usage)(uint64_t tid)
     return tid_memory_usage;
 }
 
-SN_PUB_API_OPEN size_t SN_API_PREFIX(query_total_memory_usage)()
+SN_PUB_API_OPEN size_t sn_query_total_memory_usage()
 {
-    pthread_mutex_lock(&list_mutex);  // Lock the mutex
+    /*pthread_mutex_lock(&list_mutex);  // Lock the mutex
     size_t total_memory_usage = 0;
 
     for (node_t* current_node = mem_list; current_node != NULL; current_node=current_node->next)
     {
         total_memory_usage+=current_node->size;
     }
-    pthread_mutex_unlock(&list_mutex);  // Unlock the mutex
-    return total_memory_usage;
+    pthread_mutex_unlock(&list_mutex);*/  // Unlock the mutex
+    return bytes_alloc;
 }
 
 

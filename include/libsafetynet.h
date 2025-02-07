@@ -97,6 +97,7 @@ typedef enum
     SN_ERR_FILE_NOT_EXIST = 110,         /**< file Does not exist */
     SN_ERR_ALLOC_LIMIT_HIT = 120,        /**< User defined alloc limit has been hit */
     SN_WARN_DUB_FREE = 180,              /**< Double free detected (warning) */
+    SN_ERR_SYS_FAIL = 185,               /**< generic system failure */
     SN_INFO_PLACEHOLDER = 190,           /**< This is a generic placeholder For Yet undefined errors */
 } sn_error_codes_e;
 
