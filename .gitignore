@@ -60,3 +60,4 @@ temp_*_temp
 compile_commands.json
 /.cache
 test.bin
+*.dis
