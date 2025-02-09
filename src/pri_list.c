@@ -197,7 +197,7 @@ static void inc_weight(node_t* head, node_t* node)
 node_t* list_init()
 {
     node_t* ou = malloc(sizeof(node_t));
-    if (ou != NULL) crash(SN_ERR_SYS_FAIL);
+    if (ou == NULL) crash(SN_ERR_SYS_FAIL);
     ou->previous = NULL;
     ou->data = NULL;
     ou->size = 0;
