@@ -323,32 +323,55 @@ SN_PUB_API_OPEN void SN_API_PREFIX(set_alloc_limit)(size_t limit);
 
 #if defined(__cplusplus) && (__cplusplus >= 201703L) && defined(SN_ENABLE_NEW_CALLS)
 #include <stdexcept>
-namespace safetynet
+#   ifndef SN_ENABLE_CPP_NAMESPACE
+__inline void* operator new(size_t size)
 {
-    __inline void* operator new(size_t size)
-    {
-        void* p = sn_malloc(size);
-        if (!p) throw std::bad_alloc();
-        return p;
-    }
-
-    __inline void operator delete(void* p) noexcept
-    {
-        sn_free(p);
-    }
-
-    __inline void* operator new[](size_t size)
-    {
-        void* p = sn_malloc(size);
-        if (!p) throw std::bad_alloc();
-        return p;
-    }
-
-    __inline void operator delete[](void* p) noexcept
-    {
-        sn_free(p);
-    }
+    void* p = sn_malloc(size);
+    if (!p) throw std::bad_alloc();
+    return p;
 }
+
+__inline void operator delete(void* p) noexcept
+{
+    sn_free(p);
+}
+
+__inline void* operator new[](size_t size)
+{
+    void* p = sn_malloc(size);
+    if (!p) throw std::bad_alloc();
+    return p;
+}
+
+__inline void operator delete[](void* p) noexcept
+{
+    sn_free(p);
+}
+#   else
+__inline void* operator new(size_t size)
+{
+    void* p = safetynet::sn_malloc(size);
+    if (!p) throw std::bad_alloc();
+    return p;
+}
+
+__inline void operator delete(void* p) noexcept
+{
+    safetynet::sn_free(p);
+}
+
+__inline void* operator new[](size_t size)
+{
+    void* p = safetynet::sn_malloc(size);
+    if (!p) throw std::bad_alloc();
+    return p;
+}
+
+__inline void operator delete[](void* p) noexcept
+{
+    safetynet::sn_free(p);
+}
+#   endif
 #endif
 
 #endif

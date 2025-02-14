@@ -66,7 +66,7 @@ package() {
     cd ..
     minverN=$(echo "${pkgver}" | head -c 1)
     eminverN=$(echo "${pkgver}" | head -c 3)
-    install -Dm755 ./build/libsafetynet.so "${pkgdir}/usr/lib/libsafetynet.so.${pkgver}"
+    install -Dm644 ./build/libsafetynet.so "${pkgdir}/usr/lib/libsafetynet.so.${pkgver}"
     install -Dm644 "./include/libsafetynet.h" "${pkgdir}/usr/include/libsafetynet.h"
 
     for i in $(ls ./manpages); do

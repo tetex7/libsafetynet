@@ -190,6 +190,6 @@ else
 fi
 
 
-#rm -f ${OUTPUT_BINARY}
+rm -f ${OUTPUT_BINARY}
 rm -f test.bin
 cli_exit $ecode
