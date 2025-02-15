@@ -50,8 +50,8 @@ void* sn_malloc(const size_t size)
 {
     if (!size)
     {
-        //sn_set_last_error(SN_ERR_BAD_SIZE);
-        crash(SN_ERR_BAD_SIZE);
+        sn_set_last_error(SN_ERR_BAD_SIZE);
+        //crash(SN_ERR_BAD_SIZE);
         return NULL;
     }
 

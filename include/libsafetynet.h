@@ -46,8 +46,11 @@
 #ifndef SN_GET_ARR_SIZE
 #   define SN_GET_ARR_SIZE(byte_size, type_size) ((size_t)(byte_size / type_size))
 #endif
-#ifndef SN_READONLY
-#   define SN_READONLY const
+#ifndef SN_MALLOC_ATTR
+#   define SN_MALLOC_ATTR __attribute__((__malloc__))
+#endif
+#ifndef SN_ALLOC_SIZE_ATTR
+#   define SN_ALLOC_SIZE_ATTR(...) __attribute__((__alloc_size__(__VA_ARGS__)))
 #endif
 #ifndef SN_BLOCK_NAME_MAX_LEN
 #   define SN_BLOCK_NAME_MAX_LEN 100
@@ -111,7 +114,7 @@ typedef SN_BOOL (*sn_crash_trap_t)(sn_error_codes_e err, uint32_t line, const ch
  * @param size The size of the memory block to allocate.
  * @return Pointer to the allocated memory, or NULL on failure.
  */
-SN_PUB_API_OPEN void* SN_API_PREFIX(malloc)(size_t size);
+SN_PUB_API_OPEN void* SN_API_PREFIX(malloc)(size_t size) SN_MALLOC_ATTR SN_ALLOC_SIZE_ATTR(1);
 
 /**
  * @brief Allocates memory and track it for an array of num objects of size and initializes it to all bits zero
