@@ -16,8 +16,8 @@
  */
 
 #pragma once
-#ifndef LIB_SAFETY_NET_H
-#define LIB_SAFETY_NET_H
+#ifndef LIBSAFETY_NET_H
+#define LIBSAFETY_NET_H
 
 #include <stddef.h>
 #include <stdint.h>

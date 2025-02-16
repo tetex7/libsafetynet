@@ -17,7 +17,7 @@
 
 # Maintainer: tete <tetex7@outlook.com>
 pkgname=libsafetynet
-pkgver=1.3.2
+pkgver=1.4.0
 pkgrel=1
 pkgdesc='Passive garbage collector for C and C++'
 url='www.github.com/tetex7/libsafetynet'
