@@ -29,6 +29,11 @@ makedepends=('gcc' 'binutils' 'valgrind')
 depends=('glibc')
 options=('!strip' 'docs' 'libtool' 'staticlibs' 'emptydirs' 'zipman' '!purge' '!debug' '!lto')
 
+if [ -z "${PK_DEBUG}" ]; then
+    PK_DEBUG=0d
+fi
+
+
 prepare() {
 cd ..
 echo $PWD
@@ -37,11 +42,8 @@ make clean
 
 build () {
     cd ..
-    if [ -z "${PK_DEBUG}" ]; then
-        make DEBUG=0 VER=${pkgver}
-    else
-        make DEBUG=${PK_DEBUG} VER=${pkgver}
-    fi
+    make DEBUG=${PK_DEBUG} VER=${pkgver} -j $(nproc)
+
 
     if [[ "${PK_NO_TEST}" != "1"  ]]; then
         ./test.sh

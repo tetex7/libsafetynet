@@ -281,7 +281,16 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(query_block_id)(uint16_t id);
  */
 SN_PUB_API_OPEN uint64_t SN_API_PREFIX(calculate_checksum)(void* block);
 
+
+SN_PUB_API_OPEN const char* sn_get_err_name(const sn_error_codes_e err);
+
 #ifdef __SN_WIP_CALLS__
+
+typedef void* (*sn_memalloc_call_t)(size_t size);
+typedef void  (*sn_free_call_t)(void* ptr);
+typedef void* (*sn_calloc_call_t)(size_t nmemb, size_t size);
+typedef void* (*sn_realloc_call_t)(void* ptr, size_t new_size);
+
 typedef struct SN_API_PREFIX(mem_metadata_s)
 {
     const void* const data;               // Pointer to data (generic data type)
@@ -313,8 +322,19 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(dump_to_file)(const char* file, void* bloc
  */
 SN_PUB_API_OPEN void* SN_API_PREFIX(mount_file_to_ram)(const char* file);
 
-
+/**
+ * @brief Set a software limit on how many bytes that can be allocated
+ * When the Alloc limit is hit a error of SN_ERR_ALLOC_LIMIT_HIT is produced and null is returned
+ * @param limit The bytes limit If given zero no limit is applied
+ */
 SN_PUB_API_OPEN void SN_API_PREFIX(set_alloc_limit)(size_t limit);
+
+SN_BOOL SN_API_PREFIX(set_allocer)(
+    sn_memalloc_call_t memalloc_call,
+    sn_free_call_t free_call,
+    sn_calloc_call_t calloc_call,
+    sn_realloc_call_t realloc_call
+);
 #endif
 
 #ifdef __cplusplus

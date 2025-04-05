@@ -67,13 +67,6 @@ extern sn_malloc
 extern sn_query_size
 extern sn_get_last_error
 
-%macro byte_deref_set 2
-    push rdi
-    mov rdi, [%2]      ; load arg %2 as ptr
-    mov byte [rdi], %1 ; writing arg %1 as a byte
-    pop rdi
-%endmacro
-
 _start:
     mov rdi, 4
     call sn_malloc
@@ -137,6 +130,10 @@ make  # Builds the project
 ./test.sh # Test the memory safety of the project 
 ```
 or If you're on arch
-```
+```bash
 makepkg -si  # This will build, test and install
+```
+or
+```bash
+./install.sh # This will do the same thing but more nicer
 ```

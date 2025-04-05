@@ -20,8 +20,8 @@
 #define CRASH_H
 #include "libsafetynet.h"
 #define SN_NO_RET __attribute__ ((__noreturn__))
-SN_VERY_OPTIMIZED void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file); //__attribute__ ((__noreturn__));
+SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file); //__attribute__ ((__noreturn__));
 
-#define crash(err) __sn__pri__crash__(err, __LINE__, __FILE__)
+#define sn_crash(err) __sn__pri__crash__(err, __LINE__, __FILE__);
 
 #endif

@@ -197,7 +197,7 @@ static void inc_weight(node_t* head, node_t* node)
 node_t* list_init()
 {
     node_t* ou = malloc(sizeof(node_t));
-    if (ou == NULL) crash(SN_ERR_SYS_FAIL);
+    if (ou == NULL) sn_crash(SN_ERR_SYS_FAIL);
     ou->previous = NULL;
     ou->data = NULL;
     ou->size = 0;
@@ -225,6 +225,8 @@ node_t* list_add(node_t* head, void* data)
     pthread_mutex_lock(&list_mutex);  // Lock the mutex
     node_t* last = list_index_to_last(head);
     node_t* new_last = malloc(sizeof(node_t));
+
+    if (!new_last) sn_crash(SN_ERR_SYS_FAIL);
 
     last->next = new_last;
     new_last->previous = last;

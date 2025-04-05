@@ -42,7 +42,7 @@ static SN_VERY_OPTIMIZED int print_node(const node_t* node)
     return pcc;
 }
 
-static const char* get_err_name(const sn_error_codes_e err)
+/*static const char* get_err_name(const sn_error_codes_e err)
 {
     const size_t tab_size = SN_INFO_PLACEHOLDER;
 
@@ -61,18 +61,18 @@ static const char* get_err_name(const sn_error_codes_e err)
 
 E1:
     return "SN_SERR_UNKNOWN";
-}
+}*/
 
-SN_VERY_OPTIMIZED void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file)
+SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file)
 {
-    if (crash_trap)
+    if (crash_trap && (err != SN_ERR_SYS_FAIL))
     {
-        if (crash_trap(err, line, file)) return;
+        //if (crash_trap(err, line, file)) return;
     }
 
     printf("Crash in libsafetynet/%s:%i :-(\n\n", file, line);
     printf("ERROR: %i\n", err);
-    printf("ERROR_NAME: %s\n", get_err_name(err));
+    printf("ERROR_NAME: %s\n", sn_get_err_name(err));
     printf("ERROR_MSG: %s\n", sn_get_error_msg(err));
     printf("crash on tid %lu\n\n", pthread_self());
     if (err == SN_ERR_SYS_FAIL) goto EX1;

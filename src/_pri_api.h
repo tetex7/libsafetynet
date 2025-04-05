@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "pri_list.h"
 extern pthread_mutex_t last_error_mutex;
 extern pthread_mutex_t alloc_mutex;
 extern pthread_mutex_t list_mutex;
@@ -30,6 +31,13 @@ extern sn_error_codes_e error_code;
 extern SN_FLAG do_free_exit;
 extern const char* const err_name_tap[];
 extern const char* const human_readable_messages[];
+extern node_t* mem_list;
+
+extern sn_memalloc_call_t cus_memalloc_call;
+extern sn_free_call_t cus_free_call;
+extern sn_calloc_call_t cus_calloc_call;
+extern sn_realloc_call_t cus_realloc_call;
+
 void sn_set_last_error(sn_error_codes_e er_code);
 
 

@@ -24,13 +24,15 @@
 #include "pri_list.h"
 #include "_pri_api.h"
 
-
-
-extern node_t* mem_list;
 pthread_mutex_t last_error_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t alloc_mutex = PTHREAD_MUTEX_INITIALIZER;
 static size_t bytes_alloc = 0;
 static size_t alloc_limit = 0;
+
+sn_memalloc_call_t cus_memalloc_call = &malloc;
+sn_free_call_t cus_free_call = &free;
+sn_calloc_call_t cus_calloc_call = &calloc;
+sn_realloc_call_t cus_realloc_call = &realloc;
 
 static SN_BOOL can_aloc(size_t size)
 {
@@ -51,9 +53,10 @@ void* sn_malloc(const size_t size)
     if (!size)
     {
         sn_set_last_error(SN_ERR_BAD_SIZE);
-        //crash(SN_ERR_BAD_SIZE);
+        //sn_crash(SN_ERR_BAD_SIZE);
         return NULL;
     }
+
 
     if (!can_aloc(size))
     {
@@ -61,16 +64,19 @@ void* sn_malloc(const size_t size)
         return NULL;
     }
 
-    void* ret = malloc(size);
+    pthread_mutex_lock(&alloc_mutex);
+
+    void* ret = cus_memalloc_call(size);
 
     if (!ret)
     {
         sn_set_last_error(SN_ERR_BAD_ALLOC);
+        pthread_mutex_unlock(&alloc_mutex);
         return NULL;
     }
 
     node_t* n = list_add(mem_list, ret);
-    pthread_mutex_lock(&alloc_mutex);
+
     n->size = size;
     bytes_alloc += size;
     pthread_mutex_unlock(&alloc_mutex);
@@ -89,9 +95,11 @@ void sn_free(void* const ptr)
     node_t* node = list_query(mem_list, ptr);
     if (node)
     {
-        free(node->data);
+        pthread_mutex_lock(&alloc_mutex);
+        cus_free_call(node->data);
         bytes_alloc -= node->size;
         list_free(node);
+        pthread_mutex_unlock(&alloc_mutex);
         return;
     }
     sn_set_last_error(SN_WARN_DUB_FREE);
@@ -260,6 +268,27 @@ E1:
     return "Unknown error";
 }
 
+const char* sn_get_err_name(const sn_error_codes_e err)
+{
+    const size_t tab_size = SN_INFO_PLACEHOLDER;
+
+    if ((err < 0) || (err >= tab_size))
+    {
+        goto E1;
+    }
+
+    const char* str = err_name_tap[err];
+
+    if (!str)
+    {
+        goto E1;
+    }
+    return str;
+
+    E1:
+        return "SN_SOFT_FAKE_ERR_UNKNOWN";
+}
+
 SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_metadata(void *ptr)
 {
 
@@ -356,7 +385,9 @@ SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
         return NULL;
     }
 
-    void* ret = realloc(ptr, new_size);
+    pthread_mutex_lock(&alloc_mutex);
+    void* ret = cus_realloc_call(ptr, new_size);
+    pthread_mutex_unlock(&alloc_mutex);
 
     if (!ret)
     {
@@ -384,7 +415,9 @@ SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size)
         return NULL;
     }
 
-    void* ret = calloc(num, size);
+    pthread_mutex_lock(&alloc_mutex);
+    void* ret = cus_calloc_call(num, size);
+    pthread_mutex_unlock(&alloc_mutex);
 
     if (!ret)
     {
@@ -619,7 +652,7 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(dump_to_file)(const char* file, void* bloc
     if (ftruncate(dump_file, n->size) < 0)
     {
         close(dump_file);
-        crash(SN_ERR_FTRUNCATE_CALL_FAILED);
+        sn_crash(SN_ERR_FTRUNCATE_CALL_FAILED);
     }
 
     void* file_buff = mmap(NULL, n->size, PROT_READ | PROT_WRITE, MAP_SHARED, dump_file, 0);
@@ -628,7 +661,7 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(dump_to_file)(const char* file, void* bloc
     {
         //sn_set_last_error(SN_ERR_MMAP_CALL_FAILED);
         close(dump_file);
-        crash(SN_ERR_MMAP_CALL_FAILED);
+        sn_crash(SN_ERR_MMAP_CALL_FAILED);
     }
 
     memcpy(file_buff, block, n->size);
@@ -636,14 +669,14 @@ SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(dump_to_file)(const char* file, void* bloc
     if (msync(file_buff, n->size, MS_SYNC) < 0)
     {
         close(dump_file);
-        crash(SN_ERR_MSYNC_CALL_FAILED);
+        sn_crash(SN_ERR_MSYNC_CALL_FAILED);
 
     }
 
     if (munmap(file_buff, n->size) < 0)
     {
         close(dump_file);
-        crash(SN_ERR_MUNMAP_CALL_FAILED);
+        sn_crash(SN_ERR_MUNMAP_CALL_FAILED);
     }
     close(dump_file);
 
@@ -686,7 +719,7 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(mount_file_to_ram)(const char* file)
     if (file_buff == MAP_FAILED)
     {
         close(file_obj);
-        crash(SN_ERR_MMAP_CALL_FAILED);
+        sn_crash(SN_ERR_MMAP_CALL_FAILED);
     }
 
     memcpy(buff, file_buff, file_size);
@@ -694,13 +727,13 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(mount_file_to_ram)(const char* file)
     if (msync(file_buff, file_size, MS_SYNC) < 0)
     {
         close(file_obj);
-        crash(SN_ERR_MSYNC_CALL_FAILED);
+        sn_crash(SN_ERR_MSYNC_CALL_FAILED);
     }
 
     if (munmap(file_buff, file_size) < 0)
     {
         close(file_obj);
-        crash(SN_ERR_MUNMAP_CALL_FAILED);
+        sn_crash(SN_ERR_MUNMAP_CALL_FAILED);
     }
     close(file_obj);
 
@@ -712,4 +745,25 @@ SN_PUB_API_OPEN void sn_set_alloc_limit(size_t limit)
     pthread_mutex_lock(&alloc_mutex);
     alloc_limit = limit;
     pthread_mutex_unlock(&alloc_mutex);
+}
+
+SN_PUB_API_OPEN SN_BOOL sn_set_allocer(
+    sn_memalloc_call_t memalloc_call,
+    sn_free_call_t free_call,
+    sn_calloc_call_t calloc_call,
+    sn_realloc_call_t realloc_call
+)
+{
+    if ((!memalloc_call) || (!free_call) || (!calloc_call) || (!realloc_call))
+    {
+        sn_set_last_error(SN_ERR_NULL_PTR);
+        return SN_FALSE;
+    }
+    pthread_mutex_lock(&alloc_mutex);
+    cus_memalloc_call = memalloc_call;
+    cus_free_call = free_call;
+    cus_calloc_call = calloc_call;
+    cus_realloc_call = realloc_call;
+    pthread_mutex_unlock(&alloc_mutex);
+    return SN_TRUE;
 }
