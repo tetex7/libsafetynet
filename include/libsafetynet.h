@@ -100,14 +100,14 @@ typedef enum
     SN_ERR_FILE_NOT_EXIST = 110,         /**< file Does not exist */
     SN_ERR_ALLOC_LIMIT_HIT = 120,        /**< User defined alloc limit has been hit */
     SN_WARN_DUB_FREE = 180,              /**< Double free detected (warning) */
-    SN_ERR_SYS_FAIL = 185,               /**< generic system failure */
+    SN_ERR_SYS_FAIL = 185,               /**< generic system failure (Start praying) */
     SN_INFO_PLACEHOLDER = 190,           /**< This is a generic placeholder For Yet undefined errors */
 } sn_error_codes_e;
 
 typedef size_t sn_mem_address_t;
 typedef void* sn_ext_data_t;
 
-typedef SN_BOOL (*sn_crash_trap_t)(sn_error_codes_e err, uint32_t line, const char* file);
+typedef SN_BOOL (*sn_d_trap_t)(sn_error_codes_e err, uint32_t line, const char* file);
 
 /**
  * @brief Allocates memory and tracks it for cleanup at program exit.

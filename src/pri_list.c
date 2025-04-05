@@ -362,7 +362,7 @@ void list_free_all_with_data(node_t* head)
         // Free the data inside the node (if it's not NULL)
         if (current_node->data != NULL)
         {
-            free(current_node->data);
+            cus_free_call(current_node->data);
         }
 
         // Free the current node itself

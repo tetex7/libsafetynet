@@ -52,6 +52,10 @@ size_t data_size; \
 uint16_t offset;
 
 
-
-
+#define SN_MUTEX_BLOCK(mutx, code) \
+pthread_mutex_lock(mutx); \
+{ \
+    code \
+} \
+pthread_mutex_unlock(mutx)
 #endif

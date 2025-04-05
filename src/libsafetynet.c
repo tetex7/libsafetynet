@@ -96,10 +96,12 @@ void sn_free(void* const ptr)
     if (node)
     {
         pthread_mutex_lock(&alloc_mutex);
-        cus_free_call(node->data);
-        bytes_alloc -= node->size;
-        list_free(node);
-        pthread_mutex_unlock(&alloc_mutex);
+        {
+            cus_free_call(node->data);
+            bytes_alloc -= node->size;
+            list_free(node);
+            pthread_mutex_unlock(&alloc_mutex);
+        }
         return;
     }
     sn_set_last_error(SN_WARN_DUB_FREE);
@@ -521,8 +523,6 @@ SN_PUB_API_OPEN void sn_set_block_id(void* block, uint16_t id)
 
 SN_PUB_API_OPEN uint16_t SN_API_PREFIX(get_block_id)(void* block)
 {
-    pthread_mutex_lock(&list_mutex);  // Lock the mutex
-
     pthread_mutex_lock(&list_mutex);  // Lock the mutex
     node_t* n = list_query(mem_list, block);
     pthread_mutex_unlock(&list_mutex);  // Unlock the mutex

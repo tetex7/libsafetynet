@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include "pri_list.h"
 
-sn_crash_trap_t crash_trap = NULL;
+//sn_crash_trap_t crash_trap = NULL;
 
 
 static SN_VERY_OPTIMIZED int print_node(const node_t* node)
@@ -65,11 +65,6 @@ E1:
 
 SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file)
 {
-    if (crash_trap && (err != SN_ERR_SYS_FAIL))
-    {
-        //if (crash_trap(err, line, file)) return;
-    }
-
     printf("Crash in libsafetynet/%s:%i :-(\n\n", file, line);
     printf("ERROR: %i\n", err);
     printf("ERROR_NAME: %s\n", sn_get_err_name(err));
