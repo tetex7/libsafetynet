@@ -60,18 +60,17 @@
 #if (defined(SN_NO_STD_BOOL) || !__has_include(<stdbool.h>))
 typedef uint8_t SN_BOOL;
 typedef uint8_t SN_FLAG;
-#define SN_TRUE 1
-#define SN_FALSE 0
-#define SN_FLAG_SET 1
-#define SN_FLAG_UNSET 0
 #else
 #include <stdbool.h>
 typedef bool SN_BOOL;
 typedef bool SN_FLAG;
-#define SN_TRUE 1
-#define SN_FALSE 0
-#define SN_FLAG_SET 1
-#define SN_FLAG_UNSET 0
+#endif
+
+#ifndef SN_TRUE
+#   define SN_TRUE 1
+#   define SN_FALSE 0
+#   define SN_FLAG_SET 1
+#   define SN_FLAG_UNSET 0
 #endif
 
 #ifdef __cplusplus

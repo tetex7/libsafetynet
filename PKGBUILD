@@ -30,7 +30,7 @@ depends=('glibc')
 options=('!strip' 'docs' 'libtool' 'staticlibs' 'emptydirs' 'zipman' '!purge' '!debug' '!lto')
 
 if [ -z "${PK_DEBUG}" ]; then
-    PK_DEBUG=0d
+    PK_DEBUG=0
 fi
 
 

@@ -26,7 +26,7 @@ endif
 # Compiler and flags
 CC = ${PREFIX}gcc
 CXX = ${PREFIX}g++
-GCCFLAG = ${DEBUG_FLAGS} -Wall -fno-strict-aliasing -fvisibility=hidden -fPIC  # -fPIC for Position Independent Code
+GCCFLAG = ${DEBUG_FLAGS} -Wall -Werror -fno-strict-aliasing -fvisibility=hidden -fPIC -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function # -fPIC for Position Independent Code
 CFLAGS = ${GCCFLAG} -std=gnu99 -D__SN_WIP_CALLS__=
 CPPFLAGS = ${GCCFLAG} -std=gnu++17
 LDFLAGS = ${DEBUG_FLAGS} -Wall -fno-strict-aliasing -fvisibility=hidden -shared  # Link as a shared object
