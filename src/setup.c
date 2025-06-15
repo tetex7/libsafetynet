@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024  Tete
+ * Copyright (C) 2025  Tetex7
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,42 +17,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "linked_list_c.h"
+
 #include "libsafetynet.h"
-#include "pri_list.h"
-#include "pthread.h"
-#include "_pri_api.h"
-#include "extended_data.h"
-#include "crash.h"
 
-node_t* mem_list = NULL;
-SN_FLAG do_free_exit = SN_FLAG_SET;
 
-sn_error_codes_e error_code = SN_ERR_OK;
+linked_list_c mem_list = NULL;
+
+static linked_list_entry_c freeOnListFree(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg)
+{
+    free(ctx->data);
+    return NULL;
+}
 
 void doexit()
 {
-    if (mem_list != NULL)
-    {
-        if (do_free_exit)
-        {
-            list_free_all_with_data(mem_list);  // Free all the nodes and their data
-        }
-        else
-        {
-            list_free_all(mem_list); // Free all the nodes
-        }
-        mem_list = NULL;
-        pthread_mutex_destroy(&list_mutex);
-        pthread_mutex_destroy(&last_error_mutex);
-        pthread_mutex_destroy(&alloc_mutex);
-    }
+    linked_list_forEach(mem_list, &freeOnListFree, NULL);
+    linked_list_destroy(mem_list);
 }
 
 // Constructor: Called when the library is loaded
 __attribute__((constructor))
 void library_init()
 {
-    mem_list = list_init();
+
+    mem_list = linked_list_new();
 }
 
 // Destructor: Called when the library is unloaded
@@ -62,11 +51,4 @@ void library_cleanup()
     // Perform any necessary cleanup, such as freeing global memory or other resources.
     // This function is called when the shared library is unloaded.
     doexit();
-}
-
-void sn_set_last_error(sn_error_codes_e er_code)
-{
-    pthread_mutex_lock(&last_error_mutex);
-    error_code = er_code;
-    pthread_mutex_unlock(&last_error_mutex);
 }

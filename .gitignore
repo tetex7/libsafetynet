@@ -46,11 +46,15 @@
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles/
+.cmake
 
 # Ignore test results (if you add a testing framework)
 *.gcno
 *.gcda
 
+.ninja_*
+
+*.ninja
 
 *.pkg.tar.zst
 /pkg

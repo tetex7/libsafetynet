@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2024  tete
+# Copyright (C) 2025  Tetex7
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,23 +27,27 @@ arch=('x86_64')
 license=('GPL3')
 makedepends=('gcc' 'binutils' 'valgrind')
 depends=('glibc')
-options=('!strip' 'docs' 'libtool' 'staticlibs' 'emptydirs' 'zipman' '!purge' '!debug' '!lto')
+options=('!strip' 'docs' 'libtool' '!staticlibs' 'emptydirs' 'zipman' '!purge' '!debug' '!lto')
 
 if [ -z "${PK_DEBUG}" ]; then
     PK_DEBUG=0
 fi
 
-
 prepare() {
 cd ..
 echo $PWD
-make clean
+DEBUG=${PK_DEBUG} VER=${pkgver}
+./dev_setup.sh clean
 }
 
 build () {
     cd ..
-    make DEBUG=${PK_DEBUG} VER=${pkgver} -j $(nproc)
-
+    
+    if [[ -f ./Makefile ]]; then
+        make -j $(nproc)
+    elif [[ -f ./build.ninja]]; then
+        ninja
+    fi
 
     if [[ "${PK_NO_TEST}" != "1"  ]]; then
         ./test.sh
