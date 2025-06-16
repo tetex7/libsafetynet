@@ -20,9 +20,11 @@
 #include "linked_list_c.h"
 
 #include "libsafetynet.h"
+#include "_pri_api.h"
 
 
 linked_list_c mem_list = NULL;
+plat_mutex_c alloc_mutex = NULL;
 
 static linked_list_entry_c freeOnListFree(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg)
 {
@@ -32,6 +34,7 @@ static linked_list_entry_c freeOnListFree(linked_list_c self, linked_list_entry_
 
 void doexit()
 {
+    plat_mutex_destroy(alloc_mutex);
     linked_list_forEach(mem_list, &freeOnListFree, NULL);
     linked_list_destroy(mem_list);
 }
@@ -42,6 +45,7 @@ void library_init()
 {
 
     mem_list = linked_list_new();
+    alloc_mutex = plat_mutex_new();
 }
 
 // Destructor: Called when the library is unloaded

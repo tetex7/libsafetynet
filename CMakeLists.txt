@@ -28,7 +28,7 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Debug flag control
-option(DEBUG "Enable debug mode" ON)
+option(DEBUG "Enable debug mode")
 
 # Compiler flags
 if (DEBUG)

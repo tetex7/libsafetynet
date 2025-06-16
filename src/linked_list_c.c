@@ -26,6 +26,8 @@
 
 #include "sn_crash.h"
 
+#include "plat_threading.h"
+
 #pragma region "linked_list_entry_c code"
 
 linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* data, size_t size, uint64_t tid)
@@ -115,6 +117,16 @@ void linked_list_entry_setNextEntry(linked_list_entry_c self, linked_list_entry_
 void linked_list_entry_destroy(linked_list_entry_c self)
 {
     if (self == NULL) return;
+
+    // Reweaving the list
+    if (self->previous != NULL) {
+        self->previous->next = self->next;
+    }
+
+    if (self->next != NULL) {
+        self->next->previous = self->previous;
+    }
+
     free(self);
 }
 
@@ -140,7 +152,7 @@ linked_list_c linked_list_new()
 
     //heads of lists are dummies They should be treated as Slightly immutable
 
-    self->head = linked_list_entry_new(NULL, NULL, 0, /*Replace with platform independent Tid getter*/0);
+    self->head = linked_list_entry_new(NULL, NULL, 0, plat_getTid());
 
     if (self->head == NULL)
     {

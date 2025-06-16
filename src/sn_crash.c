@@ -28,6 +28,8 @@
 
 #include "linked_list_c.h"
 
+#include "plat_threading.h"
+
 #include "_pri_api.h"
 
 #define sn_crash_print(str, ...) fprintf(stderr, str, ##__VA_ARGS__)
@@ -39,8 +41,13 @@ static SN_VERY_OPTIMIZED int print_node(const linked_list_entry_c node)
     int pcc = 0;
     pcc += sn_crash_print("previous: %p\n", node->previous);
     pcc += sn_crash_print("data: %p\n", node->data);
+#ifdef __unix
     pcc += sn_crash_print("size: %lu\n", node->size);
     pcc += sn_crash_print("tid: %lu\n", node->tid);
+#elif defined(__WIN32)
+    pcc += sn_crash_print("size: %llu\n", node->size);
+    pcc += sn_crash_print("tid: %llu\n", node->tid);
+#endif
     pcc += sn_crash_print("isHead: %i", node->isHead);
     pcc += sn_crash_print("next: %p\n", node->next);
     return pcc;
@@ -52,7 +59,12 @@ SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32
     sn_crash_print("ERROR: %i\n", err);
     sn_crash_print("ERROR_NAME: %s\n", sn_get_err_name(err));
     sn_crash_print("ERROR_MSG: %s\n", sn_get_error_msg(err));
-    sn_crash_print("crash on tid %lu\n\n", pthread_self());
+#ifdef __unix
+    sn_crash_print("crash on tid %lu\n\n", plat_getTid());
+#elif defined(__WIN32)
+    sn_crash_print("crash on tid %llu\n\n", plat_getTid());
+#endif
+
     if (err == SN_ERR_SYS_FAIL) goto EX1;
 
     sn_crash_print("Memory tracking list state:\n");

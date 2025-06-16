@@ -16,16 +16,21 @@
  */
 
 //
-// Created by tete on 06/15/2025.
+// Created by tete on 06/16/2025.
 //
+#pragma once
 
-#ifndef SN_CRASH_H
-#define SN_CRASH_H
+#ifndef PLAT_THREADING_H
+#define PLAT_THREADING_H
+#include <stdint.h>
 
-#include "libsafetynet.h"
-#define SN_NO_RET __attribute__ ((__noreturn__))
-SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file); //__attribute__ ((__noreturn__));
+typedef struct plat_mutex_s* plat_mutex_c, plat_mutex_t;
 
-#define sn_crash(err) __sn__pri__crash__(err, __LINE__, __FILE__)
+plat_mutex_c plat_mutex_new();
+void plat_mutex_lock(plat_mutex_c self);
+void plat_mutex_unlock(plat_mutex_c self);
+void plat_mutex_destroy(plat_mutex_c self);
 
-#endif //SN_CRASH_H
+uint64_t plat_getTid();
+
+#endif //PLAT_THREADING_H

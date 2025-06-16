@@ -33,5 +33,5 @@ if [[ "$1" == "clean" ]]; then
     rm -fv ./.ninja_*
 else
 #CC=/usr/bin/gcc 
-    cmake -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
+    cmake -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DDEBUG=ON .
 fi

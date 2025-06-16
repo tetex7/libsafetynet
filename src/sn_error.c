@@ -103,6 +103,7 @@ E1:
     return "Unknown error";
 }
 
+SN_PUB_API_OPEN
 const char* sn_get_err_name(const sn_error_codes_e err)
 {
     const size_t tab_size = SN_INFO_PLACEHOLDER;
@@ -122,5 +123,11 @@ const char* sn_get_err_name(const sn_error_codes_e err)
 
     E1:
         return "SN_SOFT_FAKE_ERR_UNKNOWN";
+}
+
+SN_PUB_API_OPEN
+void sn_set_last_error(const sn_error_codes_e err)
+{
+    error_code = err;
 }
 

@@ -103,10 +103,10 @@ typedef enum
     SN_INFO_PLACEHOLDER = 190,           /**< This is a generic placeholder For Yet undefined errors */
 } sn_error_codes_e;
 
-typedef size_t sn_mem_address_t;
+typedef uintptr_t sn_mem_address_t;
 typedef void* sn_ext_data_t;
 
-typedef SN_BOOL (*sn_d_trap_t)(sn_error_codes_e err, uint32_t line, const char* file);
+//typedef SN_BOOL (*sn_d_trap_t)(sn_error_codes_e err, uint32_t line, const char* file);
 
 /**
  * @brief Allocates memory and tracks it for cleanup at program exit.
@@ -281,7 +281,7 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(query_block_id)(uint16_t id);
 SN_PUB_API_OPEN uint64_t SN_API_PREFIX(calculate_checksum)(void* block);
 
 
-SN_PUB_API_OPEN const char* sn_get_err_name(const sn_error_codes_e err);
+SN_PUB_API_OPEN const char* SN_API_PREFIX(get_err_name)(const sn_error_codes_e err);
 
 #ifdef __SN_WIP_CALLS__
 

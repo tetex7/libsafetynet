@@ -18,14 +18,46 @@
 //
 // Created by tete on 06/15/2025.
 //
+#include "_pri_api.h"
 
-#ifndef SN_CRASH_H
-#define SN_CRASH_H
+#include <stdlib.h>
 
-#include "libsafetynet.h"
-#define SN_NO_RET __attribute__ ((__noreturn__))
-SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file); //__attribute__ ((__noreturn__));
 
-#define sn_crash(err) __sn__pri__crash__(err, __LINE__, __FILE__)
+SN_PUB_API_OPEN void* sn_malloc(size_t size)
+{
+    if (!size)
+    {
+        sn_error(SN_ERR_BAD_SIZE, NULL);
+    }
 
-#endif //SN_CRASH_H
+    void* pr = malloc(size);
+
+    if (!pr)
+    {
+        sn_error(SN_ERR_BAD_ALLOC, NULL);
+    }
+
+    linked_list_push(mem_list, pr, size, plat_getTid());
+
+    return pr;
+}
+
+
+
+SN_PUB_API_OPEN void sn_free(void* const ptr)
+{
+    if (!ptr)
+    {
+        sn_error(SN_ERR_NULL_PTR);
+    }
+
+    linked_list_entry_c entry = linked_list_getByPtr(mem_list, ptr);
+    if (!entry)
+    {
+        sn_error(SN_ERR_NO_ADDER_FOUND);
+    }
+
+    free(entry->data);
+
+    linked_list_entry_destroy(entry);
+}
