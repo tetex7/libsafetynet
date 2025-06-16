@@ -23,7 +23,15 @@
 #include <stdint.h>
 
 #ifndef SN_PUB_API_OPEN
-#   define SN_PUB_API_OPEN __attribute__((visibility("default")))
+#   ifdef __unix
+#       define SN_PUB_API_OPEN __attribute__((visibility("default")))
+#   elif defined(_WIN32)
+#       ifdef BUILDING_SAFETYNET
+#           define SN_PUB_API_OPEN __declspec(dllexport)
+#       else
+#           define SN_PUB_API_OPEN __declspec(dllimport)
+#       endif
+#   endif
 #endif
 #ifndef SN_DEPRECATED
 #   define SN_DEPRECATED __attribute__ ((deprecated))

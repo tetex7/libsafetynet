@@ -44,7 +44,7 @@ static SN_VERY_OPTIMIZED int print_node(const linked_list_entry_c node)
 #ifdef __unix
     pcc += sn_crash_print("size: %lu\n", node->size);
     pcc += sn_crash_print("tid: %lu\n", node->tid);
-#elif defined(__WIN32)
+#elif defined(_WIN32)
     pcc += sn_crash_print("size: %llu\n", node->size);
     pcc += sn_crash_print("tid: %llu\n", node->tid);
 #endif
@@ -61,7 +61,7 @@ SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32
     sn_crash_print("ERROR_MSG: %s\n", sn_get_error_msg(err));
 #ifdef __unix
     sn_crash_print("crash on tid %lu\n\n", plat_getTid());
-#elif defined(__WIN32)
+#elif defined(_WIN32)
     sn_crash_print("crash on tid %llu\n\n", plat_getTid());
 #endif
 

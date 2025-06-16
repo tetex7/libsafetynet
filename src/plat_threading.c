@@ -29,7 +29,7 @@
 
 #ifdef __unix
 #   include <pthread.h>
-#elif defined(__WIN32)
+#elif defined(_WIN32)
 #   include <windows.h>
 #else
 #   error "Unsupported platform for plat_threading"
@@ -39,7 +39,7 @@ struct plat_mutex_s
 {
 #ifdef __unix
     pthread_mutex_t plat_mutex;
-#elif defined(__WIN32)
+#elif defined(_WIN32)
     HANDLE plat_mutex;
 #endif
 };
@@ -58,7 +58,7 @@ plat_mutex_c plat_mutex_new()
         free(self);
         return NULL;
     }
-#elif defined(__WIN32)
+#elif defined(_WIN32)
     self->plat_mutex = CreateMutexW(NULL, FALSE, NULL);
     if (!self->plat_mutex)
     {
@@ -75,7 +75,7 @@ void plat_mutex_lock(plat_mutex_c self)
 
 #ifdef __unix
     pthread_mutex_lock(&self->plat_mutex);
-#elif defined(__WIN32)
+#elif defined(_WIN32)
     WaitForSingleObject(self->plat_mutex, INFINITE);
 #endif
 }
@@ -86,7 +86,7 @@ void plat_mutex_unlock(plat_mutex_c self)
 
 #ifdef __unix
     pthread_mutex_unlock(&self->plat_mutex);
-#elif defined(__WIN32)
+#elif defined(_WIN32)
     ReleaseMutex(self->plat_mutex);
 #endif
 }
@@ -98,7 +98,7 @@ void plat_mutex_destroy(plat_mutex_c self)
 
 #ifdef __unix
     pthread_mutex_destroy(&self->plat_mutex);
-#elif defined(__WIN32)
+#elif defined(_WIN32)
     CloseHandle(self->plat_mutex);
 #endif
 
