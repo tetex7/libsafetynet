@@ -48,7 +48,7 @@ set(GCC_FLAGS
     "${DEBUG_FLAGS} -DSN_BUILD_VER=\"${VER_FLAG_S}\" -Wall -Werror -fno-strict-aliasing -fvisibility=hidden -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function"
 )
 
-target_compile_definitions(safetynet_shared PRIVATE BUILDING_SAFETYNET)
+
 
 # Set C and C++ flags
 set(CMAKE_C_FLAGS "${GCC_FLAGS} -std=c99 -D__SN_WIP_CALLS__=")
@@ -77,6 +77,8 @@ set_target_properties(safetynet_static PROPERTIES
     OUTPUT_NAME "safetynet"
     ARCHIVE_OUTPUT_DIRECTORY ${BIN_DIR}
 )
+
+target_compile_definitions(safetynet_shared PRIVATE BUILDING_SAFETYNET)
 
 
 # Optional: add test rule
