@@ -52,6 +52,7 @@ static const char* const human_readable_messages[] = {
     [SN_ERR_ALLOC_LIMIT_HIT] = "User defined alloc limit has been hit",
     [SN_WARN_DUB_FREE] = "Possible double free, but not found in registry",
     [SN_ERR_SYS_FAIL] = "generic system failure",
+    [SN_ERR_CATASTROPHIC] = "Catastrophic system error",
     [SN_INFO_PLACEHOLDER] = "Undefined error Error code implementation coming soon"
 };
 
@@ -73,15 +74,10 @@ static const char* const err_name_tap[] = {
     [SN_ERR_ALLOC_LIMIT_HIT] = "SN_ERR_ALLOC_LIMIT_HIT",
     [SN_WARN_DUB_FREE] = "SN_WARN_DUB_FREE",
     [SN_ERR_SYS_FAIL] = "SN_ERR_SYS_FAIL",
+    [SN_ERR_CATASTROPHIC] = "SN_ERR_CATASTROPHIC",
     [SN_INFO_PLACEHOLDER] = "SN_INFO_PLACEHOLDER"
 };
 
-
-/**
- * Provide you a human-readable error message
- * @param err The error code
- * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
- */
 SN_PUB_API_OPEN const char* const sn_get_error_msg(sn_error_codes_e err)
 {
     const size_t tab_size = (sizeof(human_readable_messages) / sizeof(*human_readable_messages));
@@ -104,7 +100,7 @@ E1:
 }
 
 SN_PUB_API_OPEN
-const char* sn_get_err_name(const sn_error_codes_e err)
+const char* sn_get_error_name(const sn_error_codes_e err)
 {
     const size_t tab_size = SN_INFO_PLACEHOLDER;
 
@@ -121,8 +117,8 @@ const char* sn_get_err_name(const sn_error_codes_e err)
     }
     return str;
 
-    E1:
-        return "SN_SOFT_FAKE_ERR_UNKNOWN";
+E1:
+    return "SN_SOFT_FAKE_ERR_UNKNOWN";
 }
 
 SN_PUB_API_OPEN

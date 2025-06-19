@@ -31,7 +31,9 @@ if [[ "$1" == "clean" ]]; then
     rm -fv ./compile_commands.json
     rm -fv ./CMakeCache.txt
     rm -fv ./.ninja_*
+    rm -fv ./include/libsafetynet_config.h
+    rm -fv libsafetynet-*-x86_64.pkg.tar.zst
 else
 #CC=/usr/bin/gcc 
-    cmake -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DDEBUG=ON .
+    cmake -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DSN_CONFIG_DEBUG=ON $@  .
 fi

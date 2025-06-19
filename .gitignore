@@ -65,3 +65,4 @@ compile_commands.json
 /.cache
 test.bin
 *.dis
+libsafetynet_config.h

@@ -36,7 +36,7 @@
 
 static SN_VERY_OPTIMIZED int print_node(const linked_list_entry_c node)
 {
-    if (!node) return 0;
+    if (!node) sn_crash_print("NODE IS NULL");
 
     int pcc = 0;
     pcc += sn_crash_print("previous: %p\n", node->previous);
@@ -53,18 +53,18 @@ static SN_VERY_OPTIMIZED int print_node(const linked_list_entry_c node)
     return pcc;
 }
 
-SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file)
+SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t line, const char* file)
 {
     sn_crash_print("Crash in libsafetynet/%s:%i :-(\n\n", file, line);
     sn_crash_print("ERROR: %i\n", err);
-    sn_crash_print("ERROR_NAME: %s\n", sn_get_err_name(err));
+    sn_crash_print("ERROR_NAME: %s\n", sn_get_error_name(err));
     sn_crash_print("ERROR_MSG: %s\n", sn_get_error_msg(err));
 #ifdef __unix
     sn_crash_print("crash on tid %lu\n\n", plat_getTid());
 #elif defined(_WIN32)
     sn_crash_print("crash on tid %llu\n\n", plat_getTid());
 #endif
-
+    if (err == SN_ERR_CATASTROPHIC) abort();
     if (err == SN_ERR_SYS_FAIL) goto EX1;
 
     sn_crash_print("Memory tracking list state:\n");
@@ -72,6 +72,6 @@ SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32
     print_node(mem_list->lastAccess);
     sn_crash_print("\n\n");
 
-    EX1:
-        exit(err);
+EX1:
+    exit(err);
 }

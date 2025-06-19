@@ -21,6 +21,7 @@
 #include "_pri_api.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 
 SN_PUB_API_OPEN void* sn_malloc(size_t size)
@@ -57,7 +58,64 @@ SN_PUB_API_OPEN void sn_free(void* const ptr)
         sn_error(SN_ERR_NO_ADDER_FOUND);
     }
 
-    free(entry->data);
+    free(linked_list_entry_getData(entry));
 
-    linked_list_entry_destroy(entry);
+    linked_list_removeEntryByPtr(mem_list, ptr);
+}
+
+SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size)
+{
+    if (!size)
+    {
+        sn_error(SN_ERR_BAD_SIZE, NULL);
+    }
+
+    void* pr = calloc(num, size);
+
+    if (!pr)
+    {
+        sn_error(SN_ERR_BAD_ALLOC, NULL);
+    }
+
+    linked_list_push(mem_list, pr, size, plat_getTid());
+
+    return pr;
+}
+
+SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
+{
+    if (!ptr)
+    {
+        sn_error(SN_ERR_NULL_PTR, NULL);
+    }
+
+    linked_list_entry_c entry = linked_list_getByPtr(mem_list, ptr);
+    if (!entry)
+    {
+        sn_error(SN_ERR_NO_ADDER_FOUND, NULL);
+    }
+
+    if (!new_size || (new_size <= linked_list_entry_getSize(entry)))
+    {
+        sn_error(SN_ERR_BAD_SIZE, NULL);
+    }
+
+    void* new_ptr = realloc(ptr, new_size);
+    if (!new_size)
+    {
+        sn_error(SN_ERR_BAD_ALLOC, NULL);
+    }
+
+    linked_list_entry_setData(entry, new_ptr);
+    linked_list_entry_setSize(entry, new_size);
+    return new_ptr;
+}
+
+SN_PUB_API_OPEN void* sn_malloc_pre_initialized(size_t size, uint8_t initial_byte_value)
+{
+    void* ptr = sn_malloc(size);
+    if (!ptr) return ptr;
+
+    memset(ptr, (int)size, initial_byte_value);
+    return ptr;
 }

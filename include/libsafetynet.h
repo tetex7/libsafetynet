@@ -16,23 +16,31 @@
  */
 
 #pragma once
-#ifndef LIBSAFETY_NET_H
-#define LIBSAFETY_NET_H
+#ifndef LIBSAFETYNET_H
+#define LIBSAFETYNET_H
 
 #include <stddef.h>
 #include <stdint.h>
+#include <libsafetynet_config.h>
 
-#ifndef SN_PUB_API_OPEN
-#   ifdef __unix
-#       define SN_PUB_API_OPEN __attribute__((visibility("default")))
-#   elif defined(_WIN32)
-#       ifdef BUILDING_SAFETYNET
-#           define SN_PUB_API_OPEN __declspec(dllexport)
-#       else
-#           define SN_PUB_API_OPEN __declspec(dllimport)
+#if !defined(SN_PUB_API_OPEN)
+#   ifndef SN_CONFIG_STATIC_ONLY
+#       ifdef __unix
+#           define SN_PUB_API_OPEN __attribute__((visibility("default")))
+#       elif defined(_WIN32)
+#           define SN_PUB_API_OPEN
+/*#           ifdef BUILDING_SAFETYNET
+#               define SN_PUB_API_OPEN __declspec(dllexport)
+#           else
+#               define SN_PUB_API_OPEN __declspec(dllimport)
+#           endif*/
 #       endif
+#   else
+#       define SN_PUB_API_OPEN
 #   endif
 #endif
+
+
 #ifndef SN_DEPRECATED
 #   define SN_DEPRECATED __attribute__ ((deprecated))
 #endif
@@ -108,6 +116,7 @@ typedef enum
     SN_ERR_ALLOC_LIMIT_HIT = 120,        /**< User defined alloc limit has been hit */
     SN_WARN_DUB_FREE = 180,              /**< Double free detected (warning) */
     SN_ERR_SYS_FAIL = 185,               /**< generic system failure (Start praying) */
+    SN_ERR_CATASTROPHIC = 189,           /**< Catastrophic system error (like I said before pick a god and start praying) */
     SN_INFO_PLACEHOLDER = 190,           /**< This is a generic placeholder For Yet undefined errors */
 } sn_error_codes_e;
 
@@ -130,6 +139,15 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(malloc)(size_t size) SN_MALLOC_ATTR SN_ALLOC
  * @return Pointer to the allocated memory, or NULL on failure.
  */
 SN_PUB_API_OPEN void* SN_API_PREFIX(calloc)(size_t num, size_t size);
+
+
+/**
+ * @brief reAllocates memory and tracks it for cleanup at program exit.
+ * @param ptr a pre Allocated block that's tracked
+ * @param new_size The size of the memory block to reallocate.
+ * @return Pointer to the allocated memory, or NULL on failure.
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size);
 
 /**
  * @brief Allocates memory and initializes it to a specified value.
@@ -154,6 +172,14 @@ SN_PUB_API_OPEN void SN_API_PREFIX(free)(void* const ptr);
 SN_PUB_API_OPEN SN_MSG_DEPRECATED("unsafe due to lack of The definition of size") void* SN_API_PREFIX(register)(void* const ptr);
 
 /**
+ * @brief Registers a memory block with a specified size for tracking.
+ * @param ptr Pointer to the memory block.
+ * @param size Size of the memory block.
+ * @return The same pointer, or NULL on failure.
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(register_size)(void* ptr, size_t size);
+
+/**
  * @brief Queries the size in Bytes of a tracked memory block.
  * @param ptr Pointer to the memory block.
  * @return The size of the memory block, or 0 on failure.
@@ -168,25 +194,6 @@ SN_PUB_API_OPEN size_t SN_API_PREFIX(query_size)(void* const ptr);
 SN_PUB_API_OPEN uint64_t SN_API_PREFIX(query_tid)(void* const ptr);
 
 /**
- * @brief Registers a memory block with a specified size for tracking.
- * @param ptr Pointer to the memory block.
- * @param size Size of the memory block.
- * @return The same pointer, or NULL on failure.
- */
-SN_PUB_API_OPEN void* SN_API_PREFIX(register_size)(void* ptr, size_t size);
-
-/**
-* @brief Retrieves the last error code.
-* @return The last error code.
-*/
-SN_PUB_API_OPEN sn_error_codes_e SN_API_PREFIX(get_last_error)();
-
-/**
-* @brief Resets the last error code to SN_ERR_OK.
-*/
-SN_PUB_API_OPEN void SN_API_PREFIX(reset_last_error)();
-
-/**
  * @brief Checks if a block is being tracked by the safety net system;
  * @param ptr Pointer to the block of memory
  * @return A flag to which it exists (a bool)
@@ -194,76 +201,8 @@ SN_PUB_API_OPEN void SN_API_PREFIX(reset_last_error)();
 SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr);
 
 /**
- * @brief Provide you a human-readable error message
- * @param err The error code
- * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
- */
-SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err);
-
-/**
- * @brief Adds the metadata associated with this block of memory to the fast cache
- * @param ptr A pointer to a Tracked block memory
- * @return Returns 1 if successfully added to fast cash 0 if it did not
- */
-SN_PUB_API_OPEN const SN_FLAG SN_API_PREFIX(request_to_fast_cache)(const void* ptr);
-
-/**
- * @brief Disables automatic fast caching of tracking metadata But the fast cash is still Queryed
- */
-SN_PUB_API_OPEN void SN_API_PREFIX(lock_fast_cache)();
-
-/**
- * @brief enables automatic fast caching of tracking metadata But the fast cash is still Queryed
- */
-SN_PUB_API_OPEN void SN_API_PREFIX(unlock_fast_cache)();
-
-
-/**
- * @brief Disables/enables the fast caching system entirely
- * @param val Is set to 1 enables it if set to 0 disables it
- * @note This system is on by default
- */
-SN_PUB_API_OPEN void SN_API_PREFIX(do_fast_caching)(SN_FLAG val);
-
-/**
- * @brief Clears out the fast cache
- */
-SN_PUB_API_OPEN void SN_API_PREFIX(fast_cache_clear)();
-
-/**
- * @brief reAllocates memory and tracks it for cleanup at program exit.
- * @param ptr a pre Allocated block that's tracked
- * @param new_size The size of the memory block to reallocate.
- * @return Pointer to the allocated memory, or NULL on failure.
- */
-SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size);
-
-
-/**
- * @brief Queries memory usage for a specific thread.
- * @param tid The thread ID.
- * @return Total memory used by the thread, or 0 if no memory is tracked for this thread.
- */
-SN_PUB_API_OPEN size_t SN_API_PREFIX(query_thread_memory_usage)(uint64_t tid);
-
-/**
- * @brief Queries total memory usage across all threads.
- * @return Total memory currently tracked.
- */
-SN_PUB_API_OPEN size_t SN_API_PREFIX(query_total_memory_usage)();
-
-/**
- * @brief Disables/enables the auto free on exit system (Library memory will be freed though)
- * @param val If 0 turns off this feature or 1 turns it on
- * @note This system is on by default
- */
-SN_PUB_API_OPEN void SN_API_PREFIX(do_auto_free_at_exit)(SN_FLAG val);
-
-
-/**
- *
+ * @brief set's a numerical id for the memory block
  * @param id An integer ID for the block
- * @return
  */
 SN_PUB_API_OPEN void SN_API_PREFIX(set_block_id)(void* block, uint16_t id);
 
@@ -288,8 +227,65 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(query_block_id)(uint16_t id);
  */
 SN_PUB_API_OPEN uint64_t SN_API_PREFIX(calculate_checksum)(void* block);
 
+/**
+ * @brief Provide you a human-readable error message
+ * @param err The error code
+ * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
+ */
+SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err);
 
-SN_PUB_API_OPEN const char* SN_API_PREFIX(get_err_name)(const sn_error_codes_e err);
+SN_PUB_API_OPEN const char* SN_API_PREFIX(get_error_name)(const sn_error_codes_e err);
+
+/**
+* @brief Retrieves the last error code.
+* @return The last error code.
+*/
+SN_PUB_API_OPEN sn_error_codes_e SN_API_PREFIX(get_last_error)();
+
+/**
+* @brief Resets the last error code to SN_ERR_OK.
+*/
+SN_PUB_API_OPEN void SN_API_PREFIX(reset_last_error)();
+
+/**
+ * @brief Disables/enables the auto free on exit system (Library memory will be freed though)
+ * @param val If 0 turns off this feature or 1 turns it on
+ * @note This system is on by default
+ */
+SN_PUB_API_OPEN void SN_API_PREFIX(do_auto_free_at_exit)(SN_FLAG val);
+
+
+//Fast cache has not been Re implemented for this rewrite
+/**
+ * @brief Adds the metadata associated with this block of memory to the fast cache
+ * @param ptr A pointer to a Tracked block memory
+ * @return Returns 1 if successfully added to fast cash 0 if it did not
+ */
+//SN_PUB_API_OPEN const SN_FLAG SN_API_PREFIX(request_to_fast_cache)(const void* ptr);
+
+/**
+ * @brief Disables automatic fast caching of tracking metadata But the fast cash is still Queryed
+ */
+///SN_PUB_API_OPEN void SN_API_PREFIX(lock_fast_cache)();
+
+/**
+ * @brief enables automatic fast caching of tracking metadata But the fast cash is still Queryed
+ */
+//SN_PUB_API_OPEN void SN_API_PREFIX(unlock_fast_cache)();
+
+
+/**
+ * @brief Disables/enables the fast caching system entirely
+ * @param val Is set to 1 enables it if set to 0 disables it
+ * @note This system is on by default
+ */
+//SN_PUB_API_OPEN void SN_API_PREFIX(do_fast_caching)(SN_FLAG val);
+
+/**
+ * @brief Clears out the fast cache
+ */
+//SN_PUB_API_OPEN void SN_API_PREFIX(fast_cache_clear)();
+
 
 #ifdef __SN_WIP_CALLS__
 
@@ -303,7 +299,7 @@ typedef struct SN_API_PREFIX(mem_metadata_s)
     const void* const data;               // Pointer to data (generic data type)
     const size_t size;                    // size of the data
     const uint64_t tid;                   // The tid of the thread that allocated this chunk
-    const SN_FLAG cached;                 // is mem block cached
+    //const SN_FLAG cached;                 // is mem block cached
     const uint16_t block_id;              // An optional block id
 } SN_API_PREFIX(mem_metadata_t);
 
@@ -335,6 +331,19 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(mount_file_to_ram)(const char* file);
  * @param limit The bytes limit If given zero no limit is applied
  */
 SN_PUB_API_OPEN void SN_API_PREFIX(set_alloc_limit)(size_t limit);
+
+/**
+ * @brief Queries memory usage for a specific thread.
+ * @param tid The thread ID.
+ * @return Total memory used by the thread, or 0 if no memory is tracked for this thread.
+ */
+SN_PUB_API_OPEN size_t SN_API_PREFIX(query_thread_memory_usage)(uint64_t tid);
+
+/**
+ * @brief Queries total memory usage across all threads.
+ * @return Total memory currently tracked.
+ */
+SN_PUB_API_OPEN size_t SN_API_PREFIX(query_total_memory_usage)();
 
 SN_BOOL SN_API_PREFIX(set_allocer)(
     sn_memalloc_call_t memalloc_call,

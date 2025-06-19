@@ -20,19 +20,26 @@
 //
 #pragma once
 
+/*
+ * This list has very little thread protections just enough not to blow yourself up on first go
+ */
+
 #ifndef LINKED_LIST_C_H
 #define LINKED_LIST_C_H
 #include <stdint.h>
 #include <stddef.h>
+#include <plat_threading.h>
 #include <libsafetynet.h>
 
 typedef struct linked_list_entry_s
 {
     struct linked_list_entry_s* previous;
-    void* data;
-    size_t size;
-    uint64_t tid;
-    SN_BOOL isHead; // Do not create a getter nor a setter for this treat this as private
+    void* data;           // Pointer to data (generic data type)
+    size_t size;          // size of the data
+    uint64_t tid;         // The tid of the thread that allocated this chunk
+    uint16_t block_id;    // An optional block id
+    SN_BOOL isHead;       // Do not create a getter nor a setter for this treat this as private
+    plat_mutex_c mutex;   // A mutex inherited from the list container
     struct linked_list_entry_s* next;
 } *linked_list_entry_c, linked_list_entry_t;
 
@@ -50,6 +57,9 @@ void linked_list_entry_setSize(linked_list_entry_c self, size_t new_size);
 uint64_t linked_list_entry_getTid(const linked_list_entry_c self);
 void linked_list_entry_setTid(linked_list_entry_c self, uint64_t new_tid);
 
+uint16_t linked_list_entry_getBlockId(const linked_list_entry_c self);
+void linked_list_entry_setBlockId(linked_list_entry_c self, uint16_t new_id);
+
 linked_list_entry_c linked_list_entry_getNextEntry(const linked_list_entry_c self);
 void linked_list_entry_setNextEntry(linked_list_entry_c self, linked_list_entry_c new_next);
 
@@ -65,6 +75,7 @@ typedef struct linked_list_s
     linked_list_entry_c firstEntry; //Physical beginning
     linked_list_entry_c lastEntry; //Physical last
     linked_list_entry_c lastAccess;
+    plat_mutex_c mutex; // Shared by all elements within this list container
 } *linked_list_c, linked_list_t;
 
 typedef linked_list_entry_c(*linked_list_for_each_worker_f)(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg);
@@ -79,11 +90,15 @@ void linked_list_pop(linked_list_c self);
 
 linked_list_entry_c linked_list_getByPtr(linked_list_c self, void* key);
 linked_list_entry_c linked_list_getByIndex(linked_list_c self, size_t index);
+linked_list_entry_c linked_list_getById(linked_list_c self, uint16_t id);
 
 SN_BOOL linked_list_hasPtr(linked_list_c self, void* key);
+SN_BOOL linked_list_hasId(linked_list_c self, uint16_t id);
 
 size_t linked_list_getSize(linked_list_c self);
 
 linked_list_entry_c linked_list_forEach(linked_list_c self, linked_list_for_each_worker_f worker, void* generic_arg);
+
+void linked_list_removeEntryByPtr(linked_list_c self, void* key);
 
 #endif

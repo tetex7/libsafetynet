@@ -36,8 +36,8 @@ fi
 prepare() {
 cd ..
 echo $PWD
-DEBUG=${PK_DEBUG} VER=${pkgver}
 ./dev_setup.sh clean
+./dev_setup.sh -DSN_CONFIG_STR_VERSION=${pkgver}
 }
 
 build () {
@@ -45,7 +45,7 @@ build () {
     
     if [[ -f ./Makefile ]]; then
         make -j $(nproc)
-    elif [[ -f ./build.ninja]]; then
+    elif [[ -f ./build.ninja ]]; then
         ninja
     fi
 
@@ -74,6 +74,7 @@ package() {
     eminverN=$(echo "${pkgver}" | head -c 3)
     install -Dm644 ./build/libsafetynet.so "${pkgdir}/usr/lib/libsafetynet.so.${pkgver}"
     install -Dm644 "./include/libsafetynet.h" "${pkgdir}/usr/include/libsafetynet.h"
+    install -Dm644 "./include/libsafetynet_config.h" "${pkgdir}/usr/include/libsafetynet_config.h"
 
     for i in $(ls ./manpages); do
         install -Dm644 "./manpages/$i" "${pkgdir}/usr/man/man3/${i}"
