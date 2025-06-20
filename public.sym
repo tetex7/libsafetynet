@@ -17,6 +17,7 @@ sn_calculate_checksum
 sn_get_error_msg
 sn_get_error_name
 sn_get_last_error
+sn_set_last_error
 sn_reset_last_error
 
 sn_do_auto_free_at_exit
