@@ -20,6 +20,7 @@
 //
 #include "libsafetynet.h"
 #include "_pri_api.h"
+#include <string.h>
 
 SN_PUB_API_OPEN SN_MSG_DEPRECATED("unsafe due to lack of The definition of size") void* sn_register(void* const ptr)
 {
@@ -144,17 +145,29 @@ SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_metadata(void* ptr)
 {
     if (!ptr)
     {
-        sn_error(SN_ERR_NULL_PTR, 0);
+        sn_error(SN_ERR_NULL_PTR, NULL);
     }
 
     linked_list_entry_c entry = linked_list_getByPtr(mem_list, ptr);
     if (!entry)
     {
-        sn_error(SN_ERR_NO_ADDER_FOUND, 0);
+        sn_error(SN_ERR_NO_ADDER_FOUND, NULL);
     }
 
     //Yes very spooky, but it's a known good view into memory
     return (sn_mem_metadata_t*)&entry->data;
+}
+
+SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_static_metadata(void* ptr)
+{
+    const sn_mem_metadata_t* mem_metadata = sn_query_metadata(ptr);
+    if (!mem_metadata) return NULL;
+
+    sn_mem_metadata_t* ret_copy_meta = sn_malloc(sizeof(sn_mem_metadata_t));
+    if (!ret_copy_meta) return NULL;
+
+    memcpy(ret_copy_meta, mem_metadata, sizeof(sn_mem_metadata_t));
+    return ret_copy_meta;
 }
 
 SN_PUB_API_OPEN uint64_t sn_calculate_checksum(void* block)

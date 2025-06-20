@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "libsafetynet.h"
 #include "sn_crash.h"
 
 #include "plat_threading.h"
@@ -177,7 +178,7 @@ linked_list_c linked_list_new()
 
     if (self->head == NULL)
     {
-        sn_crash(SN_ERR_SYS_FAIL);
+        sn_crash(SN_ERR_CATASTROPHIC);
     }
 
     self->head->isHead = SN_TRUE;

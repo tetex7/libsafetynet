@@ -31,7 +31,9 @@ extern linked_list_c mem_list;
 extern plat_mutex_c alloc_mutex;
 
 #define sn_error(errorCode, ...) \
+{ \
     sn_set_last_error(errorCode); \
-    return __VA_ARGS__
+    return __VA_ARGS__; \
+}
 
 #endif //_PRI_API_H

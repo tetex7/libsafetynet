@@ -24,9 +24,9 @@ execute_process(
 set(CMAKE_OBJCOPY "${PLATFORM_TRIPLE}-objcopy" CACHE STRING "Compiler's object copy")
 
 if(NOT WIN32)
-    option(SN_CONFIG_STATIC_ONLY "If to produce a static only library" ON)
-else ()
     option(SN_CONFIG_STATIC_ONLY "If to produce a static only library" OFF)
+else ()
+    option(SN_CONFIG_STATIC_ONLY "If to produce a static only library" ON)
 endif ()
 
 # Debug flag control

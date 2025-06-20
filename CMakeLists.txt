@@ -76,7 +76,7 @@ include_directories(
 file(GLOB C_SOURCES "${SRC_DIR}/*.c")
 #file(GLOB CXX_SOURCES "${SRC_DIR}/*.cpp")
 
-if (NOT WIN32 AND NOT SN_CONFIG_STATIC_ONLY)
+if (NOT WIN32 OR NOT SN_CONFIG_STATIC_ONLY)
 # Shared library
 add_library(safetynet_shared SHARED ${C_SOURCES})
 set_target_properties(safetynet_shared PROPERTIES

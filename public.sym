@@ -14,6 +14,7 @@ sn_get_block_id
 sn_query_block_id
 sn_calculate_checksum
 
+
 sn_get_error_msg
 sn_get_error_name
 sn_get_last_error
@@ -21,7 +22,6 @@ sn_set_last_error
 sn_reset_last_error
 
 sn_do_auto_free_at_exit
-
 sn_request_to_fast_cache
 sn_lock_fast_cache
 sn_unlock_fast_cache
@@ -29,6 +29,7 @@ sn_do_fast_caching
 sn_fast_cache_clear
 
 sn_query_metadata
+sn_query_static_metadata
 sn_set_alloc_limit
 sn_query_thread_memory_usage
 sn_query_total_memory_usage

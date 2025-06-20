@@ -311,6 +311,13 @@ typedef struct SN_API_PREFIX(mem_metadata_s)
 SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void* ptr);
 
 /**
+ * @brief This function provides a copy view of the metadata structure for this memory block
+ * @param ptr A pointer to a register block memory
+ * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
+ */
+SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_static_metadata)(void* ptr);
+
+/**
  * @brief Dumps the contents of a track block memory to a file
  * @param file Path to a nonexistent file
  * @param block A pointer to a tracked block of memory
