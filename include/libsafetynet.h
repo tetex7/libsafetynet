@@ -358,6 +358,20 @@ SN_BOOL SN_API_PREFIX(set_allocer)(
     sn_calloc_call_t calloc_call,
     sn_realloc_call_t realloc_call
 );
+
+/**
+ * @brief Returns the number of elements within an array based off of the block_size
+ * @param ptr A pointer to a tracked block of memory
+ * @param block_size Size of blocks eg `sizeof(int)'
+ * @return Returns the number of elements within an array based off of the block_size
+ */
+static SN_FORCE_INLINE size_t SN_API_PREFIX(query_size_in_block_size)(void* ptr, size_t block_size)
+{
+    size_t raw_size = sn_query_size(ptr);
+    if (!raw_size) return 0;
+    return SN_GET_ARR_SIZE(raw_size, block_size);
+}
+
 #endif
 
 #ifdef __cplusplus

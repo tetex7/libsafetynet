@@ -22,7 +22,7 @@ OID_LIB_PATH=$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=${PWD}/build:$LD_LIBRARY_PATH
 
 function cli_exit() {
-    LD_LIBRARY_PATH=$OID_LIB_PATH
+    export LD_LIBRARY_PATH=$OID_LIB_PATH
     exit $1
 }
 

@@ -16,7 +16,10 @@
 #
 
 cmake_minimum_required(VERSION 3.16)
-project(safetynet LANGUAGES C)
+
+include(BuildOptions.cmake)
+
+project(safetynet VERSION ${SN_CONFIG_STR_VERSION} LANGUAGES C)
 
 #enable_testing()
 
@@ -35,7 +38,7 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 # Enable position-independent code (like -fPIC)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-include(BuildOptions.cmake)
+
 
 # Compiler flags
 if (SN_CONFIG_DEBUG)
@@ -73,7 +76,7 @@ include_directories(
 )
 
 # Collect source files
-file(GLOB C_SOURCES "${SRC_DIR}/*.c")
+file(GLOB C_SOURCES "${SRC_DIR}/*.c" "${SRC_DIR}/**/*.c")
 #file(GLOB CXX_SOURCES "${SRC_DIR}/*.cpp")
 
 if (NOT WIN32 OR NOT SN_CONFIG_STATIC_ONLY)

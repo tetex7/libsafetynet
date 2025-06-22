@@ -25,9 +25,18 @@
 
 linked_list_c mem_list = NULL;
 plat_mutex_c alloc_mutex = NULL;
+SN_FLAG doFree = 1;
+
+SN_PUB_API_OPEN void sn_do_auto_free_at_exit(SN_FLAG val)
+{
+    plat_mutex_lock(alloc_mutex);
+    doFree = val;
+    plat_mutex_unlock(alloc_mutex);
+}
 
 static linked_list_entry_c freeOnListFree(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg)
 {
+    if (!doFree) return NULL;
     free(ctx->data);
     return NULL;
 }
@@ -43,7 +52,6 @@ void doexit()
 __attribute__((constructor))
 void library_init()
 {
-
     mem_list = linked_list_new();
     alloc_mutex = plat_mutex_new();
 }

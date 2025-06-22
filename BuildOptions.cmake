@@ -32,7 +32,7 @@ endif ()
 # Debug flag control
 option(SN_CONFIG_DEBUG "Enable debug mode" OFF)
 
-set(SN_CONFIG_STR_VERSION "dev" CACHE STRING "Set the version being compiled")
+set(SN_CONFIG_STR_VERSION "0.0.0" CACHE STRING "Set the version being compiled")
 set(SN_CONFIG_VERSION_MAJOR 0 CACHE STRING "Set the major version being compiled")
 set(SN_CONFIG_VERSION_MINOR 0 CACHE STRING "Set the minor version being compiled")
 set(SN_CONFIG_VERSION_PATCH 0 CACHE STRING "Set the patch version being compiled")
