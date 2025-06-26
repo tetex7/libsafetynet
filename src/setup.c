@@ -43,7 +43,10 @@ static linked_list_entry_c freeOnListFree(linked_list_c self, linked_list_entry_
 
 void doexit()
 {
-    linked_list_forEach(mem_list, &freeOnListFree, NULL);
+    if (linked_list_getSize(mem_list))
+    {
+        linked_list_forEach(mem_list, &freeOnListFree, NULL);
+    }
     plat_mutex_destroy(alloc_mutex);
     linked_list_destroy(mem_list);
 }

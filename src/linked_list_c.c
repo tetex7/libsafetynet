@@ -401,7 +401,6 @@ void linked_list_removeEntryByPtr(linked_list_c self, void* key)
         {
             self->firstEntry = entry->next;
         }
-        else sn_crash(SN_ERR_CATASTROPHIC);
         if (self->lastEntry == entry && entry->previous)
         {
             self->lastEntry = entry->previous;
