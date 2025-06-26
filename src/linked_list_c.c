@@ -157,6 +157,22 @@ static SN_BOOL linked_list_entry_pri_isHead(linked_list_entry_c self)
     return self->isHead;
 }
 
+
+static void linked_list_entry_pri_reweave(linked_list_entry_c entry)
+{
+    if (entry->next)
+    {
+        entry->next->previous = entry->previous;
+        entry->next = NULL;
+    }
+
+    if (entry->previous)
+    {
+        entry->previous->next = entry->next;
+        entry->previous = NULL;
+    }
+}
+
 #pragma endregion
 
 
@@ -374,25 +390,28 @@ linked_list_entry_c linked_list_getById(linked_list_c self, uint16_t id)
 
 void linked_list_removeEntryByPtr(linked_list_c self, void* key)
 {
-    if (!linked_list_hasPtr(self, key)) return;
-    linked_list_entry_c entry = linked_list_getByPtr(self, key);
-    plat_mutex_lock(self->mutex);
-    if (entry->next != NULL)
-    {
-        if (entry->next->previous != NULL)
-        {
-            entry->next->previous = entry->previous;
-        }
-    }
+    if (!self || !key) return;
 
-    // Reweaving the list
-    if (entry->previous != NULL)
+    plat_mutex_lock(self->mutex);
+    linked_list_entry_c entry = linked_list_forEach(self, linked_list_searchForPointer, key);
+
+    if (entry)
     {
-        if (entry->previous->next != NULL)
+        if (self->firstEntry == entry && entry->next)
         {
-            entry->previous->next = entry->next;
+            self->firstEntry = entry->next;
         }
+        else sn_crash(SN_ERR_CATASTROPHIC);
+        if (self->lastEntry == entry && entry->previous)
+        {
+            self->lastEntry = entry->previous;
+        }
+        linked_list_entry_pri_reweave(entry);
+        linked_list_entry_destroy(entry);
+        self->len--;
     }
+    else sn_crash(SN_ERR_CATASTROPHIC);
+
     plat_mutex_unlock(self->mutex);
 }
 

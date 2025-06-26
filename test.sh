@@ -162,6 +162,9 @@ int main()
         }
     }*/
 
+    void* ptr = sn_malloc(1);
+    sn_free(ptr);
+
     return 0;
 }
 EOF
