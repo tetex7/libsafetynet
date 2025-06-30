@@ -29,9 +29,14 @@ else ()
     option(SN_CONFIG_STATIC_ONLY "If to produce a static only library" ON)
 endif ()
 
+option(SN_NO_STD_BOOL "uses stdbool.h" OFF)
+
+option(SN_CONFIG_SANITIZE_MEMORY_ON_FREE "pressure wash the block of memory with zeros on free" ON)
+
 # Debug flag control
 option(SN_CONFIG_DEBUG "Enable debug mode" OFF)
 
+# Version variables are changed at compile time by Package script
 set(SN_CONFIG_STR_VERSION "0.0.0" CACHE STRING "Set the version being compiled")
 set(SN_CONFIG_VERSION_MAJOR 0 CACHE STRING "Set the major version being compiled")
 set(SN_CONFIG_VERSION_MINOR 0 CACHE STRING "Set the minor version being compiled")

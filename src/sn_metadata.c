@@ -170,6 +170,45 @@ SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_static_metadata(void* ptr)
     return ret_copy_meta;
 }
 
+SN_FLAG sn_dump_to_file(const char* file, void* block)
+{
+    sn_set_last_error(SN_INFO_PLACEHOLDER);
+    return 0;
+}
+
+void* sn_mount_file_to_ram(const char* file)
+{
+    sn_set_last_error(SN_INFO_PLACEHOLDER);
+    return NULL;
+}
+
+typedef struct
+{
+    uint64_t tid;
+    size_t* out_size;
+} _pri_tid_size_t; // NOLINT(*-reserved-identifier)
+
+static linked_list_entry_c search_for_tid(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg)
+{
+    if (ctx->tid == ((_pri_tid_size_t*)generic_arg)->tid)
+    {
+        (*((_pri_tid_size_t*)generic_arg)->out_size) += ctx->size;
+    }
+    return NULL;
+}
+
+SN_PUB_API_OPEN
+size_t sn_query_thread_memory_usage(uint64_t tid)
+{
+    size_t siz = 0;
+    linked_list_forEach(mem_list, &search_for_tid, &(_pri_tid_size_t){
+        tid,
+        &siz
+    });
+
+    return siz;
+}
+
 SN_PUB_API_OPEN uint64_t sn_calculate_checksum(void* block)
 {
     if (!block)

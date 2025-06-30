@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025  Tete
+ * Copyright (C) 2025  Tetex7
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,8 +72,38 @@
 #   define SN_BLOCK_NAME_MAX_LEN 100
 #endif
 
+#ifdef __cplusplus
+#define SN_CPP_COMPAT_START extern "C" {
+#define SN_CPP_COMPAT_END }
+#define SN_CPP_COMPAT_MODE __cplusplus
+#   ifdef SN_ENABLE_CPP_NAMESPACE
+#       define SN_CPP_NAMESPACE_START namespace safetynet {
+#       define SN_CPP_NAMESPACE_END }
+#   else
+#       define SN_CPP_NAMESPACE_START
+#       define SN_CPP_NAMESPACE_END
+#   endif
+#else
+#define SN_CPP_COMPAT_START
+#define SN_CPP_COMPAT_END
+#define SN_CPP_NAMESPACE_START
+#define SN_CPP_NAMESPACE_END
+#endif
 
-#if (defined(SN_NO_STD_BOOL) || !__has_include(<stdbool.h>))
+#ifdef __has_include
+#   if __has_include("stdbool.h")
+#       define SN_FANCY_HAS_BOOL_CHECK 1
+#   else
+#       define SN_FANCY_HAS_BOOL_CHECK 0
+#   endif
+#else
+#   warning "Compiler appears to not support __has_include Defaulting to TGVM_FANCY_HAS_BOOL_CHECK to 0"
+#   define SN_FANCY_HAS_BOOL_CHECK 0
+#endif
+
+
+
+#if (defined(SN_NO_STD_BOOL) || !SN_FANCY_HAS_BOOL_CHECK) && !defined(SN_CPP_COMPAT_MODE)
 typedef uint8_t SN_BOOL;
 typedef uint8_t SN_FLAG;
 #else
@@ -89,13 +119,9 @@ typedef bool SN_FLAG;
 #   define SN_FLAG_UNSET 0
 #endif
 
-#ifdef __cplusplus
-#   ifdef SN_ENABLE_CPP_NAMESPACE
-namespace safetynet
-{
-#   endif
-extern "C" {
-#endif
+
+SN_CPP_NAMESPACE_START
+SN_CPP_COMPAT_START
 
 typedef enum
 {
@@ -374,10 +400,6 @@ static SN_FORCE_INLINE size_t SN_API_PREFIX(query_size_in_block_size)(void* ptr,
 
 #endif
 
-#ifdef __cplusplus
-}
-#   ifdef SN_ENABLE_CPP_NAMESPACE
-}
-#   endif
-#endif
+SN_CPP_NAMESPACE_END
+SN_CPP_COMPAT_END
 #endif

@@ -38,6 +38,11 @@ SN_PUB_API_OPEN void* sn_malloc(size_t size)
         sn_error(SN_ERR_BAD_ALLOC, NULL);
     }
 
+//The config macro does not fully conform to what we're doing here lol
+#ifdef SN_CONFIG_SANITIZE_MEMORY_ON_FREE
+    memset(pr, 0, size);
+#endif
+
     linked_list_push(mem_list, pr, size, plat_getTid());
 
     return pr;
@@ -57,6 +62,10 @@ SN_PUB_API_OPEN void sn_free(void* const ptr)
     {
         sn_error(SN_ERR_NO_ADDER_FOUND);
     }
+
+#ifdef SN_CONFIG_SANITIZE_MEMORY_ON_FREE
+    memset(entry->data, 0, entry->size);
+#endif
 
     free(linked_list_entry_getData(entry));
 
@@ -101,7 +110,8 @@ SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
     }
 
     void* new_ptr = realloc(ptr, new_size);
-    if (!new_size)
+
+    if (!new_ptr)
     {
         sn_error(SN_ERR_BAD_ALLOC, NULL);
     }
@@ -116,6 +126,6 @@ SN_PUB_API_OPEN void* sn_malloc_pre_initialized(size_t size, uint8_t initial_byt
     void* ptr = sn_malloc(size);
     if (!ptr) return ptr;
 
-    memset(ptr, (int)size, initial_byte_value);
+    memset(ptr, initial_byte_value, size);
     return ptr;
 }

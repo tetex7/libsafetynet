@@ -16,6 +16,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "linked_list_c.h"
 
@@ -37,6 +38,10 @@ SN_PUB_API_OPEN void sn_do_auto_free_at_exit(SN_FLAG val)
 static linked_list_entry_c freeOnListFree(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg)
 {
     if (!doFree) return NULL;
+#ifdef SN_CONFIG_SANITIZE_MEMORY_ON_FREE
+    memset(ctx->data, 0, ctx->size);
+#endif
+
     free(ctx->data);
     return NULL;
 }
