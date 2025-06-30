@@ -1,7 +1,12 @@
 # Libsafetynet It's just that a safety net
 it adds more metadata and clean up at exit for memory allocation
 Forget a freeit's got you covered
-here's an example
+here's an example    
+
+# Check out the work in progress rewrite
+https://github.com/tetex7/libsafetynet/tree/small_rewrite
+<br>
+<br>
 
 ```c
 #include <stdio.h>
