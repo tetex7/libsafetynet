@@ -28,12 +28,13 @@
 #include "sn_crash.h"
 
 #include "plat_threading.h"
+#include "plat_allocators.h"
 
 #pragma region "linked_list_entry_c code"
 
 linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* data, size_t size, uint64_t tid)
 {
-    linked_list_entry_c self = malloc(sizeof(linked_list_entry_t));
+    linked_list_entry_c self = plat_malloc(sizeof(linked_list_entry_t));
 
     if (self == NULL)
     {
@@ -149,7 +150,7 @@ void linked_list_entry_setNextEntry(linked_list_entry_c self, linked_list_entry_
 void linked_list_entry_destroy(linked_list_entry_c self)
 {
     if (self == NULL) return;
-    free(self);
+    plat_free(self);
 }
 
 static SN_BOOL linked_list_entry_pri_isHead(linked_list_entry_c self)
@@ -173,6 +174,15 @@ static void linked_list_entry_pri_reweave(linked_list_entry_c entry)
     }
 }
 
+static void linked_list_entry_pri_weight_increase(linked_list_entry_c self)
+{
+    plat_mutex_lock(self->mutex);
+    uint8_t* cwei = &self->_weight;
+
+    if (*cwei <= UINT8_MAX) (*cwei)++;
+    plat_mutex_unlock(self->mutex);
+}
+
 #pragma endregion
 
 
@@ -180,7 +190,7 @@ static void linked_list_entry_pri_reweave(linked_list_entry_c entry)
 
 linked_list_c linked_list_new()
 {
-    linked_list_c self = malloc(sizeof(linked_list_t));
+    linked_list_c self = plat_malloc(sizeof(linked_list_t));
 
     if (self == NULL)
     {
@@ -218,7 +228,7 @@ void linked_list_destroy(linked_list_c self)
     linked_list_forEach(self, pri_listDestroyer, NULL);
     linked_list_entry_destroy(self->head);
     plat_mutex_destroy(self->mutex);
-    free(self);
+    plat_free(self);
 }
 
 void linked_list_push(linked_list_c self, void* data, size_t size, uint64_t tid)

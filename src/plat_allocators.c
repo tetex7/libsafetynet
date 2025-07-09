@@ -16,16 +16,29 @@
  */
 
 //
-// Created by tete on 06/15/2025.
+// Created by tete on 06/22/2025.
 //
 
-#ifndef SN_CRASH_H
-#define SN_CRASH_H
 
-#include "libsafetynet.h"
-#define SN_NO_RET __attribute__ ((__noreturn__))
-SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file, const char* func_call_name); //__attribute__ ((__noreturn__));
+#include <stdlib.h>
+#include "plat_allocators.h"
 
-#define sn_crash(err) __sn__pri__crash__(err, __LINE__, __FILE_NAME__, __func__)
+void* plat_malloc(size_t size)
+{
+    return malloc(size);
+}
 
-#endif //SN_CRASH_H
+void* plat_realloc(void* ptr, size_t new_size)
+{
+    return realloc(ptr, new_size);
+}
+
+void* plat_calloc(size_t num, size_t size)
+{
+    return calloc(num, size);
+}
+
+void plat_free(void* ptr)
+{
+    free(ptr);
+}

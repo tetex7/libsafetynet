@@ -25,6 +25,8 @@
 #include <string.h>
 #include "libsafetynet_config.h"
 
+#include <plat_allocators.h>
+
 #include "sn_crash.h"
 
 #ifdef SN_CONFIG_ENABLE_MUTEX
@@ -53,7 +55,7 @@ struct plat_mutex_s
 
 plat_mutex_c plat_mutex_new()
 {
-    plat_mutex_c self = malloc(sizeof(plat_mutex_t));
+    plat_mutex_c self = plat_malloc(sizeof(plat_mutex_t));
 
 
     if (!self)
@@ -66,7 +68,7 @@ plat_mutex_c plat_mutex_new()
 #   ifdef __unix
     if (pthread_mutex_init(&self->plat_mutex, NULL) != 0)
     {
-        free(self);
+        plat_free(self);
         return NULL;
     }
 #   elif defined(_WIN32)
@@ -122,7 +124,7 @@ void plat_mutex_destroy(plat_mutex_c self)
 #   endif
 #endif
 
-    free(self);
+    plat_free(self);
 }
 
 uint64_t plat_getTid()

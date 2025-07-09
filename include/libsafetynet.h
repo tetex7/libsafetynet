@@ -56,9 +56,7 @@
 #ifndef SN_VERY_OPTIMIZED
 #   define SN_VERY_OPTIMIZED __attribute__((optimize("O3")))
 #endif
-#ifndef SN_API_PREFIX
-#   define SN_API_PREFIX(name) sn_##name
-#endif
+
 #ifndef SN_GET_ARR_SIZE
 #   define SN_GET_ARR_SIZE(byte_size, type_size) ((size_t)(byte_size / type_size))
 #endif
@@ -88,6 +86,24 @@
 #define SN_CPP_COMPAT_END
 #define SN_CPP_NAMESPACE_START
 #define SN_CPP_NAMESPACE_END
+#endif
+
+// Yes I know TRS C does not exist at this point That is just a fairy tale
+// But work on it is coming pretty slowly
+#if (defined(__TRS_C__) && !defined(SN_CPP_COMPAT_MODE)) && !defined(BUILDING_SAFETYNET)
+#   define TRS_C_NAMESPACE_START namespace sn {
+#   define TRS_C_NAMESPACE_END }
+#   else
+#   define TRS_C_NAMESPACE_START
+#   define TRS_C_NAMESPACE_END
+#endif
+
+#ifndef SN_API_PREFIX
+#   if !defined(__TRS_C__) || defined(SN_CPP_COMPAT_MODE) || defined(BUILDING_SAFETYNET)
+#       define SN_API_PREFIX(name) sn_##name
+#   else
+#       define SN_API_PREFIX(name) name
+#   endif
 #endif
 
 #ifdef __has_include
@@ -122,6 +138,7 @@ typedef bool SN_FLAG;
 
 SN_CPP_NAMESPACE_START
 SN_CPP_COMPAT_START
+TRS_C_NAMESPACE_START
 
 typedef enum
 {
@@ -325,7 +342,7 @@ typedef struct SN_API_PREFIX(mem_metadata_s)
     const void* const data;               // Pointer to data (generic data type)
     const size_t size;                    // size of the data
     const uint64_t tid;                   // The tid of the thread that allocated this chunk
-    //const SN_FLAG cached;                 // is mem block cached
+    const SN_FLAG cached;                 // is mem block cached
     const uint16_t block_id;              // An optional block id
 } SN_API_PREFIX(mem_metadata_t);
 
@@ -400,6 +417,7 @@ static SN_FORCE_INLINE size_t SN_API_PREFIX(query_size_in_block_size)(void* ptr,
 
 #endif
 
+TRS_C_NAMESPACE_END
 SN_CPP_NAMESPACE_END
 SN_CPP_COMPAT_END
 #endif

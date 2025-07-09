@@ -30,6 +30,10 @@ void sn_set_last_error(const sn_error_codes_e err);
 extern linked_list_c mem_list;
 extern plat_mutex_c alloc_mutex;
 
+/*
+ * This thing is horrid, but we keep it around because it is simple
+ * And of course it is only for back end use
+ */
 #define sn_error(errorCode, ...) \
 { \
     sn_set_last_error(errorCode); \

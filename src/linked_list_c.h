@@ -37,8 +37,10 @@ typedef struct linked_list_entry_s
     void* data;           // Pointer to data (generic data type)
     size_t size;          // size of the data
     uint64_t tid;         // The tid of the thread that allocated this chunk
+    SN_FLAG cached;       // The denotes if it's been cached by the memory manager
     uint16_t block_id;    // An optional block id
     SN_BOOL isHead;       // Do not create a getter nor a setter for this treat this as private
+    uint8_t _weight;       // For used for caching(private)
     plat_mutex_c mutex;   // A mutex inherited from the list container
     struct linked_list_entry_s* next;
 } *linked_list_entry_c, linked_list_entry_t;

@@ -18,5 +18,23 @@
 //
 // Created by tete on 06/22/2025.
 //
+#include <string.h>
 
 #include "alloc_manager_c.h"
+#include "plat_allocators.h"
+#include "sn_crash.h"
+
+alloc_manager_m memman_new()
+{
+    alloc_manager_m self = plat_malloc(sizeof(alloc_manager_t));
+    if (!self) sn_crash(SN_ERR_CATASTROPHIC);
+    memset(self, 0, sizeof(alloc_manager_t));
+
+    self->available_cache_slots = MEMMAN_MAX_CACHE_SLOTS;
+}
+
+void memman_destroy(alloc_manager_m self)
+{
+    if (!self) return;
+    plat_free(self);
+}

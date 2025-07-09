@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "plat_allocators.h"
+
 
 SN_PUB_API_OPEN void* sn_malloc(size_t size)
 {
@@ -31,7 +33,7 @@ SN_PUB_API_OPEN void* sn_malloc(size_t size)
         sn_error(SN_ERR_BAD_SIZE, NULL);
     }
 
-    void* pr = malloc(size);
+    void* pr = plat_malloc(size);
 
     if (!pr)
     {
@@ -67,7 +69,7 @@ SN_PUB_API_OPEN void sn_free(void* const ptr)
     memset(entry->data, 0, entry->size);
 #endif
 
-    free(linked_list_entry_getData(entry));
+    plat_free(linked_list_entry_getData(entry));
 
     linked_list_removeEntryByPtr(mem_list, ptr);
 }
@@ -79,7 +81,7 @@ SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size)
         sn_error(SN_ERR_BAD_SIZE, NULL);
     }
 
-    void* pr = calloc(num, size);
+    void* pr = plat_calloc(num, size);
 
     if (!pr)
     {
@@ -109,7 +111,7 @@ SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
         sn_error(SN_ERR_BAD_SIZE, NULL);
     }
 
-    void* new_ptr = realloc(ptr, new_size);
+    void* new_ptr = plat_realloc(ptr, new_size);
 
     if (!new_ptr)
     {
