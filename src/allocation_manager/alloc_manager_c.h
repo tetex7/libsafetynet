@@ -20,6 +20,10 @@
 //
 #pragma once
 
+// This file is a work in progress allocation manager
+// To reimplement functions requiring more advanced state keeping
+// e.g. sn_set_alloc_limit
+
 #ifndef ALLOC_MANAGER_C_H
 #define ALLOC_MANAGER_C_H
 #include "libsafetynet.h"
