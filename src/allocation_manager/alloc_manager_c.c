@@ -38,3 +38,7 @@ void memman_destroy(alloc_manager_m self)
     if (!self) return;
     plat_free(self);
 }
+
+void memman_work(alloc_manager_m self)
+{
+}
