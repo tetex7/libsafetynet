@@ -66,3 +66,23 @@ compile_commands.json
 test.bin
 *.dis
 libsafetynet_config.h
+pkg/
+
+# Clangd junk
+.cache/
+.clangd/
+.clang-tidy
+
+.idea/
+**/.idea/
+build.ninja
+Makefile
+l61_config.h
+l61-deployment-package
+*\[*\]_include.cmake
+*\[*\]_tests.cmake
+Testing/Temporary
+docs/
+l61-deployment-package.zip
+l61-deployment-package.*
+*.zip

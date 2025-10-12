@@ -14,6 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+/*
+ * Copyright (C) 2025  Tetex7
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +43,7 @@
 
 linked_list_c mem_list = NULL;
 plat_mutex_c alloc_mutex = NULL;
+alloc_manager_m memory_manager = NULL;
 SN_FLAG doFree = 1;
 
 SN_PUB_API_OPEN void sn_do_auto_free_at_exit(SN_FLAG val)
@@ -41,7 +59,6 @@ static linked_list_entry_c freeOnListFree(linked_list_c self, linked_list_entry_
 #ifdef SN_CONFIG_SANITIZE_MEMORY_ON_FREE
     memset(ctx->data, 0, ctx->size);
 #endif
-
     free(ctx->data);
     return NULL;
 }
@@ -54,6 +71,7 @@ void doexit()
     }
     plat_mutex_destroy(alloc_mutex);
     linked_list_destroy(mem_list);
+    memman_destroy(memory_manager);
 }
 
 // Constructor: Called when the library is loaded
@@ -62,6 +80,7 @@ void library_init()
 {
     mem_list = linked_list_new();
     alloc_mutex = plat_mutex_new();
+    memory_manager = memman_new(alloc_mutex);
 }
 
 // Destructor: Called when the library is unloaded

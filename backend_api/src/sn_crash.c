@@ -34,7 +34,7 @@
 
 #define sn_crash_print(str, ...) fprintf(stderr, str, ##__VA_ARGS__)
 
-static SN_VERY_OPTIMIZED int print_node(const linked_list_entry_c node)
+static int print_node(const linked_list_entry_c node)
 {
     if (!node) sn_crash_print("NODE IS NULL");
 
@@ -53,7 +53,7 @@ static SN_VERY_OPTIMIZED int print_node(const linked_list_entry_c node)
     return pcc;
 }
 
-SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t line, const char* file, const char* func_call_name)
+SN_NO_RET void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t line, const char* file, const char* func_call_name)
 {
     sn_crash_print("Crash in libsafetynet/%s:%i(%s) :-(\n\n", file, line, func_call_name);
     sn_crash_print("ERROR: %i\n", err);

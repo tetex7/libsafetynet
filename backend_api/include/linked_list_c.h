@@ -80,6 +80,8 @@ typedef struct linked_list_s
     plat_mutex_c mutex; // Shared by all elements within this list container
 } *linked_list_c, linked_list_t;
 
+
+#define LIST_FOR_EACH_LOOP_BRAKE ((linked_list_entry_c)-44)
 typedef linked_list_entry_c(*linked_list_for_each_worker_f)(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg);
 
 linked_list_c linked_list_new();

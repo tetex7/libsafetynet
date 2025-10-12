@@ -50,12 +50,12 @@
 #ifndef SN_FORCE_INLINE
 #   define SN_FORCE_INLINE __attribute__((always_inline)) __inline
 #endif
-#ifndef SN_VERY_VOLATILE
+/*#ifndef SN_VERY_VOLATILE
 #   define SN_VERY_VOLATILE __attribute__((optimize("O0")))
 #endif
 #ifndef SN_VERY_OPTIMIZED
 #   define SN_VERY_OPTIMIZED __attribute__((optimize("O3")))
-#endif
+#endif*/
 
 #ifndef SN_GET_ARR_SIZE
 #   define SN_GET_ARR_SIZE(byte_size, type_size) ((size_t)(byte_size / type_size))
@@ -163,6 +163,7 @@ typedef enum
     SN_INFO_PLACEHOLDER = 190,           /**< This is a generic placeholder For Yet undefined errors */
 } sn_error_codes_e;
 
+typedef uint64_t sn_tid_t;
 typedef uintptr_t sn_mem_address_t;
 typedef void* sn_ext_data_t;
 
@@ -304,17 +305,17 @@ SN_PUB_API_OPEN void SN_API_PREFIX(do_auto_free_at_exit)(SN_FLAG val);
  * @param ptr A pointer to a Tracked block memory
  * @return Returns 1 if successfully added to fast cash 0 if it did not
  */
-//SN_PUB_API_OPEN const SN_FLAG SN_API_PREFIX(request_to_fast_cache)(const void* ptr);
+SN_PUB_API_OPEN const SN_FLAG SN_API_PREFIX(request_to_fast_cache)(const void* ptr);
 
 /**
  * @brief Disables automatic fast caching of tracking metadata But the fast cash is still Queryed
  */
-///SN_PUB_API_OPEN void SN_API_PREFIX(lock_fast_cache)();
+SN_PUB_API_OPEN void SN_API_PREFIX(lock_fast_cache)();
 
 /**
  * @brief enables automatic fast caching of tracking metadata But the fast cash is still Queryed
  */
-//SN_PUB_API_OPEN void SN_API_PREFIX(unlock_fast_cache)();
+SN_PUB_API_OPEN void SN_API_PREFIX(unlock_fast_cache)();
 
 
 /**
@@ -322,20 +323,15 @@ SN_PUB_API_OPEN void SN_API_PREFIX(do_auto_free_at_exit)(SN_FLAG val);
  * @param val Is set to 1 enables it if set to 0 disables it
  * @note This system is on by default
  */
-//SN_PUB_API_OPEN void SN_API_PREFIX(do_fast_caching)(SN_FLAG val);
+SN_PUB_API_OPEN void SN_API_PREFIX(do_fast_caching)(SN_FLAG val);
 
 /**
  * @brief Clears out the fast cache
  */
-//SN_PUB_API_OPEN void SN_API_PREFIX(fast_cache_clear)();
+SN_PUB_API_OPEN void SN_API_PREFIX(fast_cache_clear)();
 
 
 #ifdef __SN_WIP_CALLS__
-
-typedef void* (*sn_memalloc_call_t)(size_t size);
-typedef void  (*sn_free_call_t)(void* ptr);
-typedef void* (*sn_calloc_call_t)(size_t nmemb, size_t size);
-typedef void* (*sn_realloc_call_t)(void* ptr, size_t new_size);
 
 typedef struct SN_API_PREFIX(mem_metadata_s)
 {
@@ -394,13 +390,6 @@ SN_PUB_API_OPEN size_t SN_API_PREFIX(query_thread_memory_usage)(uint64_t tid);
  * @return Total memory currently tracked.
  */
 SN_PUB_API_OPEN size_t SN_API_PREFIX(query_total_memory_usage)();
-
-SN_BOOL SN_API_PREFIX(set_allocer)(
-    sn_memalloc_call_t memalloc_call,
-    sn_free_call_t free_call,
-    sn_calloc_call_t calloc_call,
-    sn_realloc_call_t realloc_call
-);
 
 /**
  * @brief Returns the number of elements within an array based off of the block_size

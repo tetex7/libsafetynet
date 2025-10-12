@@ -79,6 +79,9 @@ void linked_list_entry_setPreviousEntry(linked_list_entry_c self, linked_list_en
 void* linked_list_entry_getData(const linked_list_entry_c self)
 {
     if (self == NULL) return NULL;
+    plat_mutex_lock(self->mutex);
+    self->_weight++;
+    plat_mutex_unlock(self->mutex);
     return self->data;
 }
 
@@ -93,6 +96,9 @@ void linked_list_entry_setData(linked_list_entry_c self, void* new_data)
 size_t linked_list_entry_getSize(const linked_list_entry_c self)
 {
     if (self == NULL) return 0;
+    plat_mutex_lock(self->mutex);
+    self->_weight++;
+    plat_mutex_unlock(self->mutex);
     return self->size;
 
 }
@@ -108,6 +114,9 @@ void linked_list_entry_setSize(linked_list_entry_c self, size_t new_size)
 uint64_t linked_list_entry_getTid(const linked_list_entry_c self)
 {
     if (self == NULL) return 0;
+    plat_mutex_lock(self->mutex);
+    self->_weight++;
+    plat_mutex_unlock(self->mutex);
     return self->tid;
 }
 
@@ -122,6 +131,9 @@ void linked_list_entry_setTid(linked_list_entry_c self, uint64_t new_tid)
 uint16_t linked_list_entry_getBlockId(const linked_list_entry_c self)
 {
     if (self == NULL) return 0;
+    plat_mutex_lock(self->mutex);
+    self->_weight++;
+    plat_mutex_unlock(self->mutex);
     return self->block_id;
 }
 

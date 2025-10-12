@@ -59,16 +59,18 @@ SN_PUB_API_OPEN void sn_free(void* const ptr)
         sn_error(SN_ERR_NULL_PTR);
     }
 
-    linked_list_entry_c entry = linked_list_getByPtr(mem_list, ptr);
-    if (!entry)
+    linked_list_entry_c entry;
+    if (entry == MEMMAN_CACHE_MISS)
     {
-        sn_error(SN_ERR_NO_ADDER_FOUND);
+        entry = linked_list_getByPtr(mem_list, ptr);
+        if (!entry)
+            sn_error(SN_ERR_NO_ADDER_FOUND);
     }
 
 #ifdef SN_CONFIG_SANITIZE_MEMORY_ON_FREE
     memset(entry->data, 0, entry->size);
 #endif
-
+    memman_cacheInvalidate(memory_manager, ptr);
     plat_free(linked_list_entry_getData(entry));
 
     linked_list_removeEntryByPtr(mem_list, ptr);
