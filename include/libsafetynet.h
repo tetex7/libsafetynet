@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025  Tete
+ * Copyright (C) 2025  Tetex7
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,31 @@
  */
 
 #pragma once
-#ifndef LIBSAFETY_NET_H
-#define LIBSAFETY_NET_H
+#ifndef LIBSAFETYNET_H
+#define LIBSAFETYNET_H
 
 #include <stddef.h>
 #include <stdint.h>
+#include <libsafetynet_config.h>
 
-#ifndef SN_PUB_API_OPEN
-#   define SN_PUB_API_OPEN __attribute__((visibility("default")))
+#if !defined(SN_PUB_API_OPEN)
+#   ifndef SN_CONFIG_STATIC_ONLY
+#       ifdef __unix
+#           define SN_PUB_API_OPEN __attribute__((visibility("default")))
+#       elif defined(_WIN32)
+#           define SN_PUB_API_OPEN
+/*#           ifdef BUILDING_SAFETYNET
+#               define SN_PUB_API_OPEN __declspec(dllexport)
+#           else
+#               define SN_PUB_API_OPEN __declspec(dllimport)
+#           endif*/
+#       endif
+#   else
+#       define SN_PUB_API_OPEN
+#   endif
 #endif
+
+
 #ifndef SN_DEPRECATED
 #   define SN_DEPRECATED __attribute__ ((deprecated))
 #endif
@@ -34,15 +50,13 @@
 #ifndef SN_FORCE_INLINE
 #   define SN_FORCE_INLINE __attribute__((always_inline)) __inline
 #endif
-#ifndef SN_VERY_VOLATILE
+/*#ifndef SN_VERY_VOLATILE
 #   define SN_VERY_VOLATILE __attribute__((optimize("O0")))
 #endif
 #ifndef SN_VERY_OPTIMIZED
 #   define SN_VERY_OPTIMIZED __attribute__((optimize("O3")))
-#endif
-#ifndef SN_API_PREFIX
-#   define SN_API_PREFIX(name) sn_##name
-#endif
+#endif*/
+
 #ifndef SN_GET_ARR_SIZE
 #   define SN_GET_ARR_SIZE(byte_size, type_size) ((size_t)(byte_size / type_size))
 #endif
@@ -56,8 +70,56 @@
 #   define SN_BLOCK_NAME_MAX_LEN 100
 #endif
 
+#ifdef __cplusplus
+#define SN_CPP_COMPAT_START extern "C" {
+#define SN_CPP_COMPAT_END }
+#define SN_CPP_COMPAT_MODE __cplusplus
+#   ifdef SN_ENABLE_CPP_NAMESPACE
+#       define SN_CPP_NAMESPACE_START namespace safetynet {
+#       define SN_CPP_NAMESPACE_END }
+#   else
+#       define SN_CPP_NAMESPACE_START
+#       define SN_CPP_NAMESPACE_END
+#   endif
+#else
+#define SN_CPP_COMPAT_START
+#define SN_CPP_COMPAT_END
+#define SN_CPP_NAMESPACE_START
+#define SN_CPP_NAMESPACE_END
+#endif
 
-#if (defined(SN_NO_STD_BOOL) || !__has_include(<stdbool.h>))
+// Yes I know TRS C does not exist at this point That is just a fairy tale
+// But work on it is coming pretty slowly
+#if (defined(__TRS_C__) && !defined(SN_CPP_COMPAT_MODE)) && !defined(BUILDING_SAFETYNET)
+#   define TRS_C_NAMESPACE_START namespace sn {
+#   define TRS_C_NAMESPACE_END }
+#   else
+#   define TRS_C_NAMESPACE_START
+#   define TRS_C_NAMESPACE_END
+#endif
+
+#ifndef SN_API_PREFIX
+#   if !defined(__TRS_C__) || defined(SN_CPP_COMPAT_MODE) || defined(BUILDING_SAFETYNET)
+#       define SN_API_PREFIX(name) sn_##name
+#   else
+#       define SN_API_PREFIX(name) name
+#   endif
+#endif
+
+#ifdef __has_include
+#   if __has_include("stdbool.h")
+#       define SN_FANCY_HAS_BOOL_CHECK 1
+#   else
+#       define SN_FANCY_HAS_BOOL_CHECK 0
+#   endif
+#else
+#   warning "Compiler appears to not support __has_include Defaulting to TGVM_FANCY_HAS_BOOL_CHECK to 0"
+#   define SN_FANCY_HAS_BOOL_CHECK 0
+#endif
+
+
+
+#if (defined(SN_NO_STD_BOOL) || !SN_FANCY_HAS_BOOL_CHECK) && !defined(SN_CPP_COMPAT_MODE)
 typedef uint8_t SN_BOOL;
 typedef uint8_t SN_FLAG;
 #else
@@ -73,13 +135,10 @@ typedef bool SN_FLAG;
 #   define SN_FLAG_UNSET 0
 #endif
 
-#ifdef __cplusplus
-#   ifdef SN_ENABLE_CPP_NAMESPACE
-namespace safetynet
-{
-#   endif
-extern "C" {
-#endif
+
+SN_CPP_NAMESPACE_START
+SN_CPP_COMPAT_START
+TRS_C_NAMESPACE_START
 
 typedef enum
 {
@@ -100,13 +159,15 @@ typedef enum
     SN_ERR_ALLOC_LIMIT_HIT = 120,        /**< User defined alloc limit has been hit */
     SN_WARN_DUB_FREE = 180,              /**< Double free detected (warning) */
     SN_ERR_SYS_FAIL = 185,               /**< generic system failure (Start praying) */
+    SN_ERR_CATASTROPHIC = 189,           /**< Catastrophic system error (like I said before pick a god and start praying) */
     SN_INFO_PLACEHOLDER = 190,           /**< This is a generic placeholder For Yet undefined errors */
 } sn_error_codes_e;
 
-typedef size_t sn_mem_address_t;
+typedef uint64_t sn_tid_t;
+typedef uintptr_t sn_mem_address_t;
 typedef void* sn_ext_data_t;
 
-typedef SN_BOOL (*sn_d_trap_t)(sn_error_codes_e err, uint32_t line, const char* file);
+//typedef SN_BOOL (*sn_d_trap_t)(sn_error_codes_e err, uint32_t line, const char* file);
 
 /**
  * @brief Allocates memory and tracks it for cleanup at program exit.
@@ -122,6 +183,15 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(malloc)(size_t size) SN_MALLOC_ATTR SN_ALLOC
  * @return Pointer to the allocated memory, or NULL on failure.
  */
 SN_PUB_API_OPEN void* SN_API_PREFIX(calloc)(size_t num, size_t size);
+
+
+/**
+ * @brief reAllocates memory and tracks it for cleanup at program exit.
+ * @param ptr a pre Allocated block that's tracked
+ * @param new_size The size of the memory block to reallocate.
+ * @return Pointer to the allocated memory, or NULL on failure.
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size);
 
 /**
  * @brief Allocates memory and initializes it to a specified value.
@@ -146,6 +216,14 @@ SN_PUB_API_OPEN void SN_API_PREFIX(free)(void* const ptr);
 SN_PUB_API_OPEN SN_MSG_DEPRECATED("unsafe due to lack of The definition of size") void* SN_API_PREFIX(register)(void* const ptr);
 
 /**
+ * @brief Registers a memory block with a specified size for tracking.
+ * @param ptr Pointer to the memory block.
+ * @param size Size of the memory block.
+ * @return The same pointer, or NULL on failure.
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(register_size)(void* ptr, size_t size);
+
+/**
  * @brief Queries the size in Bytes of a tracked memory block.
  * @param ptr Pointer to the memory block.
  * @return The size of the memory block, or 0 on failure.
@@ -160,12 +238,47 @@ SN_PUB_API_OPEN size_t SN_API_PREFIX(query_size)(void* const ptr);
 SN_PUB_API_OPEN uint64_t SN_API_PREFIX(query_tid)(void* const ptr);
 
 /**
- * @brief Registers a memory block with a specified size for tracking.
- * @param ptr Pointer to the memory block.
- * @param size Size of the memory block.
- * @return The same pointer, or NULL on failure.
+ * @brief Checks if a block is being tracked by the safety net system;
+ * @param ptr Pointer to the block of memory
+ * @return A flag to which it exists (a bool)
  */
-SN_PUB_API_OPEN void* SN_API_PREFIX(register_size)(void* ptr, size_t size);
+SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr);
+
+/**
+ * @brief set's a numerical id for the memory block
+ * @param id An integer ID for the block
+ */
+SN_PUB_API_OPEN void SN_API_PREFIX(set_block_id)(void* block, uint16_t id);
+
+/**
+ * @brief Get The Associated ID with a tracked block of memory
+ * @param block A pointer to a tracked block memory
+ * @return Returns the ID associated with the block
+ */
+SN_PUB_API_OPEN uint16_t SN_API_PREFIX(get_block_id)(void* block);
+
+/**
+ * @brief query by id to get a pointer to block of tracked memory
+ * @param id An id for a block of tracked memory
+ * @return A pointer to the block of tracked memory
+ */
+SN_PUB_API_OPEN void* SN_API_PREFIX(query_block_id)(uint16_t id);
+
+/**
+ * @brief calculates a checksum for the block of tracked memory
+ * @param block pointer to a block of tracked memory
+ * @return a checksum
+ */
+SN_PUB_API_OPEN uint64_t SN_API_PREFIX(calculate_checksum)(void* block);
+
+/**
+ * @brief Provide you a human-readable error message
+ * @param err The error code
+ * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
+ */
+SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err);
+
+SN_PUB_API_OPEN const char* SN_API_PREFIX(get_error_name)(const sn_error_codes_e err);
 
 /**
 * @brief Retrieves the last error code.
@@ -179,19 +292,14 @@ SN_PUB_API_OPEN sn_error_codes_e SN_API_PREFIX(get_last_error)();
 SN_PUB_API_OPEN void SN_API_PREFIX(reset_last_error)();
 
 /**
- * @brief Checks if a block is being tracked by the safety net system;
- * @param ptr Pointer to the block of memory
- * @return A flag to which it exists (a bool)
+ * @brief Disables/enables the auto free on exit system (Library memory will be freed though)
+ * @param val If 0 turns off this feature or 1 turns it on
+ * @note This system is on by default
  */
-SN_PUB_API_OPEN SN_FLAG SN_API_PREFIX(is_tracked_block)(const void* const ptr);
+SN_PUB_API_OPEN void SN_API_PREFIX(do_auto_free_at_exit)(SN_FLAG val);
 
-/**
- * @brief Provide you a human-readable error message
- * @param err The error code
- * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
- */
-SN_PUB_API_OPEN const char* const SN_API_PREFIX(get_error_msg)(sn_error_codes_e err);
 
+//Fast cache has not been Re implemented for this rewrite
 /**
  * @brief Adds the metadata associated with this block of memory to the fast cache
  * @param ptr A pointer to a Tracked block memory
@@ -222,73 +330,8 @@ SN_PUB_API_OPEN void SN_API_PREFIX(do_fast_caching)(SN_FLAG val);
  */
 SN_PUB_API_OPEN void SN_API_PREFIX(fast_cache_clear)();
 
-/**
- * @brief reAllocates memory and tracks it for cleanup at program exit.
- * @param ptr a pre Allocated block that's tracked
- * @param new_size The size of the memory block to reallocate.
- * @return Pointer to the allocated memory, or NULL on failure.
- */
-SN_PUB_API_OPEN void* SN_API_PREFIX(realloc)(void* ptr, size_t new_size);
-
-
-/**
- * @brief Queries memory usage for a specific thread.
- * @param tid The thread ID.
- * @return Total memory used by the thread, or 0 if no memory is tracked for this thread.
- */
-SN_PUB_API_OPEN size_t SN_API_PREFIX(query_thread_memory_usage)(uint64_t tid);
-
-/**
- * @brief Queries total memory usage across all threads.
- * @return Total memory currently tracked.
- */
-SN_PUB_API_OPEN size_t SN_API_PREFIX(query_total_memory_usage)();
-
-/**
- * @brief Disables/enables the auto free on exit system (Library memory will be freed though)
- * @param val If 0 turns off this feature or 1 turns it on
- * @note This system is on by default
- */
-SN_PUB_API_OPEN void SN_API_PREFIX(do_auto_free_at_exit)(SN_FLAG val);
-
-
-/**
- *
- * @param id An integer ID for the block
- * @return
- */
-SN_PUB_API_OPEN void SN_API_PREFIX(set_block_id)(void* block, uint16_t id);
-
-/**
- * @brief Get The Associated ID with a tracked block of memory
- * @param block A pointer to a tracked block memory
- * @return Returns the ID associated with the block
- */
-SN_PUB_API_OPEN uint16_t SN_API_PREFIX(get_block_id)(void* block);
-
-/**
- * @brief query by id to get a pointer to block of tracked memory
- * @param id An id for a block of tracked memory
- * @return A pointer to the block of tracked memory
- */
-SN_PUB_API_OPEN void* SN_API_PREFIX(query_block_id)(uint16_t id);
-
-/**
- * @brief calculates a checksum for the block of tracked memory
- * @param block pointer to a block of tracked memory
- * @return a checksum
- */
-SN_PUB_API_OPEN uint64_t SN_API_PREFIX(calculate_checksum)(void* block);
-
-
-SN_PUB_API_OPEN const char* sn_get_err_name(const sn_error_codes_e err);
 
 #ifdef __SN_WIP_CALLS__
-
-typedef void* (*sn_memalloc_call_t)(size_t size);
-typedef void  (*sn_free_call_t)(void* ptr);
-typedef void* (*sn_calloc_call_t)(size_t nmemb, size_t size);
-typedef void* (*sn_realloc_call_t)(void* ptr, size_t new_size);
 
 typedef struct SN_API_PREFIX(mem_metadata_s)
 {
@@ -305,6 +348,13 @@ typedef struct SN_API_PREFIX(mem_metadata_s)
  * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
  */
 SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_metadata)(void* ptr);
+
+/**
+ * @brief This function provides a copy view of the metadata structure for this memory block
+ * @param ptr A pointer to a register block memory
+ * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
+ */
+SN_PUB_API_OPEN const sn_mem_metadata_t* SN_API_PREFIX(query_static_metadata)(void* ptr);
 
 /**
  * @brief Dumps the contents of a track block memory to a file
@@ -328,18 +378,35 @@ SN_PUB_API_OPEN void* SN_API_PREFIX(mount_file_to_ram)(const char* file);
  */
 SN_PUB_API_OPEN void SN_API_PREFIX(set_alloc_limit)(size_t limit);
 
-SN_BOOL SN_API_PREFIX(set_allocer)(
-    sn_memalloc_call_t memalloc_call,
-    sn_free_call_t free_call,
-    sn_calloc_call_t calloc_call,
-    sn_realloc_call_t realloc_call
-);
+/**
+ * @brief Queries memory usage for a specific thread.
+ * @param tid The thread ID.
+ * @return Total memory used by the thread, or 0 if no memory is tracked for this thread.
+ */
+SN_PUB_API_OPEN size_t SN_API_PREFIX(query_thread_memory_usage)(uint64_t tid);
+
+/**
+ * @brief Queries total memory usage across all threads.
+ * @return Total memory currently tracked.
+ */
+SN_PUB_API_OPEN size_t SN_API_PREFIX(query_total_memory_usage)();
+
+/**
+ * @brief Returns the number of elements within an array based off of the block_size
+ * @param ptr A pointer to a tracked block of memory
+ * @param block_size Size of blocks eg `sizeof(int)'
+ * @return Returns the number of elements within an array based off of the block_size
+ */
+static SN_FORCE_INLINE size_t SN_API_PREFIX(query_size_in_block_size)(void* ptr, size_t block_size)
+{
+    size_t raw_size = sn_query_size(ptr);
+    if (!raw_size) return 0;
+    return SN_GET_ARR_SIZE(raw_size, block_size);
+}
+
 #endif
 
-#ifdef __cplusplus
-}
-#   ifdef SN_ENABLE_CPP_NAMESPACE
-}
-#   endif
-#endif
+TRS_C_NAMESPACE_END
+SN_CPP_NAMESPACE_END
+SN_CPP_COMPAT_END
 #endif

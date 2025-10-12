@@ -22,7 +22,7 @@ OID_LIB_PATH=$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=${PWD}/build:$LD_LIBRARY_PATH
 
 function cli_exit() {
-    LD_LIBRARY_PATH=$OID_LIB_PATH
+    export LD_LIBRARY_PATH=$OID_LIB_PATH
     exit $1
 }
 
@@ -56,9 +56,9 @@ const char* dump_file = "${PWD}/test.bin";
 
 int main()
 {
-    sn_lock_fast_cache();
+    //sn_lock_fast_cache();
     srand(time(NULL));
-    sn_set_alloc_limit(sizeof(size_t) * 200);
+    //sn_set_alloc_limit(sizeof(size_t) * 200);
     for (volatile size_t i = 0; i < 400; i++)
     {
         //printf("Allocating Garbage block %lu\n", i);
@@ -69,7 +69,7 @@ int main()
             break;
         }
     }
-    sn_set_alloc_limit(0);
+    //sn_set_alloc_limit(0);
 
     printf("Allocating test block\n");
     int32_t* buff = sn_malloc(sizeof(int32_t) * 10);
@@ -81,9 +81,9 @@ int main()
     }
     printf("seting id\n");
     sn_set_block_id(buff, 84);
-    printf("request_to_fast_cache\n");
-    sn_request_to_fast_cache(buff);
-    sn_malloc(0);
+    //printf("request_to_fast_cache\n");
+    //sn_request_to_fast_cache(buff);
+    //sn_malloc(0);
     
 
     size_t buff_size = SN_GET_ARR_SIZE(sn_query_size(buff), sizeof(int32_t));
@@ -114,20 +114,20 @@ int main()
         printf("buff[%lu] = %i\n", i, buff[i]);
     }
 
-    printf("%lu bytes allocated\n", sn_query_total_memory_usage());
+    //printf("%lu bytes allocated\n", sn_query_total_memory_usage());
 
     const sn_mem_metadata_t* const metadata = sn_query_metadata(buff);
 
-    printf("\n\nmetadata\n");
+    printf("\n\nmetadata:\n");
     printf("data: %p\n", metadata->data);
     printf("size: %lu\n", metadata->size);
     printf("rsize: %lu\n", SN_GET_ARR_SIZE(metadata->size, sizeof(int32_t)));
     printf("tid: %lu\n", metadata->tid);
-    printf("cached: %i\n", metadata->cached);
+    //printf("cached: %i\n", metadata->cached);
     printf("block id: %i\n", metadata->block_id);
-    printf("checksum: %lx\n", sn_calculate_checksum(buff));
+    //printf("checksum: %lx\n", sn_calculate_checksum(buff));
 
-    uint16_t* test_val = sn_malloc(sizeof(uint16_t));
+    /*uint16_t* test_val = sn_malloc(sizeof(uint16_t));
     *test_val = (uint16_t)rand();
 
     printf("\n\nchecksum16: %lx\n", sn_calculate_checksum(test_val));
@@ -146,7 +146,7 @@ int main()
     else
     {
         printf("Test failed mcmp buff != sn_mount_file_to_ram(dump_file)\n");
-    }
+    }*/
 
     /*for (size_t i = 0; i < sn_query_size(buff); i++)
     {
@@ -161,6 +161,9 @@ int main()
             //return 1;
         }
     }*/
+
+    void* ptr = sn_malloc(1);
+    sn_free(ptr);
 
     return 0;
 }

@@ -46,11 +46,15 @@
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles/
+.cmake
 
 # Ignore test results (if you add a testing framework)
 *.gcno
 *.gcda
 
+.ninja_*
+
+*.ninja
 
 *.pkg.tar.zst
 /pkg
@@ -61,3 +65,24 @@ compile_commands.json
 /.cache
 test.bin
 *.dis
+libsafetynet_config.h
+pkg/
+
+# Clangd junk
+.cache/
+.clangd/
+.clang-tidy
+
+.idea/
+**/.idea/
+build.ninja
+Makefile
+l61_config.h
+l61-deployment-package
+*\[*\]_include.cmake
+*\[*\]_tests.cmake
+Testing/Temporary
+docs/
+l61-deployment-package.zip
+l61-deployment-package.*
+*.zip

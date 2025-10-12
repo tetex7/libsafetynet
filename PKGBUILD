@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2024  tete
+# Copyright (C) 2025  Tetex7
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 # Maintainer: tete <tetex7@outlook.com>
 pkgname=libsafetynet
-pkgver=1.4.0
+pkgver=2.0.0
 pkgrel=1
 pkgdesc='Passive garbage collector for C and C++'
 url='www.github.com/tetex7/libsafetynet'
@@ -27,23 +27,31 @@ arch=('x86_64')
 license=('GPL3')
 makedepends=('gcc' 'binutils' 'valgrind')
 depends=('glibc')
-options=('!strip' 'docs' 'libtool' 'staticlibs' 'emptydirs' 'zipman' '!purge' '!debug' '!lto')
+options=('!strip' 'docs' 'libtool' '!staticlibs' 'emptydirs' 'zipman' '!purge' '!debug' '!lto')
 
 if [ -z "${PK_DEBUG}" ]; then
     PK_DEBUG=0
 fi
 
+minverN=${pkgver%%.*}        # major version before first dot
+eminverN=$(echo $pkgver | cut -d '.' -f1,2)  # major.minor
+
 
 prepare() {
 cd ..
 echo $PWD
-make clean
+./dev_setup.sh clean
+./dev_setup.sh -DSN_CONFIG_STR_VERSION=${pkgver}
 }
 
 build () {
     cd ..
-    make DEBUG=${PK_DEBUG} VER=${pkgver} -j $(nproc)
-
+    
+    if [[ -f ./Makefile ]]; then
+        make -j $(nproc)
+    elif [[ -f ./build.ninja ]]; then
+        ninja
+    fi
 
     if [[ "${PK_NO_TEST}" != "1"  ]]; then
         ./test.sh
@@ -59,17 +67,16 @@ build () {
 
         if [[ -z "${PK_DEBUG}" || "${PK_DEBUG}" == "0" ]]; then
             echo "striping debug syms"
-            strip -v --strip-debug -o ./build/libsafetynet.so ./build/libsafetynet.so
+            strip -v --strip-debug -o ./build/${pkgname}.so ./build/${pkgname}.so
         fi
     fi
 }
 
 package() {
     cd ..
-    minverN=$(echo "${pkgver}" | head -c 1)
-    eminverN=$(echo "${pkgver}" | head -c 3)
-    install -Dm644 ./build/libsafetynet.so "${pkgdir}/usr/lib/libsafetynet.so.${pkgver}"
-    install -Dm644 "./include/libsafetynet.h" "${pkgdir}/usr/include/libsafetynet.h"
+    install -Dm644 ./build/${pkgname}.so "${pkgdir}/usr/lib/${pkgname}.so.${pkgver}"
+    install -Dm644 "./include/${pkgname}.h" "${pkgdir}/usr/include/${pkgname}.h"
+    install -Dm644 "./include/${pkgname}_config.h" "${pkgdir}/usr/include/${pkgname}_config.h"
 
     for i in $(ls ./manpages); do
         install -Dm644 "./manpages/$i" "${pkgdir}/usr/man/man3/${i}"
@@ -78,4 +85,17 @@ package() {
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so"
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so.${minverN}"
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so.${eminverN}"
+    mkdir -p "${pkgdir}/usr/lib/pkgconfig"
+    cat >> "${pkgdir}/usr/lib/pkgconfig/${pkgname}.pc" <<_ACEOF
+prefix=/usr
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: ${pkgname}
+Description: ${pkgdesc}
+Version: ${pkgver}
+Libs: -l${pkgname##lib}
+_ACEOF
+
 }

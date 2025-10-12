@@ -112,10 +112,6 @@ _start:
     call exit
 
 allocation_failed:
-    lea rdi, [msg]         ; Argument: pointer to message
-    xor rax, rax           ; Clear rax for variadic function (printf)
-    call printf            ; Call printf
-
     call sn_get_last_error
     mov rsi, rax
     lea rdi, [error_msg]

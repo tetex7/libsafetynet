@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025  Tete
+ * Copyright (C) 2025  Tetex7
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,13 +15,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+//
+// Created by tete on 06/30/2025.
+//
 #pragma once
-#ifndef CRASH_H
-#define CRASH_H
-#include "libsafetynet.h"
-#define SN_NO_RET __attribute__ ((__noreturn__))
-SN_VERY_OPTIMIZED SN_NO_RET void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file); //__attribute__ ((__noreturn__));
 
-#define sn_crash(err) __sn__pri__crash__(err, __LINE__, __FILE__);
+#ifndef SN_PLAT_ALLOCATORS_H
+#define SN_PLAT_ALLOCATORS_H
+#include <stddef.h>
 
-#endif
+void* plat_malloc(size_t size);
+void* plat_realloc(void* ptr, size_t new_size);
+void* plat_calloc(size_t num, size_t size);
+void  plat_free(void* ptr);
+
+
+#endif //SN_PLAT_ALLOCATORS_H
