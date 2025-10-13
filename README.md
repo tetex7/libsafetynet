@@ -1,12 +1,19 @@
-# Libsafetynet It's just that a safety net
-it adds more metadata and clean up at exit for memory allocation
-Forget a freeit's got you covered
-here's an example    
+# Libsafetynet
 
-# Check out the work in progress rewrite
-https://github.com/tetex7/libsafetynet/tree/small_rewrite
-<br>
-<br>
+**Libsafetynet** is a lightweight memory management library for C and assembly.  
+It tracks allocations, prevents double frees, and adds useful metadata for debugging memory issues.
+---
+
+## Features
+
+- Automatic tracking of allocations
+- Prevents double frees
+- Optional memory sanitization on free
+- Query allocation size and last error
+- Works in C and assembly
+
+---
+## C Example
 
 ```c
 #include <stdio.h>
@@ -44,13 +51,13 @@ int main()
     return 0;
 }
 ```
+Notes:
+* `sn_malloc` tracks allocations in a linked list
+* Unfreed memory is automatically freed at program exit `sn_query_size(ptr)` returns the size of an allocation
+* `sn_get_last_error()` returns the last allocation error
 
-Since you used the malloc that comes with the library the address      
-will be appended to a linked list and on exit if it's still there in the list it will free it     
-This also prevents double free's   
-<br>
-<br>
-it also can be used in assembly 
+--- 
+## Assembly Example
 ```asm
 section .data
     db "TRS", 0
@@ -121,8 +128,16 @@ allocation_failed:
     mov rdi, 1
     call exit
 ```
-<br>
+---
+## Summary
+
+Libsafetynet is your memory “safety net.” It’s simple, reliable, and ensures clean program exits while protecting against common memory issues.
     
+## Current working issues
+* Fast cashing for metadata look up might be a little wonky 
+  Look up times might be a little slow
+* I do not plan to implement custom allocator support If you want custom allocators replace the Platform independent allocators 
+
 ### How to build
 run
 ```bash
