@@ -385,7 +385,6 @@ static SN_FORCE_INLINE size_t sn_query_size_in_block_size(void* ptr, size_t bloc
 
 #endif
 
-TRS_C_NAMESPACE_END
 SN_CPP_NAMESPACE_END
 SN_CPP_COMPAT_END
 
