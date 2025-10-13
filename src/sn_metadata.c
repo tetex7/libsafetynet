@@ -46,7 +46,7 @@ SN_PUB_API_OPEN size_t sn_query_size(void* const ptr)
     return linked_list_entry_getSize(entry);
 }
 
-SN_PUB_API_OPEN uint64_t sn_query_tid(void* const ptr)
+SN_PUB_API_OPEN sn_tid_t sn_query_tid(void* const ptr)
 {
     memman_work(memory_manager); // Let's Steal some CPU time
     if (!ptr)
@@ -209,7 +209,7 @@ void* sn_mount_file_to_ram(const char* file)
 
 typedef struct
 {
-    uint64_t tid;
+    sn_tid_t tid;
     size_t* out_size;
 } _pri_tid_size_t; // NOLINT(*-reserved-identifier)
 
@@ -223,7 +223,7 @@ static linked_list_entry_c search_for_tid(linked_list_c self, linked_list_entry_
 }
 
 SN_PUB_API_OPEN
-size_t sn_query_thread_memory_usage(uint64_t tid)
+size_t sn_query_thread_memory_usage(sn_tid_t tid)
 {
     memman_work(memory_manager); // Let's Steal some CPU time
     size_t siz = 0;

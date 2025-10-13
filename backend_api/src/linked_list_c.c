@@ -32,7 +32,7 @@
 
 #pragma region "linked_list_entry_c code"
 
-linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* data, size_t size, uint64_t tid)
+linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* data, size_t size, sn_tid_t tid)
 {
     linked_list_entry_c self = plat_malloc(sizeof(linked_list_entry_t));
 
