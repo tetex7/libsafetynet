@@ -44,7 +44,7 @@ SN_PUB_API_OPEN void* sn_malloc(size_t size)
 #ifdef SN_CONFIG_SANITIZE_MEMORY_ON_FREE
     memset(pr, 0, size);
 #endif
-    memory_manager->global_memory_usage + size;
+    memory_manager->global_memory_usage += size;
     linked_list_push(mem_list, pr, size, plat_getTid());
 
     return pr;
@@ -70,7 +70,7 @@ SN_PUB_API_OPEN void sn_free(void* const ptr)
 #ifdef SN_CONFIG_SANITIZE_MEMORY_ON_FREE
     memset(entry->data, 0, entry->size);
 #endif
-    memory_manager->global_memory_usage - entry->size;
+    memory_manager->global_memory_usage -= entry->size;
     memman_cacheInvalidate(memory_manager, ptr);
     plat_free(linked_list_entry_getData(entry));
 
@@ -90,7 +90,7 @@ SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size)
     {
         sn_error(SN_ERR_BAD_ALLOC, NULL);
     }
-    memory_manager->global_memory_usage + (size * num);
+    memory_manager->global_memory_usage += (size * num);
     linked_list_push(mem_list, pr, size, plat_getTid());
 
     return pr;
@@ -120,8 +120,8 @@ SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
     {
         sn_error(SN_ERR_BAD_ALLOC, NULL);
     }
-    memory_manager->global_memory_usage - entry->size;
-    memory_manager->global_memory_usage + new_size;
+    memory_manager->global_memory_usage -= entry->size;
+    memory_manager->global_memory_usage += new_size;
 
     linked_list_entry_setData(entry, new_ptr);
     linked_list_entry_setSize(entry, new_size);
