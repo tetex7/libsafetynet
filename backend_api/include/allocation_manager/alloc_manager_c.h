@@ -75,7 +75,7 @@ typedef struct alloc_manager_s
 alloc_manager_m memman_new(plat_mutex_c mutex_ref);
 
 void memman_destroy(alloc_manager_m self);
-void memman_work(alloc_manager_m self);
+void memman_work(alloc_manager_m self, linked_list_c list);
 
 linked_list_entry_c memman_TryCacheHit(alloc_manager_m self, void* key);
 linked_list_entry_c memman_TryCacheHitById(alloc_manager_m self, uint16_t id);

@@ -21,7 +21,30 @@ execute_process(
         OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-set(CMAKE_OBJCOPY "${PLATFORM_TRIPLE}-objcopy" CACHE STRING "Compiler's object copy")
+
+# --- Automatically pick objcopy binary ---
+# 1. Try triple-prefixed version (e.g. x86_64-linux-gnu-objcopy)
+# 2. Fall back to plain objcopy if triple is empty or prefixed tool doesn't exist
+if(PLATFORM_TRIPLE)
+    find_program(PLAT_OBJCOPY
+            NAMES
+            ${PLATFORM_TRIPLE}-objcopy
+            objcopy
+            DOC "Platform-appropriate objcopy tool"
+    )
+else()
+    find_program(PLAT_OBJCOPY
+            NAMES
+            objcopy
+            DOC "Default objcopy tool"
+    )
+endif()
+
+if(NOT PLAT_OBJCOPY)
+    message(FATAL_ERROR "Failed to locate objcopy for platform '${PLATFORM_TRIPLE}'. Please install binutils.")
+else()
+    message(STATUS "Using objcopy: ${PLAT_OBJCOPY}")
+endif()
 
 if(NOT WIN32)
     option(SN_CONFIG_STATIC_ONLY "If to produce a static only library" OFF)
@@ -43,3 +66,10 @@ set(SN_CONFIG_VERSION_MINOR 0 CACHE STRING "Set the minor version being compiled
 set(SN_CONFIG_VERSION_PATCH 0 CACHE STRING "Set the patch version being compiled")
 
 option(SN_CONFIG_ENABLE_MUTEX "Use thread safety mechanisms" ON)
+
+
+string(TIMESTAMP SN_CONFIG_GENERATION_DATE "%m-%d-%Y(%H:%M:%S)")
+string(TIMESTAMP SN_CONFIG_GENERATION_YEAR "%Y")
+
+execute_process(COMMAND git rev-parse --short HEAD OUTPUT_VARIABLE GIT_COMMIT_HASH OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND git rev-parse --abbrev-ref HEAD OUTPUT_VARIABLE GIT_BRANCH_NAME OUTPUT_STRIP_TRAILING_WHITESPACE)

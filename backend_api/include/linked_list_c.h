@@ -29,23 +29,23 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <plat_threading.h>
-#include <libsafetynet.h>
+#include "libsafetynet.h"
 
 typedef struct linked_list_entry_s
 {
     struct linked_list_entry_s* previous;
     void* data;           // Pointer to data (generic data type)
     size_t size;          // size of the data
-    uint64_t tid;         // The tid of the thread that allocated this chunk
+    sn_tid_t tid;         // The tid of the thread that allocated this chunk
     SN_FLAG cached;       // The denotes if it's been cached by the memory manager
     uint16_t block_id;    // An optional block id
     SN_BOOL isHead;       // Do not create a getter nor a setter for this treat this as private
-    uint8_t _weight;       // For used for caching(private)
+    uint8_t _weight;      // For used for caching(private)
     plat_mutex_c mutex;   // A mutex inherited from the list container
     struct linked_list_entry_s* next;
 } *linked_list_entry_c, linked_list_entry_t;
 
-linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* data, size_t size, uint64_t tid);
+linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* data, size_t size, sn_tid_t tid);
 
 linked_list_entry_c linked_list_entry_getPreviousEntry(const linked_list_entry_c self);
 void linked_list_entry_setPreviousEntry(linked_list_entry_c self, linked_list_entry_c new_previous);

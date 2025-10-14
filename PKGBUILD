@@ -46,12 +46,9 @@ echo $PWD
 
 build () {
     cd ..
-    
-    if [[ -f ./Makefile ]]; then
-        make -j $(nproc)
-    elif [[ -f ./build.ninja ]]; then
-        ninja
-    fi
+
+    ./dev_setup.sh mk -j $(nproc)
+    ./package.sh
 
     if [[ "${PK_NO_TEST}" != "1"  ]]; then
         ./test.sh
@@ -67,20 +64,20 @@ build () {
 
         if [[ -z "${PK_DEBUG}" || "${PK_DEBUG}" == "0" ]]; then
             echo "striping debug syms"
-            strip -v --strip-debug -o ./build/${pkgname}.so ./build/${pkgname}.so
+            strip -v --strip-debug -o ./libsafetynet-deployment-package/${pkgname}.so ./libsafetynet-deployment-package/${pkgname}.so
         fi
     fi
 }
 
 package() {
     cd ..
-    install -Dm644 ./build/${pkgname}.so "${pkgdir}/usr/lib/${pkgname}.so.${pkgver}"
-    install -Dm644 "./include/${pkgname}.h" "${pkgdir}/usr/include/${pkgname}.h"
-    install -Dm644 "./include/${pkgname}_config.h" "${pkgdir}/usr/include/${pkgname}_config.h"
+    install -Dm644 ./libsafetynet-deployment-package/${pkgname}.so "${pkgdir}/usr/lib/${pkgname}.so.${pkgver}"
+    install -Dm644 "./libsafetynet-deployment-package/${pkgname}.h" "${pkgdir}/usr/include/${pkgname}.h"
+    install -Dm644 "./libsafetynet-deployment-package/${pkgname}_config.h" "${pkgdir}/usr/include/${pkgname}_config.h"
 
-    for i in $(ls ./manpages); do
-        install -Dm644 "./manpages/$i" "${pkgdir}/usr/man/man3/${i}"
-    done
+    #for i in $(ls ./manpages); do
+    #    install -Dm644 "./manpages/$i" "${pkgdir}/usr/man/man3/${i}"
+    #done
 
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so"
     ln -s "/usr/lib/${pkgname}.so.${pkgver}" "${pkgdir}/usr/lib/${pkgname}.so.${minverN}"
@@ -95,7 +92,7 @@ includedir=\${prefix}/include
 Name: ${pkgname}
 Description: ${pkgdesc}
 Version: ${pkgver}
-Libs: -l${pkgname##lib}
+Libs: -L\${libdir} -l${pkgname##lib}
 _ACEOF
 
 }

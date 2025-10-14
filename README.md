@@ -2,6 +2,7 @@
 
 **Libsafetynet** is a lightweight memory management library for C and assembly.  
 It tracks allocations, prevents double frees, and adds useful metadata for debugging memory issues.
+
 ---
 
 ## Features
@@ -11,6 +12,18 @@ It tracks allocations, prevents double frees, and adds useful metadata for debug
 - Optional memory sanitization on free
 - Query allocation size and last error
 - Works in C and assembly
+- Auto frees leftovers at exit 
+
+---
+# Dependencies
+- **Runtime**
+  - libc
+
+- **Build**
+  - [GCC](https://gcc.gnu.org/) or [Clang](https://clang.llvm.org/) (New enough to compile C99)
+  - CMake
+  - Ninja *or* Make
+  - Bash
 
 ---
 ## C Example
@@ -141,15 +154,10 @@ Libsafetynet is your memory “safety net.” It’s simple, reliable, and ensur
 ### How to build
 run
 ```bash
-make clean # Cleans the build environment Just in case 
-make  # Builds the project 
-./test.sh # Test the memory safety of the project 
-```
-or If you're on arch
-```bash
-makepkg -si  # This will build, test and install
-```
-or
-```bash
-./install.sh # This will do the same thing but more nicer
+git clone https://github.com/tetex7/libsafetynet.git # Clone the project to your local machine
+cd ./libsafetynet # Changes your current working directory to the project
+
+./dev_setup.sh # Initializes the Cmake environment
+./dev_setup.sh mk # Builds the project
+./package.sh # Packages the project into a A small Folder containing headers and a library
 ```

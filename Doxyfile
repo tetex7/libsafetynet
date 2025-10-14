@@ -1,0 +1,51 @@
+# Doxyfile — minimal API header documentation
+#
+# Copyright (C) 2025  Tetex7
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+# Project info
+PROJECT_NAME           = "libsafetynet API"
+OUTPUT_DIRECTORY       = docs
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_MAN           = NO
+GENERATE_RTF           = NO
+GENERATE_XML           = NO
+
+# Input
+INPUT                  = include/libsafetynet.h
+FILE_PATTERNS          = *.h
+RECURSIVE              = NO
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+
+# Layout & Style
+QUIET                  = YES
+JAVADOC_AUTOBRIEF      = YES
+OPTIMIZE_OUTPUT_FOR_C  = YES
+INLINE_SOURCES         = YES
+SOURCE_BROWSER         = NO
+HTML_OUTPUT            = html
+HTML_COLORSTYLE_HUE    = 210
+HTML_COLORSTYLE_SAT    = 100
+HTML_COLORSTYLE_GAMMA  = 90
+USE_MDFILE_AS_MAINPAGE = include/libsafetynet.h
+
+# Simplify HTML
+GENERATE_TREEVIEW      = NO
+DISABLE_INDEX          = YES
+SEARCHENGINE           = NO

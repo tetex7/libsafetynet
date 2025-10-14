@@ -1,7 +1,6 @@
-#!/usr/bin/env bash
-
 #
-# Copyright (C) 2025  tete
+# Copyright (C) 2025  Tetex7
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -16,16 +15,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if [ -e "/usr/bin/doas" ] ; then
-    DOAS=doas
-else
-    DOAS=sudo
-fi
-PKG_NAME="libsafetynet"
+FROM archlinux:latest
+LABEL authors="Tetex7"
 
-rm -f ./${PKG_NAME}-*-1-x86_64.pkg.tar.zst
+ARG USER_ID=1000
+ARG GROUP_ID=1000
 
-yes | ${DOAS} pacman -R ${PKG_NAME}
-makepkg -f
-yes | ${DOAS} pacman -U ./${PKG_NAME}-*-1-x86_64.pkg.tar.zst
-rm -f ./${PKG_NAME}-*-1-x86_64.pkg.tar.zst
+RUN pacman -Syu --noconfirm
+RUN pacman -S --noconfirm --needed \
+    base-devel cmake gcc ninja git gtest doxygen zip
+RUN pacman -Scc --noconfirm
+
+# Create non-root user
+RUN groupadd -g $GROUP_ID builder \
+ && useradd -m -u $USER_ID -g $GROUP_ID -s /bin/bash builder
+USER builder
+WORKDIR /home/builder/project

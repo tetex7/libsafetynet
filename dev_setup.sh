@@ -39,13 +39,13 @@ readonly detected_os=$(uname | tr '[:upper:]' '[:lower:]')
 
 if [[ "$detected_os" == "linux" ]]; then
     # The tools for the liunx
-    readonly DEFAULT_TOOLS=(gcc g++ zip cmake ctest ninja git)
+    readonly DEFAULT_TOOLS=(gcc zip cmake ctest ninja git)
 elif [[ "$detected_os" == *bsd || "$detected_os" == "dragonfly" || "$detected_os" == "darwin" ]]; then
     # The tools for the BSD-likes
-    readonly DEFAULT_TOOLS=(clang clang++ zip cmake ctest ninja git)
+    readonly DEFAULT_TOOLS=(clang zip cmake ctest ninja git)
 else
     # The tools that should be on an generic system
-    readonly DEFAULT_TOOLS=(gcc g++ zip cmake ctest ninja git)
+    readonly DEFAULT_TOOLS=(gcc zip cmake ctest ninja git)
 fi
 
 # If override exists, split it into an array; otherwise use default
@@ -138,10 +138,10 @@ function clean()
     rm -fv ./.ninja_*
     rm -fv ./include/libsafetynet_config.h
     rm -fv libsafetynet-*-x86_64.pkg.tar.zst
-    rm -rfv ./l61-deployment-package
+    rm -rfv ./libsafetynet-deployment-package
     rm -rfv ./Testing/Temporary
     rm -rfv ./docs
-    rm -fv ./l61-deployment-package.zip
+    rm -fv ./libsafetynet-deployment-package.zip
 
     find "." -maxdepth 20 -type d -name "CMakeFiles" -exec rm -vrf {} +
 
@@ -171,7 +171,7 @@ function release_package_zip()
 {
     release_package || return 1
 
-    local folder="l61-deployment-package"
+    local folder="libsafetynet-deployment-package"
     local zipfile="${folder}.zip"
 
     if [ -d "$folder" ]; then

@@ -32,7 +32,7 @@
 
 #pragma region "linked_list_entry_c code"
 
-linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* data, size_t size, uint64_t tid)
+linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* data, size_t size, sn_tid_t tid)
 {
     linked_list_entry_c self = plat_malloc(sizeof(linked_list_entry_t));
 
@@ -79,9 +79,6 @@ void linked_list_entry_setPreviousEntry(linked_list_entry_c self, linked_list_en
 void* linked_list_entry_getData(const linked_list_entry_c self)
 {
     if (self == NULL) return NULL;
-    plat_mutex_lock(self->mutex);
-    self->_weight++;
-    plat_mutex_unlock(self->mutex);
     return self->data;
 }
 
@@ -96,9 +93,6 @@ void linked_list_entry_setData(linked_list_entry_c self, void* new_data)
 size_t linked_list_entry_getSize(const linked_list_entry_c self)
 {
     if (self == NULL) return 0;
-    plat_mutex_lock(self->mutex);
-    self->_weight++;
-    plat_mutex_unlock(self->mutex);
     return self->size;
 
 }
@@ -114,9 +108,6 @@ void linked_list_entry_setSize(linked_list_entry_c self, size_t new_size)
 uint64_t linked_list_entry_getTid(const linked_list_entry_c self)
 {
     if (self == NULL) return 0;
-    plat_mutex_lock(self->mutex);
-    self->_weight++;
-    plat_mutex_unlock(self->mutex);
     return self->tid;
 }
 
@@ -131,9 +122,6 @@ void linked_list_entry_setTid(linked_list_entry_c self, uint64_t new_tid)
 uint16_t linked_list_entry_getBlockId(const linked_list_entry_c self)
 {
     if (self == NULL) return 0;
-    plat_mutex_lock(self->mutex);
-    self->_weight++;
-    plat_mutex_unlock(self->mutex);
     return self->block_id;
 }
 
@@ -362,7 +350,13 @@ linked_list_entry_c linked_list_getByPtr(linked_list_c self, void* key)
 {
     if (!self || !key) return NULL;
     linked_list_entry_c temp = linked_list_forEach(self, &linked_list_searchForPointer, key);
-    if (temp) self->lastAccess = temp;
+    if (temp)
+    {
+        self->lastAccess = temp;
+        plat_mutex_lock(self->mutex);
+        temp->_weight++;
+        plat_mutex_unlock(self->mutex);
+    }
     return temp;
 }
 
@@ -382,7 +376,13 @@ linked_list_entry_c linked_list_getByIndex(linked_list_c self, size_t index)
     if (linked_list_getSize(self) < index) return NULL;
 
     linked_list_entry_c temp = linked_list_forEach(self, &linked_list_searchForIndex, &index);
-    if (temp) self->lastAccess = temp;
+    if (temp)
+    {
+        self->lastAccess = temp;
+        plat_mutex_lock(self->mutex);
+        temp->_weight++;
+        plat_mutex_unlock(self->mutex);
+    }
 
     return temp;
 }
@@ -405,6 +405,9 @@ linked_list_entry_c linked_list_getById(linked_list_c self, uint16_t id)
     if (temp)
     {
         self->lastAccess = temp;
+        plat_mutex_lock(self->mutex);
+        temp->_weight++;
+        plat_mutex_unlock(self->mutex);
     }
     return temp;
 }

@@ -77,12 +77,11 @@ pkg/
 **/.idea/
 build.ninja
 Makefile
-l61_config.h
-l61-deployment-package
+libsafetynet-deployment-package
 *\[*\]_include.cmake
 *\[*\]_tests.cmake
 Testing/Temporary
 docs/
-l61-deployment-package.zip
-l61-deployment-package.*
+libsafetynet-deployment-package.zip
+libsafetynet-deployment-package.*
 *.zip
