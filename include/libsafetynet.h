@@ -130,11 +130,8 @@ typedef enum
     SN_ERR_NO_ADDER_FOUND = 30,          /**< No adder found in system */
     SN_ERR_NO_TID_FOUND = 40,            /**< No tid found in system */
     SN_ERR_BAD_BLOCK_ID = 50,            /**< block id is not above 20 */
-    SN_ERR_DUMP_FILE_PREEXIST = 60,      /**< Dump file path provided already exists */
-    SN_ERR_MSYNC_CALL_FAILED = 70,       /**< posix call to MSYNC failed */
-    SN_ERR_MMAP_CALL_FAILED = 80,        /**< posix call to mmap failed */
-    SN_ERR_MUNMAP_CALL_FAILED = 90,      /**< posix call to munmap failed */
-    SN_ERR_FTRUNCATE_CALL_FAILED = 100,  /**< posix call to FTRUNCATE failed */
+    SN_ERR_FILE_PRE_EXIST = 60,     /**< file path provided already exists */
+    SN_ERR_FILE_IO = 70,                 /**< Libc file IO error */
     SN_ERR_FILE_NOT_EXIST = 110,         /**< file Does not exist */
     SN_ERR_ALLOC_LIMIT_HIT = 120,        /**< User defined alloc limit has been hit */
     SN_WARN_DUB_FREE = 180,              /**< Double free detected (warning) */

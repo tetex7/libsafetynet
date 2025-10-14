@@ -81,8 +81,8 @@ int main()
     }
     printf("seting id\n");
     sn_set_block_id(buff, 84);
-    //printf("request_to_fast_cache\n");
-    //sn_request_to_fast_cache(buff);
+    printf("request_to_fast_cache\n");
+    sn_request_to_fast_cache(buff);
     //sn_malloc(0);
     
 
@@ -127,7 +127,7 @@ int main()
     printf("block id: %i\n", metadata->block_id);
     //printf("checksum: %lx\n", sn_calculate_checksum(buff));
 
-    /*uint16_t* test_val = sn_malloc(sizeof(uint16_t));
+    uint16_t* test_val = sn_malloc(sizeof(uint16_t));
     *test_val = (uint16_t)rand();
 
     printf("\n\nchecksum16: %lx\n", sn_calculate_checksum(test_val));
@@ -146,9 +146,9 @@ int main()
     else
     {
         printf("Test failed mcmp buff != sn_mount_file_to_ram(dump_file)\n");
-    }*/
+    }
 
-    /*for (size_t i = 0; i < sn_query_size(buff); i++)
+    for (size_t i = 0; i < sn_query_size(buff); i++)
     {
         if (((uint8_t*)buff)[i] == ((uint8_t*)mfile)[i])
         {
@@ -160,7 +160,7 @@ int main()
             printf("%x != %x\n", ((uint8_t*)buff)[i], ((uint8_t*)mfile)[i]);
             //return 1;
         }
-    }*/
+    }
 
     void* ptr = sn_malloc(1);
     sn_free(ptr);
@@ -194,5 +194,5 @@ fi
 
 
 rm -f ${OUTPUT_BINARY}
-rm -f test.bin
+#rm -f test.bin
 cli_exit $ecode

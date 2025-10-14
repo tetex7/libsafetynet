@@ -195,17 +195,7 @@ SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_static_metadata(void* ptr)
     return ret_copy_meta;
 }
 
-SN_FLAG sn_dump_to_file(const char* file, void* block)
-{
-    sn_set_last_error(SN_INFO_PLACEHOLDER);
-    return 0;
-}
 
-void* sn_mount_file_to_ram(const char* file)
-{
-    sn_set_last_error(SN_INFO_PLACEHOLDER);
-    return NULL;
-}
 
 void sn_set_alloc_limit(size_t limit)
 {
