@@ -24,14 +24,14 @@
 
 SN_PUB_API_OPEN SN_MSG_DEPRECATED("unsafe due to lack of The definition of size") void* sn_register(void* const ptr)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     linked_list_push(mem_list, ptr, 0, plat_getTid());
     return ptr;
 }
 
 SN_PUB_API_OPEN size_t sn_query_size(void* const ptr)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!ptr)
     {
         sn_error(SN_ERR_NULL_PTR, 0);
@@ -48,7 +48,7 @@ SN_PUB_API_OPEN size_t sn_query_size(void* const ptr)
 
 SN_PUB_API_OPEN sn_tid_t sn_query_tid(void* const ptr)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!ptr)
     {
         sn_error(SN_ERR_NULL_PTR, 0);
@@ -68,7 +68,7 @@ SN_PUB_API_OPEN sn_tid_t sn_query_tid(void* const ptr)
 
 SN_PUB_API_OPEN void* sn_register_size(void* ptr, size_t size)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!ptr)
     {
         sn_error(SN_ERR_NULL_PTR, NULL);
@@ -87,7 +87,7 @@ SN_PUB_API_OPEN void* sn_register_size(void* ptr, size_t size)
 
 SN_PUB_API_OPEN SN_FLAG sn_is_tracked_block(const void* const ptr)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!ptr)
     {
         sn_error(SN_ERR_NULL_PTR, 0);
@@ -98,7 +98,7 @@ SN_PUB_API_OPEN SN_FLAG sn_is_tracked_block(const void* const ptr)
 
 SN_PUB_API_OPEN void sn_set_block_id(void* block, uint16_t id)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!block)
     {
         sn_error(SN_ERR_NULL_PTR);
@@ -123,7 +123,7 @@ SN_PUB_API_OPEN void sn_set_block_id(void* block, uint16_t id)
 
 SN_PUB_API_OPEN uint16_t sn_get_block_id(void* block)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!block)
     {
         sn_error(SN_ERR_NULL_PTR, 0);
@@ -143,7 +143,7 @@ SN_PUB_API_OPEN uint16_t sn_get_block_id(void* block)
 
 SN_PUB_API_OPEN void* sn_query_block_id(uint16_t id)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!id)
     {
         sn_error(SN_ERR_BAD_BLOCK_ID, NULL);
@@ -163,7 +163,7 @@ SN_PUB_API_OPEN void* sn_query_block_id(uint16_t id)
 
 SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_metadata(void* ptr)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!ptr)
     {
         sn_error(SN_ERR_NULL_PTR, NULL);
@@ -184,7 +184,7 @@ SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_metadata(void* ptr)
 
 SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_static_metadata(void* ptr)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     const sn_mem_metadata_t* mem_metadata = sn_query_metadata(ptr);
     if (!mem_metadata) return NULL;
 
@@ -207,6 +207,11 @@ void* sn_mount_file_to_ram(const char* file)
     return NULL;
 }
 
+void sn_set_alloc_limit(size_t limit)
+{
+    memory_manager->alloc_limit = limit;
+}
+
 typedef struct
 {
     sn_tid_t tid;
@@ -225,7 +230,7 @@ static linked_list_entry_c search_for_tid(linked_list_c self, linked_list_entry_
 SN_PUB_API_OPEN
 size_t sn_query_thread_memory_usage(sn_tid_t tid)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     size_t siz = 0;
     linked_list_forEach(mem_list, &search_for_tid, &(_pri_tid_size_t){
         tid,
@@ -235,9 +240,14 @@ size_t sn_query_thread_memory_usage(sn_tid_t tid)
     return siz;
 }
 
+size_t sn_query_total_memory_usage()
+{
+    return memory_manager->global_memory_usage;
+}
+
 SN_PUB_API_OPEN uint64_t sn_calculate_checksum(void* block)
 {
-    memman_work(memory_manager); // Let's Steal some CPU time
+    memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!block)
     {
         sn_error(SN_ERR_NULL_PTR, 0);
