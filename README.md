@@ -2,6 +2,7 @@
 
 **Libsafetynet** is a lightweight memory management library for C and assembly.  
 It tracks allocations, prevents double frees, and adds useful metadata for debugging memory issues.
+
 ---
 
 ## Features
