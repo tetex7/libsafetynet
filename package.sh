@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-
 #
-# Copyright (C) 2025  tete
+# Copyright (C) 2025  Tetex7
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -16,16 +16,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if [ -e "/usr/bin/doas" ] ; then
-    DOAS=doas
-else
-    DOAS=sudo
-fi
-PKG_NAME="libsafetynet"
+set -e
 
-rm -f ./${PKG_NAME}-*-1-x86_64.pkg.tar.zst
+readonly PAK_NAME="libsafetynet-deployment-package"
 
-yes | ${DOAS} pacman -R ${PKG_NAME}
-makepkg -f
-yes | ${DOAS} pacman -U ./${PKG_NAME}-*-1-x86_64.pkg.tar.zst
-rm -f ./${PKG_NAME}-*-1-x86_64.pkg.tar.zst
+rm -rf ./${PAK_NAME}
+
+cp -rv ./include ./${PAK_NAME}
+cp -v ./build/libsafetynet.* ./${PAK_NAME}
+
+readonly GIT_COMMIT_HASH=$(git rev-parse --short HEAD)
+readonly GIT_BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+
+echo "Built: $(date)" > "${PAK_NAME}/build-info.txt"
+echo "Commit: ${GIT_COMMIT_HASH}" >> "${PAK_NAME}/build-info.txt"
+echo "Branch: ${GIT_BRANCH_NAME}" >> "${PAK_NAME}/build-info.txt"
+echo "Generated ${PAK_NAME}/build-info.txt"

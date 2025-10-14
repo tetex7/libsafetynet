@@ -153,15 +153,10 @@ Libsafetynet is your memory “safety net.” It’s simple, reliable, and ensur
 ### How to build
 run
 ```bash
-make clean # Cleans the build environment Just in case 
-make  # Builds the project 
-./test.sh # Test the memory safety of the project 
-```
-or If you're on arch
-```bash
-makepkg -si  # This will build, test and install
-```
-or
-```bash
-./install.sh # This will do the same thing but more nicer
+git clone https://github.com/tetex7/libsafetynet.git # Clone the project to your local machine
+cd ./libsafetynet # Changes your current working directory to the project
+
+./dev_setup.sh # Initializes the Cmake environment
+./dev_setup.sh mk # Builds the project
+./package.sh # Packages the project into a A small Folder containing headers and a library
 ```

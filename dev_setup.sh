@@ -138,10 +138,10 @@ function clean()
     rm -fv ./.ninja_*
     rm -fv ./include/libsafetynet_config.h
     rm -fv libsafetynet-*-x86_64.pkg.tar.zst
-    rm -rfv ./l61-deployment-package
+    rm -rfv ./libsafetynet-deployment-package
     rm -rfv ./Testing/Temporary
     rm -rfv ./docs
-    rm -fv ./l61-deployment-package.zip
+    rm -fv ./libsafetynet-deployment-package.zip
 
     find "." -maxdepth 20 -type d -name "CMakeFiles" -exec rm -vrf {} +
 
@@ -171,7 +171,7 @@ function release_package_zip()
 {
     release_package || return 1
 
-    local folder="l61-deployment-package"
+    local folder="libsafetynet-deployment-package"
     local zipfile="${folder}.zip"
 
     if [ -d "$folder" ]; then
