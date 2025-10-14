@@ -11,6 +11,18 @@ It tracks allocations, prevents double frees, and adds useful metadata for debug
 - Optional memory sanitization on free
 - Query allocation size and last error
 - Works in C and assembly
+- Auto frees leftovers at exit 
+
+---
+# Dependencies
+- **Runtime**
+  - libc
+
+- **Build**
+  - [GCC](https://gcc.gnu.org/) or [Clang](https://clang.llvm.org/) (New enough to compile C99)
+  - CMake
+  - Ninja *or* Make
+  - Bash
 
 ---
 ## C Example

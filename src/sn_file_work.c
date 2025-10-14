@@ -34,7 +34,7 @@ static SN_BOOL file_exists(const char* path)
     return SN_FALSE; // file doesn't exist
 }
 
-SN_FLAG sn_dump_to_file(const char* file, void* block)
+SN_PUB_API_OPEN SN_FLAG sn_dump_to_file(const char* file, void* block)
 {
     if (!file || !block)
     {
@@ -71,7 +71,7 @@ SN_FLAG sn_dump_to_file(const char* file, void* block)
     return 1;
 }
 
-void* sn_mount_file_to_ram(const char* file)
+SN_PUB_API_OPEN void* sn_mount_file_to_ram(const char* file)
 {
     if (!file)
     {

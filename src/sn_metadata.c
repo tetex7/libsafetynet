@@ -230,7 +230,7 @@ size_t sn_query_thread_memory_usage(sn_tid_t tid)
     return siz;
 }
 
-size_t sn_query_total_memory_usage()
+SN_PUB_API_OPEN size_t sn_query_total_memory_usage()
 {
     return memory_manager->global_memory_usage;
 }

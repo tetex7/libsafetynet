@@ -342,7 +342,7 @@ SN_PUB_API_OPEN SN_FLAG sn_dump_to_file(const char* file, void* block);
 
 /**
  * @brief It copies a files data to block memory of the same size
- * @param file Path to a preexisting file (This file will be treated as read only)
+ * @param file Path to a pre-existing file (This file will be treated as read only)
  * @return A pointer to a Pre-allocated tracked block of memory
  */
 SN_PUB_API_OPEN void* sn_mount_file_to_ram(const char* file);
