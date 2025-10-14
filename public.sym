@@ -33,3 +33,6 @@ sn_query_static_metadata
 sn_set_alloc_limit
 sn_query_thread_memory_usage
 sn_query_total_memory_usage
+
+sn_mount_file_to_ram
+sn_dump_to_file

@@ -49,3 +49,9 @@ USE_MDFILE_AS_MAINPAGE = include/libsafetynet.h
 GENERATE_TREEVIEW      = NO
 DISABLE_INDEX          = YES
 SEARCHENGINE           = NO
+
+ENABLE_PREPROCESSING      = YES
+MACRO_EXPANSION           = YES
+EXPAND_ONLY_PREDEF        = YES
+PREDEFINED                = \
+  __SN_WIP_CALLS__=1 \

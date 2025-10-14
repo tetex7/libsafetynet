@@ -1,7 +1,9 @@
 # Libsafetynet
 
 **Libsafetynet** is a lightweight memory management library for C and assembly.  
-It tracks allocations, prevents double frees, and adds useful metadata for debugging memory issues.
+It tracks allocations, prevents double frees, and adds useful metadata for debugging memory issues.   
+
+The one thing it won't do though is stop you from blowing past the edge of an array it Just make C a little more forgiving
 
 ---
 
@@ -12,7 +14,7 @@ It tracks allocations, prevents double frees, and adds useful metadata for debug
 - Optional memory sanitization on free
 - Query allocation size and last error
 - Works in C and assembly
-- Auto frees leftovers at exit 
+- Auto frees leftovers at exit (Optional)
 
 ---
 # Dependencies
