@@ -50,6 +50,7 @@ static int print_node(const linked_list_entry_c node)
 #endif
     pcc += sn_crash_print("isHead: %i", node->isHead);
     pcc += sn_crash_print("next: %p\n", node->next);
+    pcc += sn_crash_print("weight : %x\n", node->_weight);
     return pcc;
 }
 

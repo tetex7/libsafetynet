@@ -27,7 +27,8 @@
 static SN_BOOL file_exists(const char* path)
 {
     FILE* f = fopen(path, "rb"); // try to open for reading
-    if (f) {
+    if (f)
+    {
         fclose(f);
         return SN_TRUE; // file exists
     }
@@ -93,7 +94,8 @@ SN_PUB_API_OPEN void* sn_mount_file_to_ram(const char* file)
     const size_t filesize = (size_t)ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    if (filesize <= 0) {
+    if (filesize <= 0)
+    {
         fclose(f);
         sn_error(SN_ERR_BAD_SIZE, NULL);
     }
@@ -108,7 +110,8 @@ SN_PUB_API_OPEN void* sn_mount_file_to_ram(const char* file)
     size_t read = fread(buffer, 1, (size_t)filesize, f);
     fclose(f);
 
-    if (read != filesize) {
+    if (read != filesize)
+    {
         sn_free(buffer); // optional cleanup
         sn_error(SN_ERR_FILE_IO, NULL);
     }

@@ -21,4 +21,4 @@ target_compile_features(base_interface INTERFACE
         c_std_99
 )
 
-target_compile_options(base_interface INTERFACE ${DEBUG_FLAGS} -Wall -Werror -fno-strict-aliasing -fvisibility=hidden -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function)
+target_compile_options(base_interface INTERFACE $<$<COMPILE_LANGUAGE:C>:${DEBUG_FLAGS} -Wall -Werror -fno-strict-aliasing -fvisibility=hidden -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function>)

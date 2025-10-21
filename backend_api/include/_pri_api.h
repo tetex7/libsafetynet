@@ -48,6 +48,7 @@ void sn_set_last_error(const sn_error_codes_e err);
 extern linked_list_c mem_list;
 extern plat_mutex_c alloc_mutex;
 extern alloc_manager_m memory_manager;
+extern SN_FLAG doFree;
 
 /*
  * This thing is horrid, but we keep it around because it is simple

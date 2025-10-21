@@ -33,6 +33,11 @@ SN_PUB_API_OPEN void* sn_malloc(size_t size)
         sn_error(SN_ERR_BAD_SIZE, NULL);
     }
 
+    if (!memman_canAllocateBasedOnLimitAndSize(memory_manager, size))
+    {
+        sn_error(SN_ERR_ALLOC_LIMIT_HIT, NULL);
+    }
+
     void* pr = plat_malloc(size);
 
     if (!pr)
@@ -79,9 +84,14 @@ SN_PUB_API_OPEN void sn_free(void* const ptr)
 
 SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size)
 {
-    if (!size)
+    if (!size | !num)
     {
         sn_error(SN_ERR_BAD_SIZE, NULL);
+    }
+
+    if (!memman_canAllocateBasedOnLimitAndSize(memory_manager, (size * num)))
+    {
+        sn_error(SN_ERR_ALLOC_LIMIT_HIT, NULL);
     }
 
     void* pr = plat_calloc(num, size);
@@ -114,6 +124,11 @@ SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
         sn_error(SN_ERR_BAD_SIZE, NULL);
     }
 
+    /*if (!memman_canAllocateBasedOnLimitAndSize(memory_manager, entry->size - new_size))
+    {
+        sn_error(SN_ERR_ALLOC_LIMIT_HIT, NULL);
+    }*/
+
     void* new_ptr = plat_realloc(ptr, new_size);
 
     if (!new_ptr)
@@ -135,4 +150,11 @@ SN_PUB_API_OPEN void* sn_malloc_pre_initialized(size_t size, uint8_t initial_byt
 
     memset(ptr, initial_byte_value, size);
     return ptr;
+}
+
+SN_PUB_API_OPEN void sn_do_auto_free_at_exit(SN_FLAG val)
+{
+    plat_mutex_lock(alloc_mutex);
+    doFree = val;
+    plat_mutex_unlock(alloc_mutex);
 }

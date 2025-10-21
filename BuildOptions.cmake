@@ -71,5 +71,14 @@ option(SN_CONFIG_ENABLE_MUTEX "Use thread safety mechanisms" ON)
 string(TIMESTAMP SN_CONFIG_GENERATION_DATE "%m-%d-%Y(%H:%M:%S)")
 string(TIMESTAMP SN_CONFIG_GENERATION_YEAR "%Y")
 
+
+function(set_target_output target_name out_path)
+    set_target_properties(${target_name} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${out_path}"
+            LIBRARY_OUTPUT_DIRECTORY "${out_path}"
+            ARCHIVE_OUTPUT_DIRECTORY "${out_path}"
+    )
+endfunction()
+
 execute_process(COMMAND git rev-parse --short HEAD OUTPUT_VARIABLE GIT_COMMIT_HASH OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND git rev-parse --abbrev-ref HEAD OUTPUT_VARIABLE GIT_BRANCH_NAME OUTPUT_STRIP_TRAILING_WHITESPACE)

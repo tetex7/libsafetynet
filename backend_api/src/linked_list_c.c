@@ -147,6 +147,19 @@ void linked_list_entry_setNextEntry(linked_list_entry_c self, linked_list_entry_
     plat_mutex_unlock(self->mutex);
 }
 
+uint8_t linked_list_entry_pri_getWeight(linked_list_entry_c self)
+{
+    return self->_weight;
+}
+
+void linked_list_entry_pri_setWeight(linked_list_entry_c self, uint8_t weight)
+{
+    if (self == NULL) return;
+    plat_mutex_lock(self->mutex);
+    self->_weight = weight;
+    plat_mutex_unlock(self->mutex);
+}
+
 void linked_list_entry_destroy(linked_list_entry_c self)
 {
     if (self == NULL) return;
@@ -161,17 +174,16 @@ static SN_BOOL linked_list_entry_pri_isHead(linked_list_entry_c self)
 
 static void linked_list_entry_pri_reweave(linked_list_entry_c entry)
 {
+    if (!entry) return;
+
     if (entry->next)
-    {
         entry->next->previous = entry->previous;
-        entry->next = NULL;
-    }
 
     if (entry->previous)
-    {
         entry->previous->next = entry->next;
-        entry->previous = NULL;
-    }
+
+    entry->next = NULL;
+    entry->previous = NULL;
 }
 
 static void linked_list_entry_pri_weight_increase(linked_list_entry_c self)
@@ -246,11 +258,12 @@ void linked_list_push(linked_list_c self, void* data, size_t size, uint64_t tid)
 
     //If pushing to a blank list
 
-    if (self->firstEntry->isHead == SN_TRUE)
+    if (!self->firstEntry || self->firstEntry->isHead == SN_TRUE)
     {
         self->head->next = new_enty;
         self->firstEntry = new_enty;
         self->lastEntry = new_enty;
+        new_enty->next = NULL;
         self->len++;
         return;
     }
@@ -288,6 +301,7 @@ size_t linked_list_getSize(linked_list_c self)
 linked_list_entry_c linked_list_forEach(linked_list_c self, linked_list_for_each_worker_f worker, void* generic_arg)
 {
     if (self == NULL || worker == NULL) return NULL;
+    if (self->len == 0) return NULL;
     linked_list_entry_c entry = self->firstEntry;
     plat_mutex_lock(self->mutex);
     if (linked_list_entry_pri_isHead(entry))

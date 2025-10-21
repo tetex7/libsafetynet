@@ -34,7 +34,7 @@ void sn_reset_last_error()
     error_code = SN_ERR_OK;
 }
 
-static const char* const human_readable_messages[] = {
+static const char* const human_readable_messages[191] = {
     [SN_ERR_OK] = "everything is AOK",
     [SN_ERR_NULL_PTR] = "Null-Pointer provided to function",
     [SN_ERR_NO_SIZE] = "no size Metadata Provided or available",
@@ -53,7 +53,7 @@ static const char* const human_readable_messages[] = {
     [SN_INFO_PLACEHOLDER] = "Undefined error Error code implementation coming soon"
 };
 
-static const char* const err_name_tap[] = {
+static const char* const err_name_tap[191] = {
     [SN_ERR_OK] = "SN_ERR_OK",
     [SN_ERR_NULL_PTR] = "SN_ERR_NULL_PTR",
     [SN_ERR_NO_SIZE] = "SN_ERR_NO_SIZE",
@@ -72,10 +72,11 @@ static const char* const err_name_tap[] = {
     [SN_INFO_PLACEHOLDER] = "SN_INFO_PLACEHOLDER"
 };
 
-SN_PUB_API_OPEN const char* const sn_get_error_msg(sn_error_codes_e err)
+SN_PUB_API_OPEN const char* sn_get_error_msg(sn_error_codes_e err)
 {
     const size_t tab_size = (sizeof(human_readable_messages) / sizeof(*human_readable_messages));
 
+    // ReSharper disable once CppDFAConstantConditions
     if ((err < SN_ERR_OK) || err >= tab_size)
     {
         goto E1;

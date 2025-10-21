@@ -65,6 +65,9 @@ void linked_list_entry_setBlockId(linked_list_entry_c self, uint16_t new_id);
 linked_list_entry_c linked_list_entry_getNextEntry(const linked_list_entry_c self);
 void linked_list_entry_setNextEntry(linked_list_entry_c self, linked_list_entry_c new_next);
 
+uint8_t linked_list_entry_pri_getWeight(linked_list_entry_c self);
+void linked_list_entry_pri_setWeight(linked_list_entry_c self, uint8_t weight);
+
 void linked_list_entry_destroy(linked_list_entry_c self);
 
 

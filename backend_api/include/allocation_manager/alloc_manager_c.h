@@ -88,6 +88,8 @@ void memman_setGlobalMemoryUsage(alloc_manager_m self, size_t global_memory_usag
 
 size_t memman_getAllocLimit(alloc_manager_m self);
 void memman_setAllocLimit(alloc_manager_m self, size_t alloc_limit);
+
 SN_BOOL memman_canAllocateBasedOnLimit(alloc_manager_m self);
+SN_BOOL memman_canAllocateBasedOnLimitAndSize(alloc_manager_m self, size_t size);
 
 #endif //ALLOC_MANAGER_C_H

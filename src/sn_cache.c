@@ -22,7 +22,7 @@
 #include "libsafetynet.h"
 #include "_pri_api.h"
 
-SN_PUB_API_OPEN const SN_FLAG sn_request_to_fast_cache(const void* ptr)
+SN_PUB_API_OPEN SN_FLAG sn_request_to_fast_cache(const void* ptr)
 {
     if (!ptr)
     {

@@ -21,6 +21,7 @@ add_library(backend_api STATIC ${BACKEND_C_SOURCES})
 target_link_libraries(backend_api PUBLIC base_interface)
 target_include_directories(backend_api PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_include_directories(backend_api PRIVATE "${CMAKE_SOURCE_DIR}/include")
+target_link_libraries(backend_api PRIVATE defs_interface)
 
 set_target_properties(backend_api PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${BIN_DIR}
