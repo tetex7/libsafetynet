@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "allocation_manager/alloc_manager_c.h"
-#include "plat_allocators.h"
+#include "../../include/platform_independent/plat_allocators.h"
 #include "sn_crash.h"
 
 alloc_manager_m memman_new(plat_mutex_c mutex_ref)
@@ -60,12 +60,14 @@ static linked_list_entry_c memman_CacheAlgorithmWorker(linked_list_c self, linke
             if (self_alloc_manager->cache_list[i].value == NULL)
             {
                 self_alloc_manager->cache_list[i].value = ctx;
+                self_alloc_manager->cache_list[i].value->cached = 1;
                 self_alloc_manager->cache_list[i].key = ctx->data;
                 return NULL;
             }
             if (self_alloc_manager->cache_list[i].value->_weight < 10)
             {
                 self_alloc_manager->cache_list[i].value = ctx;
+                self_alloc_manager->cache_list[i].value->cached = 1;
                 self_alloc_manager->cache_list[i].key = ctx->data;
                 return NULL;
             }
@@ -131,6 +133,7 @@ void memman_cacheInvalidate(alloc_manager_m self, void* key)
         if (!self->cache_list[i].key) continue;
         if (self->cache_list[i].key == key)
         {
+            self->cache_list[i].value->cached = 0;
             self->available_cache_slots++;
             memset(&self->cache_list[i], 0, sizeof(cache_pair_t));
         }
@@ -145,6 +148,7 @@ void memman_cacheClear(alloc_manager_m self)
     for (size_t i = 0; i < MEMMAN_MAX_CACHE_SLOTS; i++)
     {
         if (!self->cache_list[i].key) continue;
+        self->cache_list[i].value->cached = 1;
         self->available_cache_slots++;
         memset(&self->cache_list[i], 0, sizeof(cache_pair_t));
     }
@@ -165,6 +169,7 @@ SN_FLAG memman_tryCachePut(alloc_manager_m self, linked_list_entry_c entry)
             self->available_cache_slots--;
             self->cache_list[i].key = entry->data;
             self->cache_list[i].value = entry;
+            self->cache_list[i].value->cached = 1;
             plat_mutex_unlock(self->mutex_ref);
             return 1;
         }
@@ -201,6 +206,15 @@ SN_BOOL memman_canAllocateBasedOnLimit(alloc_manager_m self)
     if (!self) return SN_FALSE;
     if (memman_getAllocLimit(self) == MEMMAN_NO_ALLOC_LIMIT) return SN_TRUE;
     if (memman_getAllocLimit(self) <= memman_getGlobalMemoryUsage(self))
+        return SN_FALSE;
+    return SN_TRUE;
+}
+
+SN_BOOL memman_canAllocateBasedOnLimitAndSize(alloc_manager_m self, size_t size)
+{
+    if (!self) return SN_FALSE;
+    if (memman_getAllocLimit(self) == MEMMAN_NO_ALLOC_LIMIT) return SN_TRUE;
+    if (memman_getAllocLimit(self) <= memman_getGlobalMemoryUsage(self) + size)
         return SN_FALSE;
     return SN_TRUE;
 }

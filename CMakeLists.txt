@@ -21,8 +21,6 @@ include(BuildOptions.cmake)
 
 project(safetynet VERSION ${SN_CONFIG_STR_VERSION} LANGUAGES C)
 
-#enable_testing()
-
 set(CMAKE_SKIP_INSTALL_RULES ON)
 
 # Set output directory
@@ -31,8 +29,6 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 
 # Enable position-independent code (like -fPIC)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-
 
 # Compiler flags
 if (SN_CONFIG_DEBUG)
@@ -46,6 +42,12 @@ if(SN_CONFIG_STR_VERSION)
 else()
     set(VER_FLAG_S "dev")
 endif()
+
+
+add_library(defs_interface INTERFACE)
+target_compile_definitions(defs_interface INTERFACE BUILDING_SAFETYNET)
+target_compile_definitions(defs_interface INTERFACE __SN_WIP_CALLS__)
+target_compile_definitions(defs_interface INTERFACE __SN_DEBUG_CALLS__)
 
 include(base_interface.cmake)
 add_subdirectory(backend_api)
@@ -67,14 +69,18 @@ target_include_directories(
         ${CMAKE_SOURCE_DIR}/src
 )
 target_sources(safetynet_base INTERFACE ${C_SOURCES})
+target_link_libraries(safetynet_base INTERFACE defs_interface)
 target_link_libraries(safetynet_base INTERFACE backend_api)
-target_compile_definitions(safetynet_base INTERFACE BUILDING_SAFETYNET)
-target_compile_definitions(safetynet_base INTERFACE __SN_WIP_CALLS__)
 
 if (NOT WIN32 AND NOT SN_CONFIG_STATIC_ONLY)
 # Shared library
 add_library(safetynet_shared SHARED)
-target_link_libraries(safetynet_shared PUBLIC safetynet_base)
+target_link_libraries(safetynet_shared PRIVATE safetynet_base)
+target_include_directories(
+        safetynet_shared
+        PUBLIC
+        ${CMAKE_SOURCE_DIR}/include
+)
 set_target_properties(safetynet_shared PROPERTIES
     OUTPUT_NAME "safetynet"
     LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR}
@@ -87,6 +93,8 @@ if (WIN32)
     )
 endif ()
 
+set(safetynet_out_lib safetynet_shared)
+
 endif ()
 
 if (SN_CONFIG_STATIC_ONLY OR WIN32)
@@ -97,6 +105,14 @@ set_target_properties(safetynet_static PROPERTIES
     OUTPUT_NAME "safetynet"
     ARCHIVE_OUTPUT_DIRECTORY ${BIN_DIR}
 )
+
+target_include_directories(
+        safetynet_static
+        PUBLIC
+        ${CMAKE_SOURCE_DIR}/include
+)
+
+set(safetynet_out_lib safetynet_static)
 
 if (WIN32)
     set_target_properties(safetynet_shared PROPERTIES
@@ -150,4 +166,12 @@ if (NOT WIN32)
 #    DEPENDS safetynet_shared
 #    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 #)
+endif ()
+if (NOT SN_CONFIG_NO_TESTING_SUITE)
+    message(STATUS "Loading Gtesting Component")
+    find_package(GTest REQUIRED)
+    enable_testing()
+    add_subdirectory(Testing)
+else ()
+    message(STATUS "gTesting suite disabled")
 endif ()

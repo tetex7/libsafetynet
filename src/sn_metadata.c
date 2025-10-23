@@ -93,6 +93,12 @@ SN_PUB_API_OPEN SN_FLAG sn_is_tracked_block(const void* const ptr)
         sn_error(SN_ERR_NULL_PTR, 0);
     }
 
+    SN_BOOL not_has_entry = (memman_TryCacheHit(memory_manager, (void*)ptr) == MEMMAN_CACHE_MISS);
+    if (not_has_entry)
+    {
+        return not_has_entry;
+    }
+
     return linked_list_hasPtr(mem_list, (void*)ptr);
 }
 

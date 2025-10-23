@@ -16,16 +16,11 @@
  */
 
 //
-// Created by tete on 06/15/2025.
+// Created by tete on 10/22/2025.
 //
+#include "sn_crash.h"
 
-#ifndef SN_CRASH_H
-#define SN_CRASH_H
-
-#include "libsafetynet.h"
-
-SN_NO_RETURN void __sn__pri__crash__(sn_error_codes_e err, uint32_t line, const char* file, const char* func_call_name);
-
-#define sn_crash(err) __sn__pri__crash__(err, __LINE__, __FILE_NAME__, __func__)
-
-#endif //SN_CRASH_H
+SN_PUB_API_OPEN SN_NO_RETURN void sn_debug_crash()
+{
+    sn_crash(SN_ERR_DEBUG);
+}

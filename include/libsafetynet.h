@@ -50,6 +50,10 @@
 #ifndef SN_FORCE_INLINE
 #   define SN_FORCE_INLINE __attribute__((always_inline)) inline
 #endif
+#ifndef SN_NO_RETURN
+#   define SN_NO_RETURN __attribute__ ((__noreturn__))
+#endif
+
 /*#ifndef SN_VERY_VOLATILE
 #   define SN_VERY_VOLATILE __attribute__((optimize("O0")))
 #endif
@@ -100,7 +104,7 @@
 #endif
 
 
-
+SN_CPP_NAMESPACE_START
 #if (defined(SN_NO_STD_BOOL) || !SN_FANCY_HAS_BOOL_CHECK) && !defined(SN_CPP_COMPAT_MODE)
 typedef uint8_t SN_BOOL;
 typedef uint8_t SN_FLAG;
@@ -109,7 +113,7 @@ typedef uint8_t SN_FLAG;
 typedef bool SN_BOOL;
 typedef bool SN_FLAG;
 #endif
-
+SN_CPP_NAMESPACE_END
 #ifndef SN_TRUE
 #   define SN_TRUE 1
 #   define SN_FALSE 0
@@ -130,13 +134,14 @@ typedef enum
     SN_ERR_NO_ADDER_FOUND = 30,          /**< No adder found in system */
     SN_ERR_NO_TID_FOUND = 40,            /**< No tid found in system */
     SN_ERR_BAD_BLOCK_ID = 50,            /**< block id is not above 20 */
-    SN_ERR_FILE_PRE_EXIST = 60,     /**< file path provided already exists */
+    SN_ERR_FILE_PRE_EXIST = 60,          /**< file path provided already exists */
     SN_ERR_FILE_IO = 70,                 /**< Libc file IO error */
     SN_ERR_FILE_NOT_EXIST = 110,         /**< file Does not exist */
     SN_ERR_ALLOC_LIMIT_HIT = 120,        /**< User defined alloc limit has been hit */
     SN_WARN_DUB_FREE = 180,              /**< Double free detected (warning) */
     SN_ERR_SYS_FAIL = 185,               /**< generic system failure (Start praying) */
-    SN_ERR_CATASTROPHIC = 189,           /**< Catastrophic system error (like I said before pick a god and start praying) */
+    SN_ERR_CATASTROPHIC = 187,           /**< Catastrophic system error (like I said before pick a god and start praying) */
+    SN_ERR_DEBUG = 180,                  /**< A debug error used in debug crashes */
     SN_INFO_PLACEHOLDER = 190,           /**< This is a generic placeholder For Yet undefined errors */
 } sn_error_codes_e;
 
@@ -252,8 +257,13 @@ SN_PUB_API_OPEN uint64_t sn_calculate_checksum(void* block);
  * @param err The error code
  * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
  */
-SN_PUB_API_OPEN const char* const sn_get_error_msg(sn_error_codes_e err);
+SN_PUB_API_OPEN const char* sn_get_error_msg(sn_error_codes_e err);
 
+/**
+ * @brief get you the human-readable version the error code
+ * @param err error codes
+ * @return The human-readable version the error code
+ */
 SN_PUB_API_OPEN const char* sn_get_error_name(const sn_error_codes_e err);
 
 /**
@@ -274,14 +284,12 @@ SN_PUB_API_OPEN void sn_reset_last_error();
  */
 SN_PUB_API_OPEN void sn_do_auto_free_at_exit(SN_FLAG val);
 
-
-//Fast cache has not been Re implemented for this rewrite
 /**
  * @brief Adds the metadata associated with this block of memory to the fast cache
  * @param ptr A pointer to a Tracked block memory
  * @return Returns 1 if successfully added to fast cash 0 if it did not
  */
-SN_PUB_API_OPEN const SN_FLAG sn_request_to_fast_cache(const void* ptr);
+SN_PUB_API_OPEN SN_FLAG sn_request_to_fast_cache(const void* ptr);
 
 /**
  * @brief Disables automatic fast caching of tracking metadata But the fast cash is still Queryed
@@ -292,7 +300,6 @@ SN_PUB_API_OPEN void sn_lock_fast_cache();
  * @brief enables automatic fast caching of tracking metadata But the fast cash is still Queryed
  */
 SN_PUB_API_OPEN void sn_unlock_fast_cache();
-
 
 /**
  * @brief Disables/enables the fast caching system entirely
@@ -381,6 +388,16 @@ static SN_FORCE_INLINE size_t sn_query_size_in_block_size(void* ptr, size_t bloc
 }
 
 #endif
+
+#ifdef __SN_DEBUG_CALLS__
+    /**
+     * @brief Intentionally Crashes the program using the internal crash handler
+     * This is to help with dumping state for the internal link list
+     * @note A library crash is or should be extraordinarily rare
+     */
+    SN_PUB_API_OPEN SN_NO_RETURN void sn_debug_crash();
+#endif
+
 
 SN_CPP_NAMESPACE_END
 SN_CPP_COMPAT_END

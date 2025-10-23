@@ -46,13 +46,6 @@ plat_mutex_c alloc_mutex = NULL;
 alloc_manager_m memory_manager = NULL;
 SN_FLAG doFree = 1;
 
-SN_PUB_API_OPEN void sn_do_auto_free_at_exit(SN_FLAG val)
-{
-    plat_mutex_lock(alloc_mutex);
-    doFree = val;
-    plat_mutex_unlock(alloc_mutex);
-}
-
 static linked_list_entry_c freeOnListFree(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg)
 {
     if (!doFree) return NULL;

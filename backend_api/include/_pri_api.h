@@ -39,7 +39,7 @@
 #ifndef _PRI_API_H
 #define _PRI_API_H
 #include "linked_list_c.h"
-#include "plat_threading.h"
+#include "platform_independent/plat_threading.h"
 #include "allocation_manager/alloc_manager_c.h"
 
 SN_PUB_API_OPEN
@@ -48,15 +48,14 @@ void sn_set_last_error(const sn_error_codes_e err);
 extern linked_list_c mem_list;
 extern plat_mutex_c alloc_mutex;
 extern alloc_manager_m memory_manager;
+extern SN_FLAG doFree;
 
 /*
  * This thing is horrid, but we keep it around because it is simple
  * And of course it is only for back end use
  */
 #define sn_error(errorCode, ...) \
-{ \
     sn_set_last_error(errorCode); \
-    return __VA_ARGS__; \
-}
+    return __VA_ARGS__
 
 #endif //_PRI_API_H

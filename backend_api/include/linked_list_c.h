@@ -15,6 +15,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/*
+ * Copyright (C) 2025  Tetex7
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 //
 // Created by tete on 06/15/2025.
 //
@@ -28,7 +45,7 @@
 #define LINKED_LIST_C_H
 #include <stdint.h>
 #include <stddef.h>
-#include <plat_threading.h>
+#include "platform_independent/plat_threading.h"
 #include "libsafetynet.h"
 
 typedef struct linked_list_entry_s
@@ -39,7 +56,8 @@ typedef struct linked_list_entry_s
     sn_tid_t tid;         // The tid of the thread that allocated this chunk
     SN_FLAG cached;       // The denotes if it's been cached by the memory manager
     uint16_t block_id;    // An optional block id
-    SN_BOOL isHead;       // Do not create a getter nor a setter for this treat this as private
+    // Do not create a getter nor a setter for this treat this as private
+    SN_BOOL isHead;       // To be determined
     uint8_t _weight;      // For used for caching(private)
     plat_mutex_c mutex;   // A mutex inherited from the list container
     struct linked_list_entry_s* next;
@@ -64,6 +82,9 @@ void linked_list_entry_setBlockId(linked_list_entry_c self, uint16_t new_id);
 
 linked_list_entry_c linked_list_entry_getNextEntry(const linked_list_entry_c self);
 void linked_list_entry_setNextEntry(linked_list_entry_c self, linked_list_entry_c new_next);
+
+uint8_t linked_list_entry_pri_getWeight(linked_list_entry_c self);
+void linked_list_entry_pri_setWeight(linked_list_entry_c self, uint8_t weight);
 
 void linked_list_entry_destroy(linked_list_entry_c self);
 
@@ -104,5 +125,7 @@ size_t linked_list_getSize(linked_list_c self);
 linked_list_entry_c linked_list_forEach(linked_list_c self, linked_list_for_each_worker_f worker, void* generic_arg);
 
 void linked_list_removeEntryByPtr(linked_list_c self, void* key);
+
+SN_BOOL linked_list_removeEntry(linked_list_c self, linked_list_entry_c entry_ref);
 
 #endif

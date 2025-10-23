@@ -1,0 +1,30 @@
+name: Runs the gtest suite
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: [ "*" ]  # triggers on PRs targeting any branch
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "Testing"
+  cancel-in-progress: false
+
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - run: sudo systemctl start docker
+      - run: ./docker_dev_setup.sh
+      - run: ./docker_dev_setup.sh mk
+      - run: ./docker_dev_setup.sh gtest -V

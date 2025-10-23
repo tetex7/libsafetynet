@@ -28,7 +28,7 @@
 
 #include "linked_list_c.h"
 
-#include "plat_threading.h"
+#include "platform_independent/plat_threading.h"
 
 #include "_pri_api.h"
 
@@ -36,9 +36,13 @@
 
 static int print_node(const linked_list_entry_c node)
 {
-    if (!node) sn_crash_print("NODE IS NULL");
-
     int pcc = 0;
+    if (!node)
+    {
+        pcc += sn_crash_print("NODE IS NULL");
+        return pcc;
+    }
+    pcc += sn_crash_print("node@%p(head=%i)\n", node, node->isHead);
     pcc += sn_crash_print("previous: %p\n", node->previous);
     pcc += sn_crash_print("data: %p\n", node->data);
 #ifdef __unix
@@ -48,12 +52,63 @@ static int print_node(const linked_list_entry_c node)
     pcc += sn_crash_print("size: %llu\n", node->size);
     pcc += sn_crash_print("tid: %llu\n", node->tid);
 #endif
-    pcc += sn_crash_print("isHead: %i", node->isHead);
+    pcc += sn_crash_print("isHead: %i\n", node->isHead);
     pcc += sn_crash_print("next: %p\n", node->next);
+    pcc += sn_crash_print("weight : %x\n", node->_weight);
     return pcc;
 }
 
-SN_NO_RET void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t line, const char* file, const char* func_call_name)
+static linked_list_entry_c list_nodeas(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg)
+{
+    if (!ctx)
+    {
+#ifdef __unix
+        sn_crash_print("node: %lu is NULL@%p\n", index, ctx);
+#elif defined(_WIN32)
+        sn_crash_print("node: %lluis NULL@%p\n", index, ctx);
+#endif
+        return LIST_FOR_EACH_LOOP_BRAKE;
+    }
+#ifdef __unix
+    sn_crash_print("node: %lu\n", index);
+#elif defined(_WIN32)
+    sn_crash_print("node: %llu\n", index);
+#endif
+    print_node(ctx);
+    sn_crash_print("\n");
+    return NULL;
+}
+
+//Yes this does do something unsafe,
+//but it is not working with those addresses just displaying
+#ifdef SN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE
+#if defined(__GNUC__)
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wframe-address"
+#elif defined(__clang__)
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wframe-address"
+#endif
+
+static void print_stack_trace()
+{
+#define print_trace_ent(x) sn_crash_print("Frame %d: %p\n", x, __builtin_return_address(x))
+    print_trace_ent(0);
+    print_trace_ent(1);
+    print_trace_ent(2);
+    print_trace_ent(3);
+    print_trace_ent(4);
+#undef print_trace_ent
+}
+#if defined(__GNUC__)
+#   pragma GCC diagnostic pop
+#elif defined(__clang__)
+#   pragma clang diagnostic pop
+#endif
+#endif
+
+
+SN_NO_RETURN void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t line, const char* file, const char* func_call_name)
 {
     sn_crash_print("Crash in libsafetynet/%s:%i(%s) :-(\n\n", file, line, func_call_name);
     sn_crash_print("ERROR: %i\n", err);
@@ -64,13 +119,23 @@ SN_NO_RET void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t lin
 #elif defined(_WIN32)
     sn_crash_print("crash on tid %llu\n\n", plat_getTid());
 #endif
+#ifdef SN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE
+    sn_crash_print("\nStock trace:\n");
+    print_stack_trace();
+    sn_crash_print("\n");
+#endif
+
     if (err == SN_ERR_CATASTROPHIC) abort();
     if (err == SN_ERR_SYS_FAIL) goto EX1;
 
     sn_crash_print("Memory tracking list state:\n");
     sn_crash_print("\nlast_access_node:\n");
     print_node(mem_list->lastAccess);
+#ifdef SN_CONFIG_ENABLE_DUMP_LIST_CRASH
     sn_crash_print("\n\n");
+    sn_crash_print("nodes:\n");
+    linked_list_forEach(mem_list, &list_nodeas, NULL);
+#endif
 
 EX1:
     exit(err);

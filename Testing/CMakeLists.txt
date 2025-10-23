@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2024  Tetex7
+# Copyright (C) 2025  tetex7
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,11 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-include_guard(GLOBAL)
+enable_language(CXX)
 
-add_library(base_interface INTERFACE)
-target_compile_features(base_interface INTERFACE
-        c_std_99
+add_library(sn_standard_test_base INTERFACE)
+target_link_libraries(sn_standard_test_base INTERFACE base_interface)
+target_compile_options(sn_standard_test_base INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-O0 -g -Wall -Wextra -Werror -Wpedantic -fno-strict-aliasing>)
+target_compile_features(sn_standard_test_base INTERFACE
+        cxx_std_23
 )
 
-target_compile_options(base_interface INTERFACE $<$<COMPILE_LANGUAGE:C>:${DEBUG_FLAGS} -Wall -Werror -fno-strict-aliasing -fvisibility=hidden -Wno-unused-parameter -Wno-unused-variable -Wno-multistatement-macros -Wno-unused-function>)
+add_subdirectory(frontend_api_tests)
