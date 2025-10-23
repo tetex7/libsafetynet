@@ -49,6 +49,7 @@ SN_FLAG doFree = 1;
 static linked_list_entry_c freeOnListFree(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg)
 {
     if (!doFree) return NULL;
+    //if (!ctx) sn_debug_crash();
 #ifdef SN_CONFIG_SANITIZE_MEMORY_ON_FREE
     memset(ctx->data, 0, ctx->size);
 #endif
