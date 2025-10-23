@@ -69,7 +69,7 @@ TEST(SafetynetAllocatorTests, AllocFreeCycling)
         EXPECT_EQ(sn_get_last_error(), SN_ERR_OK);
         sn_reset_last_error();
     }
-    sn_debug_crash();
+
     for (std::size_t i = 0; i < 10; i++)
     {
         sn_free(buff[i]);
