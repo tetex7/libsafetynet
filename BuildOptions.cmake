@@ -66,6 +66,8 @@ set(SN_CONFIG_VERSION_MINOR 0 CACHE STRING "Set the minor version being compiled
 set(SN_CONFIG_VERSION_PATCH 0 CACHE STRING "Set the patch version being compiled")
 
 option(SN_CONFIG_ENABLE_MUTEX "Use thread safety mechanisms" ON)
+option(SN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE "On library crash it will show you a primitive stack trace" ON)
+option(SN_CONFIG_ENABLE_DUMP_LIST_CRASH "On library crash it will All the linked list nodes which can get big" ON)
 
 
 string(TIMESTAMP SN_CONFIG_GENERATION_DATE "%m-%d-%Y(%H:%M:%S)")

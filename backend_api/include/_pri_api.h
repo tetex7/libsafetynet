@@ -39,7 +39,7 @@
 #ifndef _PRI_API_H
 #define _PRI_API_H
 #include "linked_list_c.h"
-#include "plat_threading.h"
+#include "platform_independent/plat_threading.h"
 #include "allocation_manager/alloc_manager_c.h"
 
 SN_PUB_API_OPEN
@@ -55,9 +55,7 @@ extern SN_FLAG doFree;
  * And of course it is only for back end use
  */
 #define sn_error(errorCode, ...) \
-{ \
     sn_set_last_error(errorCode); \
-    return __VA_ARGS__; \
-}
+    return __VA_ARGS__
 
 #endif //_PRI_API_H

@@ -23,12 +23,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "plat_allocators.h"
+#include "../backend_api/include/platform_independent/plat_allocators.h"
 
 
 SN_PUB_API_OPEN void* sn_malloc(size_t size)
 {
-    if (!size)
+    if (size == 0)
     {
         sn_error(SN_ERR_BAD_SIZE, NULL);
     }
@@ -69,7 +69,9 @@ SN_PUB_API_OPEN void sn_free(void* const ptr)
     {
         entry = linked_list_getByPtr(mem_list, ptr);
         if (!entry)
+        {
             sn_error(SN_ERR_NO_ADDER_FOUND);
+        }
     }
 
 #ifdef SN_CONFIG_SANITIZE_MEMORY_ON_FREE

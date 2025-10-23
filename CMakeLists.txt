@@ -47,6 +47,7 @@ endif()
 add_library(defs_interface INTERFACE)
 target_compile_definitions(defs_interface INTERFACE BUILDING_SAFETYNET)
 target_compile_definitions(defs_interface INTERFACE __SN_WIP_CALLS__)
+target_compile_definitions(defs_interface INTERFACE __SN_DEBUG_CALLS__)
 
 include(base_interface.cmake)
 add_subdirectory(backend_api)

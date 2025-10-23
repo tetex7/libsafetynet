@@ -50,6 +50,10 @@
 #ifndef SN_FORCE_INLINE
 #   define SN_FORCE_INLINE __attribute__((always_inline)) inline
 #endif
+#ifndef SN_NO_RETURN
+#   define SN_NO_RETURN __attribute__ ((__noreturn__))
+#endif
+
 /*#ifndef SN_VERY_VOLATILE
 #   define SN_VERY_VOLATILE __attribute__((optimize("O0")))
 #endif
@@ -136,7 +140,8 @@ typedef enum
     SN_ERR_ALLOC_LIMIT_HIT = 120,        /**< User defined alloc limit has been hit */
     SN_WARN_DUB_FREE = 180,              /**< Double free detected (warning) */
     SN_ERR_SYS_FAIL = 185,               /**< generic system failure (Start praying) */
-    SN_ERR_CATASTROPHIC = 189,           /**< Catastrophic system error (like I said before pick a god and start praying) */
+    SN_ERR_CATASTROPHIC = 187,           /**< Catastrophic system error (like I said before pick a god and start praying) */
+    SN_ERR_DEBUG = 180,                  /**< A debug error used in debug crashes */
     SN_INFO_PLACEHOLDER = 190,           /**< This is a generic placeholder For Yet undefined errors */
 } sn_error_codes_e;
 
@@ -383,6 +388,16 @@ static SN_FORCE_INLINE size_t sn_query_size_in_block_size(void* ptr, size_t bloc
 }
 
 #endif
+
+#ifdef __SN_DEBUG_CALLS__
+    /**
+     * @brief Intentionally Crashes the program using the internal crash handler
+     * This is to help with dumping state for the internal link list
+     * @note A library crash is or should be extraordinarily rare
+     */
+    SN_PUB_API_OPEN SN_NO_RETURN void sn_debug_crash();
+#endif
+
 
 SN_CPP_NAMESPACE_END
 SN_CPP_COMPAT_END

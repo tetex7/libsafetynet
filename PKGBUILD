@@ -41,7 +41,13 @@ prepare() {
 cd ..
 echo $PWD
 ./dev_setup.sh clean
-./dev_setup.sh -DSN_CONFIG_STR_VERSION=${pkgver}
+./dev_setup.sh \
+    -DSN_CONFIG_STR_VERSION=${pkgver} \
+    -DSN_CONFIG_ENABLE_DUMP_LIST_CRASH=OFF \
+    -DSN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE=OFF \
+    -DSN_CONFIG_SANITIZE_MEMORY_ON_FREE=ON \
+    -DSN_CONFIG_ENABLE_MUTEX=ON \
+    -DSN_NO_STD_BOOL=ON
 }
 
 build () {

@@ -19,8 +19,9 @@
 // Created by tete on 06/15/2025.
 //
 #include "libsafetynet.h"
+#include "_pri_api.h"
 
-sn_error_codes_e error_code = SN_ERR_OK;
+static sn_error_codes_e error_code = SN_ERR_OK;
 
 SN_PUB_API_OPEN
 sn_error_codes_e sn_get_last_error()
@@ -50,6 +51,7 @@ static const char* const human_readable_messages[191] = {
     [SN_WARN_DUB_FREE] = "Possible double free, but not found in registry",
     [SN_ERR_SYS_FAIL] = "generic system failure",
     [SN_ERR_CATASTROPHIC] = "Catastrophic system error",
+    [SN_ERR_DEBUG] = "A debug error used in debug crashes",
     [SN_INFO_PLACEHOLDER] = "Undefined error Error code implementation coming soon"
 };
 
@@ -69,6 +71,7 @@ static const char* const err_name_tap[191] = {
     [SN_WARN_DUB_FREE] = "SN_WARN_DUB_FREE",
     [SN_ERR_SYS_FAIL] = "SN_ERR_SYS_FAIL",
     [SN_ERR_CATASTROPHIC] = "SN_ERR_CATASTROPHIC",
+    [SN_ERR_DEBUG] = "SN_ERR_DEBUG",
     [SN_INFO_PLACEHOLDER] = "SN_INFO_PLACEHOLDER"
 };
 
@@ -97,9 +100,10 @@ E1:
 SN_PUB_API_OPEN
 const char* sn_get_error_name(const sn_error_codes_e err)
 {
-    const size_t tab_size = SN_INFO_PLACEHOLDER;
+    const size_t tab_size = (sizeof(err_name_tap) / sizeof(*err_name_tap));
 
-    if ((err < SN_ERR_OK) || (err >= tab_size))
+    // ReSharper disable once CppDFAConstantConditions
+    if ((err < SN_ERR_OK) || err >= tab_size)
     {
         goto E1;
     }
@@ -119,6 +123,8 @@ E1:
 SN_PUB_API_OPEN
 void sn_set_last_error(const sn_error_codes_e err)
 {
+    plat_mutex_lock(alloc_mutex);
     error_code = err;
+    plat_mutex_unlock(alloc_mutex);
 }
 

@@ -27,8 +27,8 @@
 #include "libsafetynet.h"
 #include "sn_crash.h"
 
-#include "plat_threading.h"
-#include "plat_allocators.h"
+#include "platform_independent/plat_threading.h"
+#include "platform_independent/plat_allocators.h"
 
 #pragma region "linked_list_entry_c code"
 
@@ -47,12 +47,13 @@ linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* da
     if (previous != NULL)
     {
         previous->next = self;
+        self->previous = previous;
     }
     else
     {
-        self->next = NULL;
         self->previous = NULL;
     }
+    self->next = NULL;
 
     self->data = data;
     self->size = size;
@@ -247,35 +248,25 @@ void linked_list_push(linked_list_c self, void* data, size_t size, uint64_t tid)
 {
     if (!self) return;
     if (self->firstEntry == NULL) sn_crash(SN_ERR_CATASTROPHIC);
-    linked_list_entry_c new_enty = linked_list_entry_new(NULL, data, size, tid);
+    plat_mutex_lock(self->mutex);
+    linked_list_entry_c new_entry = linked_list_entry_new(self->lastEntry, data, size, tid);
 
-    if (new_enty == NULL)
+    if (new_entry == NULL)
     {
         sn_crash(SN_ERR_CATASTROPHIC);
     }
 
-    new_enty->mutex = self->mutex;
+    new_entry->mutex = self->mutex;
 
-    //If pushing to a blank list
-
-    if (!self->firstEntry || self->firstEntry->isHead == SN_TRUE)
+    if (linked_list_entry_pri_isHead(self->firstEntry))
     {
-        self->head->next = new_enty;
-        self->firstEntry = new_enty;
-        self->lastEntry = new_enty;
-        new_enty->next = NULL;
-        self->len++;
-        return;
+        self->firstEntry = new_entry;
     }
 
-    linked_list_entry_c temp_first = self->firstEntry;
-    self->firstEntry = new_enty;
+    self->lastEntry = new_entry;
 
-    temp_first->previous = new_enty;
-    self->head->next = new_enty;
-
-    new_enty->next = temp_first;
     self->len++;
+    plat_mutex_unlock(self->mutex);
 }
 
 linked_list_entry_c linked_list_peek(linked_list_c self)
@@ -286,10 +277,20 @@ linked_list_entry_c linked_list_peek(linked_list_c self)
 void linked_list_pop(linked_list_c self)
 {
     plat_mutex_lock(self->mutex);
+    if (linked_list_entry_pri_isHead(self->lastEntry)) return;
+
     linked_list_entry_c temp = self->lastEntry;
-    self->lastEntry = self->lastEntry->previous;
+    self->lastEntry = temp->previous;
+
     linked_list_entry_destroy(temp);
+
+    if (linked_list_entry_pri_isHead(self->lastEntry)) //Just in case we popped so far back
+    {
+        self->firstEntry = self->lastEntry;
+    }
+
     self->len--;
+
     plat_mutex_unlock(self->mutex);
 }
 
@@ -363,6 +364,7 @@ SN_BOOL linked_list_hasId(linked_list_c self, uint16_t id)
 linked_list_entry_c linked_list_getByPtr(linked_list_c self, void* key)
 {
     if (!self || !key) return NULL;
+
     linked_list_entry_c temp = linked_list_forEach(self, &linked_list_searchForPointer, key);
     if (temp)
     {
@@ -434,23 +436,40 @@ void linked_list_removeEntryByPtr(linked_list_c self, void* key)
     plat_mutex_lock(self->mutex);
     linked_list_entry_c entry = linked_list_forEach(self, linked_list_searchForPointer, key);
 
-    if (entry)
-    {
-        if (self->firstEntry == entry && entry->next)
-        {
-            self->firstEntry = entry->next;
-        }
-        if (self->lastEntry == entry && entry->previous)
-        {
-            self->lastEntry = entry->previous;
-        }
-        linked_list_entry_pri_reweave(entry);
-        linked_list_entry_destroy(entry);
-        self->len--;
-    }
-    else sn_crash(SN_ERR_CATASTROPHIC);
+    linked_list_removeEntry(self, entry);
 
     plat_mutex_unlock(self->mutex);
+}
+
+SN_BOOL linked_list_removeEntry(linked_list_c self, linked_list_entry_c entry_ref)
+{
+    if (!self) return SN_FALSE;
+    if (!entry_ref) return  SN_FALSE;
+    plat_mutex_lock(self->mutex);
+
+
+    if (self->lastEntry == entry_ref)
+    {
+        plat_mutex_unlock(self->mutex);
+        linked_list_pop(self);
+        return SN_TRUE;
+    }
+
+    linked_list_entry_c pre = entry_ref->previous;
+    linked_list_entry_c nxt = entry_ref->next;
+    if (self->firstEntry == entry_ref)
+
+    if (pre)
+        pre->next = nxt;
+    if(nxt)
+        nxt->previous = pre;
+
+
+    if (self->firstEntry == entry_ref)
+        self->firstEntry = nxt;
+
+    plat_mutex_unlock(self->mutex);
+    return SN_TRUE;
 }
 
 

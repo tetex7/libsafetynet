@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "allocation_manager/alloc_manager_c.h"
-#include "plat_allocators.h"
+#include "../../include/platform_independent/plat_allocators.h"
 #include "sn_crash.h"
 
 alloc_manager_m memman_new(plat_mutex_c mutex_ref)

@@ -30,7 +30,7 @@ rm -f test.bin
 
 # Compile the source code
 echo "Compiling test code"
-gcc -g -Wall -Werror -std=c99 -O0 -D__SN_WIP_CALLS__= -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
+gcc -g -Wall -Werror -std=c99 -O0 -D__SN_WIP_CALLS__= -D__SN_DEBUG_CALLS__= -L./build -I./include -lsafetynet -o "$OUTPUT_BINARY" -x c - <<EOF
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -84,7 +84,6 @@ int main()
     printf("request_to_fast_cache\n");
     sn_request_to_fast_cache(buff);
     //sn_malloc(0);
-    
 
     size_t buff_size = SN_GET_ARR_SIZE(sn_query_size(buff), sizeof(int32_t));
 

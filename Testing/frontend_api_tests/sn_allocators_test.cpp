@@ -18,7 +18,7 @@
 //
 // Created by tete on 10/20/2025.
 //
-
+#define __SN_DEBUG_CALLS__
 #include "libsafetynet.h"
 #include <gtest/gtest.h>
 #include <cstdint>
@@ -46,7 +46,7 @@ TEST(SafetynetAllocatorTests, AllocateAndFree)
 
 TEST(SafetynetAllocatorTests, ReallocBlockToZeroEdgeCaseTest)
 {
-    std::uint8_t* p = reinterpret_cast<std::uint8_t*>(sn_malloc(10));
+    std::uint8_t* p = reinterpret_cast<std::uint8_t*>(sn_malloc(1));
     EXPECT_NE(p, nullptr);
     EXPECT_NE(sn_get_last_error(), SN_ERR_BAD_ALLOC);
 
@@ -56,4 +56,24 @@ TEST(SafetynetAllocatorTests, ReallocBlockToZeroEdgeCaseTest)
     EXPECT_NE(p, nullptr); // original pointer still valid
 
     sn_free(p);
+    sn_reset_last_error();
+}
+
+TEST(SafetynetAllocatorTests, AllocFreeCycling)
+{
+    void* buff[10];
+    for (std::size_t i = 0; i < 10; i++)
+    {
+        buff[i] = sn_malloc(40);
+        EXPECT_NE(buff[i], nullptr);
+        EXPECT_EQ(sn_get_last_error(), SN_ERR_OK);
+        sn_reset_last_error();
+    }
+    sn_debug_crash();
+    for (std::size_t i = 0; i < 10; i++)
+    {
+        sn_free(buff[i]);
+        EXPECT_EQ(sn_get_last_error(), SN_ERR_OK);
+        sn_reset_last_error();
+    }
 }

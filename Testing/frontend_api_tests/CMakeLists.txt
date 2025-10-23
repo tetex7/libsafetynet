@@ -18,6 +18,7 @@ file(GLOB SN_FRONTEND_TEST_CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" "${CMAK
 add_executable(sn_frontend_test ${SN_FRONTEND_TEST_CPP_FILES})
 
 set_target_output(sn_frontend_test ${BIN_DIR}/testing)
+set_target_properties(sn_frontend_test PROPERTIES CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
 target_link_libraries(
         sn_frontend_test
