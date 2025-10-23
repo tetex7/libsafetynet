@@ -99,7 +99,7 @@
 #       define SN_FANCY_HAS_BOOL_CHECK 0
 #   endif
 #else
-#   warning "Compiler appears to not support __has_include Defaulting to TGVM_FANCY_HAS_BOOL_CHECK to 0"
+#   warning "Compiler appears to not support __has_include Defaulting to SN_FANCY_HAS_BOOL_CHECK to 0"
 #   define SN_FANCY_HAS_BOOL_CHECK 0
 #endif
 
@@ -390,12 +390,12 @@ static SN_FORCE_INLINE size_t sn_query_size_in_block_size(void* ptr, size_t bloc
 #endif
 
 #ifdef __SN_DEBUG_CALLS__
-    /**
-     * @brief Intentionally Crashes the program using the internal crash handler
-     * This is to help with dumping state for the internal link list
-     * @note A library crash is or should be extraordinarily rare
-     */
-    SN_PUB_API_OPEN SN_NO_RETURN void sn_debug_crash();
+/**
+ * @brief Intentionally Crashes the program using the internal crash handler
+ * This is to help with dumping state for the internal link list
+ * @note A library crash is or should be extraordinarily rare
+ */
+SN_PUB_API_OPEN SN_NO_RETURN void sn_debug_crash();
 #endif
 
 

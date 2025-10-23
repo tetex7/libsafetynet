@@ -85,3 +85,14 @@ void library_cleanup()
     // This function is called when the shared library is unloaded.
     doexit();
 }
+
+
+/*int main()
+{
+    void* test = sn_register((void*)123); // Has no checks whatsoever
+    const sn_mem_metadata_t* node = sn_query_metadata(test);
+
+    (*(uint16_t*)&node->block_id) = 44;
+    (*(size_t*)&node->size) = 88;
+    (*(void**)&node->data) = malloc(88);
+}*/
