@@ -126,10 +126,13 @@ SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
         sn_error(SN_ERR_BAD_SIZE, NULL);
     }
 
-    /*if (!memman_canAllocateBasedOnLimitAndSize(memory_manager, entry->size - new_size))
+    if (new_size > entry->size)
     {
-        sn_error(SN_ERR_ALLOC_LIMIT_HIT, NULL);
-    }*/
+        if (!memman_canAllocateBasedOnLimitAndSize(memory_manager, new_size - entry->size))
+        {
+            sn_error(SN_ERR_ALLOC_LIMIT_HIT, NULL);
+        }
+    }
 
     void* new_ptr = plat_realloc(ptr, new_size);
 

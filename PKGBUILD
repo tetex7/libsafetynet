@@ -27,7 +27,7 @@ arch=('x86_64')
 license=('GPL3')
 makedepends=('gcc' 'binutils' 'valgrind')
 depends=('glibc')
-options=('!strip' 'docs' 'libtool' '!staticlibs' 'emptydirs' 'zipman' '!purge' '!debug' '!lto')
+options=('!strip' 'docs' 'libtool' '!staticlibs' 'emptydirs' '!purge' '!debug' '!lto')
 
 if [ -z "${PK_DEBUG}" ]; then
     PK_DEBUG=0
@@ -36,9 +36,8 @@ fi
 minverN=${pkgver%%.*}        # major version before first dot
 eminverN=$(echo $pkgver | cut -d '.' -f1,2)  # major.minor
 
-
 prepare() {
-cd ..
+pushd $srcdir/.. >/dev/null
 echo $PWD
 ./dev_setup.sh clean
 ./dev_setup.sh \
@@ -47,11 +46,12 @@ echo $PWD
     -DSN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE=OFF \
     -DSN_CONFIG_SANITIZE_MEMORY_ON_FREE=ON \
     -DSN_CONFIG_ENABLE_MUTEX=ON \
-    -DSN_NO_STD_BOOL=ON
+    -DSN_NO_STD_BOOL=OFF
+popd >/dev/null
 }
 
 build () {
-    cd ..
+    pushd $srcdir/.. >/dev/null
 
     ./dev_setup.sh mk -j $(nproc)
     ./package.sh
@@ -73,10 +73,11 @@ build () {
             strip -v --strip-debug -o ./libsafetynet-deployment-package/${pkgname}.so ./libsafetynet-deployment-package/${pkgname}.so
         fi
     fi
+    popd >/dev/null
 }
 
 package() {
-    cd ..
+    pushd $srcdir/.. >/dev/null
     install -Dm644 ./libsafetynet-deployment-package/${pkgname}.so "${pkgdir}/usr/lib/${pkgname}.so.${pkgver}"
     install -Dm644 "./libsafetynet-deployment-package/${pkgname}.h" "${pkgdir}/usr/include/${pkgname}.h"
     install -Dm644 "./libsafetynet-deployment-package/${pkgname}_config.h" "${pkgdir}/usr/include/${pkgname}_config.h"
@@ -100,5 +101,5 @@ Description: ${pkgdesc}
 Version: ${pkgver}
 Libs: -L\${libdir} -l${pkgname##lib}
 _ACEOF
-
+popd >/dev/null
 }

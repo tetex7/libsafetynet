@@ -281,6 +281,7 @@ void linked_list_pop(linked_list_c self)
 
     linked_list_entry_c temp = self->lastEntry;
     self->lastEntry = temp->previous;
+    self->lastEntry->next = NULL;
 
     linked_list_entry_destroy(temp);
 
@@ -352,13 +353,13 @@ SN_BOOL linked_list_hasPtr(linked_list_c self, void* key)
 
 SN_BOOL linked_list_hasId(linked_list_c self, uint16_t id)
 {
-    if (!self) return NULL;
+    if (!self) return SN_FALSE;
     linked_list_entry_c temp = linked_list_getById(self, id);
 
     if (temp == NULL)
-        return SN_TRUE;
+        return SN_FALSE;
 
-    return SN_FALSE;
+    return SN_TRUE;
 }
 
 linked_list_entry_c linked_list_getByPtr(linked_list_c self, void* key)
@@ -457,13 +458,13 @@ SN_BOOL linked_list_removeEntry(linked_list_c self, linked_list_entry_c entry_re
 
     linked_list_entry_c pre = entry_ref->previous;
     linked_list_entry_c nxt = entry_ref->next;
-    if (self->firstEntry == entry_ref)
 
     if (pre)
         pre->next = nxt;
     if(nxt)
         nxt->previous = pre;
 
+    linked_list_entry_destroy(entry_ref);
 
     if (self->firstEntry == entry_ref)
         self->firstEntry = nxt;
