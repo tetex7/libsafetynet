@@ -4,6 +4,8 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["*"]
+  pull_request:
+      branches: [ "*" ]  # triggers on PRs targeting any branch
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
