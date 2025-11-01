@@ -166,7 +166,7 @@ cd ./libsafetynet # Changes your current working directory to the project
 
 For cross compilation windows 
 ```bash
-./dev_setup.sh -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=<Path to a gcc or Cling compiler for Windows> -DSN_CONFIG_NO_TESTING_SUITE=ON -DSN_CONFIG_STATIC_ONLY=OFF
+./dev_setup.sh -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=<Path to a gcc or Cling compiler for Windows> -DSN_CONFIG_STATIC_ONLY=OFF
 ```
 No this does not support being compiled on MSVC, although it can be used with MSVC projects
 And no it Does not have hard requirement for Windows pthread

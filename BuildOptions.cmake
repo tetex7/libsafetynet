@@ -48,11 +48,13 @@ endif()
 
 if(NOT WIN32)
     option(SN_CONFIG_STATIC_ONLY "If to produce a static only library" OFF)
+    option(SN_CONFIG_NO_TESTING_SUITE "Disable the test suite if set" ON)
 else ()
     option(SN_CONFIG_STATIC_ONLY "If to produce a static only library" ON)
+    option(SN_CONFIG_NO_TESTING_SUITE "Disable the test suite if set" OFF)
 endif ()
 
-option(SN_NO_STD_BOOL "uses stdbool.h" OFF)
+option(SN_NO_STD_BOOL "Does not uses stdbool.h" OFF)
 
 option(SN_CONFIG_SANITIZE_MEMORY_ON_FREE "pressure wash the block of memory with zeros on free" ON)
 
