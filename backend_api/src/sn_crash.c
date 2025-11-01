@@ -45,10 +45,10 @@ static int print_node(const linked_list_entry_c node)
     pcc += sn_crash_print("node@%p(head=%i)\n", node, node->isHead);
     pcc += sn_crash_print("previous: %p\n", node->previous);
     pcc += sn_crash_print("data: %p\n", node->data);
-#ifdef __unix
+#ifdef SN_ON_UNIX
     pcc += sn_crash_print("size: %lu\n", node->size);
     pcc += sn_crash_print("tid: %lu\n", node->tid);
-#elif defined(_WIN32)
+#elif defined(SN_ON_WIN32)
     pcc += sn_crash_print("size: %llu\n", node->size);
     pcc += sn_crash_print("tid: %llu\n", node->tid);
 #endif
@@ -62,16 +62,16 @@ static linked_list_entry_c list_nodeas(linked_list_c self, linked_list_entry_c c
 {
     if (!ctx)
     {
-#ifdef __unix
+#ifdef SN_ON_UNIX
         sn_crash_print("node: %lu is NULL@%p\n", index, ctx);
-#elif defined(_WIN32)
+#elif defined(SN_ON_WIN32)
         sn_crash_print("node: %lluis NULL@%p\n", index, ctx);
 #endif
         return LIST_FOR_EACH_LOOP_BRAKE;
     }
-#ifdef __unix
+#ifdef SN_ON_UNIX
     sn_crash_print("node: %lu\n", index);
-#elif defined(_WIN32)
+#elif defined(SN_ON_WIN32)
     sn_crash_print("node: %llu\n", index);
 #endif
     print_node(ctx);
@@ -82,12 +82,12 @@ static linked_list_entry_c list_nodeas(linked_list_c self, linked_list_entry_c c
 //Yes this does do something unsafe,
 //but it is not working with those addresses just displaying
 #ifdef SN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE
-#if defined(__GNUC__)
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wframe-address"
-#elif defined(__clang__)
+#if defined(__clang__)
 #   pragma clang diagnostic push
 #   pragma clang diagnostic ignored "-Wframe-address"
+#elif defined(__GNUC__)
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wframe-address"
 #endif
 
 static void print_stack_trace()
@@ -100,10 +100,11 @@ static void print_stack_trace()
     print_trace_ent(4);
 #undef print_trace_ent
 }
-#if defined(__GNUC__)
-#   pragma GCC diagnostic pop
-#elif defined(__clang__)
+
+#if defined(__clang__)
 #   pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#   pragma GCC diagnostic pop
 #endif
 #endif
 
@@ -114,9 +115,9 @@ SN_NO_RETURN void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t 
     sn_crash_print("ERROR: %i\n", err);
     sn_crash_print("ERROR_NAME: %s\n", sn_get_error_name(err));
     sn_crash_print("ERROR_MSG: %s\n", sn_get_error_msg(err));
-#ifdef __unix
+#ifdef SN_ON_UNIX
     sn_crash_print("crash on tid %lu\n\n", plat_getTid());
-#elif defined(_WIN32)
+#elif defined(SN_ON_WIN32)
     sn_crash_print("crash on tid %llu\n\n", plat_getTid());
 #endif
 #ifdef SN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE

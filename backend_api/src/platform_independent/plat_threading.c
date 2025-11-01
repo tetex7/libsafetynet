@@ -64,9 +64,9 @@
 #include "sn_crash.h"
 
 #ifdef SN_CONFIG_ENABLE_MUTEX
-#   ifdef __unix
+#   ifdef SN_ON_UNIX
 #       include <pthread.h>
-#   elif defined(_WIN32)
+#   elif defined(SN_ON_WIN32)
 #       include <windows.h>
 #   else
 #       error "Unsupported platform for plat_threading"
@@ -76,9 +76,9 @@
 struct plat_mutex_s
 {
 #ifdef SN_CONFIG_ENABLE_MUTEX
-#   ifdef __unix
+#   ifdef SN_ON_UNIX
     pthread_mutex_t plat_mutex;
-#   elif defined(_WIN32)
+#   elif defined(SN_ON_WIN32)
     HANDLE plat_mutex;
 #   endif
     uint64_t locker_tid;
@@ -99,13 +99,13 @@ plat_mutex_c plat_mutex_new()
 
     memset(self, 0, sizeof(plat_mutex_t));
 #ifdef SN_CONFIG_ENABLE_MUTEX
-#   ifdef __unix
+#   ifdef SN_ON_UNIX
     if (pthread_mutex_init(&self->plat_mutex, NULL) != 0)
     {
         plat_free(self);
         return NULL;
     }
-#   elif defined(_WIN32)
+#   elif defined(SN_ON_WIN32)
     self->plat_mutex = CreateMutexW(NULL, FALSE, NULL);
     if (!self->plat_mutex)
     {
@@ -124,9 +124,9 @@ void plat_mutex_lock(plat_mutex_c self)
 #ifdef SN_CONFIG_ENABLE_MUTEX
     if (plat_getTid() == self->locker_tid) return;
 
-#   ifdef __unix
+#   ifdef SN_ON_UNIX
     pthread_mutex_lock(&self->plat_mutex);
-#   elif defined(_WIN32)
+#   elif defined(SN_ON_WIN32)
     WaitForSingleObject(self->plat_mutex, INFINITE);
 #   endif
     self->locker_tid = plat_getTid();
@@ -137,9 +137,9 @@ void plat_mutex_unlock(plat_mutex_c self)
 {
     if (!self) return;
 #ifdef SN_CONFIG_ENABLE_MUTEX
-#   ifdef __unix
+#   ifdef SN_ON_UNIX
     pthread_mutex_unlock(&self->plat_mutex);
-#   elif defined(_WIN32)
+#   elif defined(SN_ON_WIN32)
     ReleaseMutex(self->plat_mutex);
 #   endif
     self->locker_tid = 0;
@@ -151,9 +151,9 @@ void plat_mutex_destroy(plat_mutex_c self)
 {
     if (!self) return;
 #ifdef SN_CONFIG_ENABLE_MUTEX
-#   ifdef __unix
+#   ifdef SN_ON_UNIX
     pthread_mutex_destroy(&self->plat_mutex);
-#   elif defined(_WIN32)
+#   elif defined(SN_ON_WIN32)
     CloseHandle(self->plat_mutex);
 #   endif
 #endif
@@ -164,9 +164,9 @@ void plat_mutex_destroy(plat_mutex_c self)
 uint64_t plat_getTid()
 {
 #ifdef SN_CONFIG_ENABLE_MUTEX
-#   ifdef __unix
+#   ifdef SN_ON_UNIX
     return (uint64_t)(uintptr_t)pthread_self();
-#   elif defined(_WIN32)
+#   elif defined(SN_ON_WIN32)
     return (uint64_t)GetCurrentThreadId();
 #   endif
 #else

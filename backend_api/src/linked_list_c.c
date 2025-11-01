@@ -319,6 +319,8 @@ linked_list_entry_c linked_list_forEach(linked_list_c self, linked_list_for_each
         if (temp != NULL)
         {
             plat_mutex_unlock(self->mutex);
+            if (temp == LIST_FOR_EACH_LOOP_BRAKE)
+                return NULL; //Produce a sanitary value on loop break
             return temp;
         }
         entry = next;

@@ -36,3 +36,5 @@ sn_query_total_memory_usage
 
 sn_mount_file_to_ram
 sn_dump_to_file
+
+sn_debug_crash
