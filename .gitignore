@@ -85,3 +85,4 @@ docs/
 libsafetynet-deployment-package.zip
 libsafetynet-deployment-package.*
 *.zip
+CTestTestfile.cmake
