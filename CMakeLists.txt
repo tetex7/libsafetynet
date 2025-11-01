@@ -17,9 +17,14 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-include(BuildOptions.cmake)
 
-project(safetynet VERSION ${SN_CONFIG_STR_VERSION} LANGUAGES C)
+if(NOT DEFINED SN_CONFIG_VERSION)
+    set(SN_CONFIG_VERSION 0.0.0)
+endif()
+
+project(safetynet VERSION ${SN_CONFIG_VERSION} LANGUAGES C)
+
+include(BuildOptions.cmake)
 
 set(CMAKE_SKIP_INSTALL_RULES ON)
 
@@ -36,12 +41,6 @@ if (SN_CONFIG_DEBUG)
     set(DEBUG_FLAGS -g -O0)
 else()
     set(DEBUG_FLAGS -g -O1)
-endif()
-
-if(SN_CONFIG_STR_VERSION)
-    set(VER_FLAG_S "${SN_CONFIG_STR_VERSION}")
-else()
-    set(VER_FLAG_S "dev")
 endif()
 
 
@@ -164,14 +163,6 @@ add_custom_command(TARGET safetynet_static POST_BUILD
 
 endif ()
 
-if (NOT WIN32)
-# Optional: add test rule
-#add_custom_target(mem_test
-#    COMMAND ${CMAKE_SOURCE_DIR}/test.sh
-#    DEPENDS safetynet_shared
-#    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-#)
-endif ()
 if (NOT SN_CONFIG_NO_TESTING_SUITE)
     message(STATUS "Loading Gtesting Component")
     find_package(GTest REQUIRED)

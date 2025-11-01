@@ -48,10 +48,10 @@ endif()
 
 if(NOT WIN32)
     option(SN_CONFIG_STATIC_ONLY "If to produce a static only library" OFF)
-    option(SN_CONFIG_NO_TESTING_SUITE "Disable the test suite if set" ON)
+    option(SN_CONFIG_NO_TESTING_SUITE "Disable the test suite if set" OFF)
 else ()
     option(SN_CONFIG_STATIC_ONLY "If to produce a static only library" ON)
-    option(SN_CONFIG_NO_TESTING_SUITE "Disable the test suite if set" OFF)
+    option(SN_CONFIG_NO_TESTING_SUITE "Disable the test suite if set" ON)
 endif ()
 
 option(SN_NO_STD_BOOL "Does not uses stdbool.h" OFF)
@@ -59,13 +59,7 @@ option(SN_NO_STD_BOOL "Does not uses stdbool.h" OFF)
 option(SN_CONFIG_SANITIZE_MEMORY_ON_FREE "pressure wash the block of memory with zeros on free" ON)
 
 # Debug flag control
-option(SN_CONFIG_DEBUG "Enable debug mode" OFF)
-
-# Version variables are changed at compile time by Package script
-set(SN_CONFIG_STR_VERSION "0.0.0" CACHE STRING "Set the version being compiled")
-set(SN_CONFIG_VERSION_MAJOR 0 CACHE STRING "Set the major version being compiled")
-set(SN_CONFIG_VERSION_MINOR 0 CACHE STRING "Set the minor version being compiled")
-set(SN_CONFIG_VERSION_PATCH 0 CACHE STRING "Set the patch version being compiled")
+option(SN_CONFIG_DEBUG "Enable debug mode" ON)
 
 option(SN_CONFIG_ENABLE_MUTEX "Use thread safety mechanisms" ON)
 option(SN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE "On library crash it will show you a primitive stack trace" ON)
