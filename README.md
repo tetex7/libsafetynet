@@ -163,3 +163,9 @@ cd ./libsafetynet # Changes your current working directory to the project
 ./dev_setup.sh mk # Builds the project
 ./package.sh # Packages the project into a A small Folder containing headers and a library
 ```
+```bash
+./dev_setup.sh -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=/opt/mingw-ntix/bin/x86_64-w64-mingw32-gcc -DSN_CONFIG_NO_TESTING_SUITE=ON
+```
+
+
+

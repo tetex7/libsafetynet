@@ -20,7 +20,7 @@ execute_process(
         OUTPUT_VARIABLE PLATFORM_TRIPLE
         OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-
+message(NOTICE "system triple-prefixed is ${PLATFORM_TRIPLE} on compiler ${CMAKE_C_COMPILER}")
 
 # --- Automatically pick objcopy binary ---
 # 1. Try triple-prefixed version (e.g. x86_64-linux-gnu-objcopy)

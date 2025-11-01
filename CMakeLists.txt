@@ -23,6 +23,7 @@ project(safetynet VERSION ${SN_CONFIG_STR_VERSION} LANGUAGES C)
 
 set(CMAKE_SKIP_INSTALL_RULES ON)
 
+
 # Set output directory
 set(BIN_DIR ${CMAKE_BINARY_DIR}/build)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
@@ -72,7 +73,7 @@ target_sources(safetynet_base INTERFACE ${C_SOURCES})
 target_link_libraries(safetynet_base INTERFACE defs_interface)
 target_link_libraries(safetynet_base INTERFACE backend_api)
 
-if (NOT WIN32 AND NOT SN_CONFIG_STATIC_ONLY)
+if (NOT SN_CONFIG_STATIC_ONLY)
 # Shared library
 add_library(safetynet_shared SHARED)
 target_link_libraries(safetynet_shared PRIVATE safetynet_base)
@@ -83,7 +84,9 @@ target_include_directories(
 )
 set_target_properties(safetynet_shared PROPERTIES
     OUTPUT_NAME "safetynet"
-    LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR}
+    ARCHIVE_OUTPUT_DIRECTORY "${BIN_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}"
 )
 
 if (WIN32)
@@ -97,13 +100,15 @@ set(safetynet_out_lib safetynet_shared)
 
 endif ()
 
-if (SN_CONFIG_STATIC_ONLY OR WIN32)
+if (SN_CONFIG_STATIC_ONLY)
 # Static library
 add_library(safetynet_static STATIC)
 target_link_libraries(safetynet_static PRIVATE safetynet_base)
 set_target_properties(safetynet_static PROPERTIES
     OUTPUT_NAME "safetynet"
-    ARCHIVE_OUTPUT_DIRECTORY ${BIN_DIR}
+    ARCHIVE_OUTPUT_DIRECTORY "${BIN_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${out_path}"
 )
 
 target_include_directories(
@@ -115,7 +120,7 @@ target_include_directories(
 set(safetynet_out_lib safetynet_static)
 
 if (WIN32)
-    set_target_properties(safetynet_shared PROPERTIES
+    set_target_properties(safetynet_static PROPERTIES
             PREFIX "lib"
             SUFFIX ".a"
     )

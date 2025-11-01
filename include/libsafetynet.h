@@ -25,15 +25,14 @@
 
 #if !defined(SN_PUB_API_OPEN)
 #   ifndef SN_CONFIG_STATIC_ONLY
-#       ifdef __unix
+#       ifdef SN_ON_UNIX
 #           define SN_PUB_API_OPEN __attribute__((visibility("default")))
-#       elif defined(_WIN32)
-#           define SN_PUB_API_OPEN
-/*#           ifdef BUILDING_SAFETYNET
+#       elif defined(SN_ON_WIN32)
+#           ifdef BUILDING_SAFETYNET
 #               define SN_PUB_API_OPEN __declspec(dllexport)
 #           else
 #               define SN_PUB_API_OPEN __declspec(dllimport)
-#           endif*/
+#           endif
 #       endif
 #   else
 #       define SN_PUB_API_OPEN
@@ -42,16 +41,35 @@
 
 
 #ifndef SN_DEPRECATED
-#   define SN_DEPRECATED __attribute__ ((deprecated))
+#   if defined(SN_ON_MSVC) || defined(SN_ON_WIN32)
+#       define SN_DEPRECATED __declspec(deprecated)
+#   else
+#       define SN_DEPRECATED __attribute__ ((deprecated))
+#   endif
 #endif
+
 #ifndef SN_MSG_DEPRECATED
-#   define SN_MSG_DEPRECATED(msg) __attribute__ ((deprecated(msg)))
+#   if defined(SN_ON_MSVC) || defined(SN_ON_WIN32)
+#       define SN_MSG_DEPRECATED(msg) __declspec(deprecated(msg))
+#   else
+#       define SN_MSG_DEPRECATED(msg) __attribute__ ((deprecated(msg)))
+#   endif
 #endif
+
 #ifndef SN_FORCE_INLINE
-#   define SN_FORCE_INLINE __attribute__((always_inline)) inline
+#   if defined(SN_ON_MSVC) || defined(SN_ON_WIN32)
+#       define SN_FORCE_INLINE __forceinline
+#   else
+#       define SN_FORCE_INLINE __attribute__((always_inline)) static inline
+#   endif
 #endif
+
 #ifndef SN_NO_RETURN
-#   define SN_NO_RETURN __attribute__ ((__noreturn__))
+#   if defined(SN_ON_MSVC) || defined(SN_ON_WIN32)
+#       define SN_NO_RETURN __declspec(noreturn)
+#   else
+#       define SN_NO_RETURN __attribute__ ((__noreturn__))
+#   endif
 #endif
 
 /*#ifndef SN_VERY_VOLATILE
@@ -64,12 +82,23 @@
 #ifndef SN_GET_ARR_SIZE
 #   define SN_GET_ARR_SIZE(byte_size, type_size) ((size_t)(byte_size / type_size))
 #endif
+
 #ifndef SN_MALLOC_ATTR
-#   define SN_MALLOC_ATTR __attribute__((__malloc__))
+#   if defined(SN_ON_MSVC) || defined(SN_ON_WIN32)
+#       define SN_MALLOC_ATTR
+#   else
+#       define SN_MALLOC_ATTR __attribute__((__malloc__))
+#   endif
 #endif
+
 #ifndef SN_ALLOC_SIZE_ATTR
-#   define SN_ALLOC_SIZE_ATTR(...) __attribute__((__alloc_size__(__VA_ARGS__)))
+#   if defined(SN_ON_MSVC) || defined(SN_ON_WIN32)
+#       define SN_ALLOC_SIZE_ATTR(...)
+#   else
+#       define SN_ALLOC_SIZE_ATTR(...) __attribute__((__alloc_size__(__VA_ARGS__)))
+#   endif
 #endif
+
 #ifndef SN_BLOCK_NAME_MAX_LEN
 #   define SN_BLOCK_NAME_MAX_LEN 100
 #endif
@@ -98,6 +127,9 @@
 #   else
 #       define SN_FANCY_HAS_BOOL_CHECK 0
 #   endif
+#elif defined(SN_ON_MSVC)
+    /* MSVC's C compiler lacks __has_include but provides stdbool.h */
+#   define SN_FANCY_HAS_BOOL_CHECK 1
 #else
 #   warning "Compiler appears to not support __has_include Defaulting to SN_FANCY_HAS_BOOL_CHECK to 0"
 #   define SN_FANCY_HAS_BOOL_CHECK 0
@@ -162,7 +194,6 @@ SN_PUB_API_OPEN void* sn_malloc(size_t size) SN_MALLOC_ATTR SN_ALLOC_SIZE_ATTR(1
  * @return Pointer to the allocated memory, or NULL on failure.
  */
 SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size);
-
 
 /**
  * @brief reAllocates memory and tracks it for cleanup at program exit.
@@ -380,12 +411,17 @@ SN_PUB_API_OPEN size_t sn_query_total_memory_usage();
  * @param block_size Size of blocks eg `sizeof(int)'
  * @return Returns the number of elements within an array based off of the block_size
  */
-static SN_FORCE_INLINE size_t sn_query_size_in_block_size(void* ptr, size_t block_size)
+SN_FORCE_INLINE size_t sn_query_size_in_block_size(void* ptr, size_t block_size)
 {
     size_t raw_size = sn_query_size(ptr);
     if (!raw_size) return 0;
     return SN_GET_ARR_SIZE(raw_size, block_size);
 }
+
+
+typedef sn_mem_metadata_t* (*sn_metadata_for_each_worker_f)(sn_mem_metadata_t* ctx, size_t index, void* generic_arg);
+
+SN_PUB_API_OPEN sn_mem_metadata_t* sn_mem_metadata_for_each(sn_metadata_for_each_worker_f worker, void* generic_arg);
 
 #endif
 
@@ -402,8 +438,8 @@ SN_PUB_API_OPEN SN_NO_RETURN void sn_debug_crash();
 SN_CPP_NAMESPACE_END
 SN_CPP_COMPAT_END
 
-#undef TRS_C_NAMESPACE_START
-#undef TRS_C_NAMESPACE_END
+/*#undef TRS_C_NAMESPACE_START
+#undef TRS_C_NAMESPACE_END*/
 
 #undef SN_CPP_COMPAT_START
 #undef SN_CPP_COMPAT_END

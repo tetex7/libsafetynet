@@ -284,3 +284,40 @@ SN_PUB_API_OPEN uint64_t sn_calculate_checksum(void* block)
     return (checksum);
 }
 
+typedef struct
+{
+    void* real_generic_arg;
+    sn_metadata_for_each_worker_f worker;
+    sn_mem_metadata_t** out;
+} __sn_mem_metadata_for_each_data_t; // NOLINT(*-reserved-identifier)
+
+static linked_list_entry_c mem_metadata_for_each(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg)
+{
+    __sn_mem_metadata_for_each_data_t* real_arg = (__sn_mem_metadata_for_each_data_t*)generic_arg;
+    sn_mem_metadata_t* rt = real_arg->worker((sn_mem_metadata_t*)&ctx->data, index, generic_arg);
+    if (rt != NULL)
+    {
+        *real_arg->out = rt;
+        return LIST_FOR_EACH_LOOP_BRAKE;
+    }
+    return NULL;
+}
+
+sn_mem_metadata_t* sn_mem_metadata_for_each(sn_metadata_for_each_worker_f worker, void* generic_arg)
+{
+    sn_mem_metadata_t* out = NULL;
+    __sn_mem_metadata_for_each_data_t data = {
+        generic_arg,
+        worker,
+        &out
+    };
+
+    void* temp = linked_list_forEach(mem_list, &mem_metadata_for_each, &data);
+
+    if (temp == LIST_FOR_EACH_LOOP_BRAKE)
+    {
+        return out;
+    }
+    return NULL;
+}
+

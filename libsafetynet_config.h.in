@@ -54,4 +54,22 @@
 #define SN_GIT_COMMIT_HASH "@GIT_COMMIT_HASH@"
 #define SN_GIT_BRANCH_NAME "@GIT_BRANCH_NAME@"
 
+
+#if defined(__clang__)
+#   define SN_ON_CLANG
+#   define SN_C_COMPILER "CLANG"
+#elif defined(__GNUC__)
+#   define SN_ON_GCC
+#   define SN_C_COMPILER "GCC"
+#elif defined(_MSC_VER)
+#   define SN_ON_MSVC
+#   define SN_C_COMPILER "MSVC"
+#endif
+
+#if defined(__unix__) || defined(__unix) || defined(__APPLE__)
+#   define SN_ON_UNIX
+#elif defined(_WIN32)
+#   define SN_ON_WIN32
+#endif
+
 #endif //LIBSAFETYNET_CONFIG_H
