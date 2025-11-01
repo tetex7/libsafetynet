@@ -38,3 +38,4 @@ sn_mount_file_to_ram
 sn_dump_to_file
 
 sn_debug_crash
+sn_mem_metadata_for_each

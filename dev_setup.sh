@@ -111,7 +111,7 @@ function build()
 {
     #CC=/usr/bin/gcc
     #Ninja
-    cmake -G "$CMAKE_GEN" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DSN_CONFIG_DEBUG=ON "$@"  .
+    cmake -G "$CMAKE_GEN" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "$@"  .
 }
 
 function make_cmd()
