@@ -23,7 +23,7 @@ ARG GROUP_ID=1000
 
 RUN pacman -Syu --noconfirm
 RUN pacman -S --noconfirm --needed \
-    base-devel cmake gcc ninja git gtest doxygen zip
+    base-devel cmake gcc ninja git gtest doxygen zip python
 RUN pacman -Scc --noconfirm
 
 # Create non-root user
