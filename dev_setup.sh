@@ -39,13 +39,13 @@ readonly detected_os=$(uname | tr '[:upper:]' '[:lower:]')
 
 if [[ "$detected_os" == "linux" ]]; then
     # The tools for the liunx
-    readonly DEFAULT_TOOLS=(gcc zip cmake ctest ninja git)
+    readonly DEFAULT_TOOLS=(python3 gcc zip cmake ctest ninja git)
 elif [[ "$detected_os" == *bsd || "$detected_os" == "dragonfly" || "$detected_os" == "darwin" ]]; then
     # The tools for the BSD-likes
-    readonly DEFAULT_TOOLS=(clang zip cmake ctest ninja git)
+    readonly DEFAULT_TOOLS=(python3 clang zip cmake ctest ninja git)
 else
     # The tools that should be on an generic system
-    readonly DEFAULT_TOOLS=(gcc zip cmake ctest ninja git)
+    readonly DEFAULT_TOOLS=(python3 gcc zip cmake ctest ninja git)
 fi
 
 # If override exists, split it into an array; otherwise use default

@@ -32,10 +32,21 @@ if(PLATFORM_TRIPLE)
             objcopy
             DOC "Platform-appropriate objcopy tool"
     )
+    find_program(PLAT_NM
+            NAMES
+            ${PLATFORM_TRIPLE}-nm
+            nm
+            DOC "Platform-appropriate objcopy tool"
+    )
 else()
     find_program(PLAT_OBJCOPY
             NAMES
             objcopy
+            DOC "Default objcopy tool"
+    )
+    find_program(PLAT_NM
+            NAMES
+            nm
             DOC "Default objcopy tool"
     )
 endif()
@@ -44,6 +55,12 @@ if(NOT PLAT_OBJCOPY)
     message(FATAL_ERROR "Failed to locate objcopy for platform '${PLATFORM_TRIPLE}'. Please install binutils.")
 else()
     message(STATUS "Using objcopy: ${PLAT_OBJCOPY}")
+endif()
+
+if(NOT PLAT_NM)
+    message(FATAL_ERROR "Failed to locate nm for platform '${PLATFORM_TRIPLE}'. Please install binutils.")
+else()
+    message(STATUS "Using nm: ${PLAT_NM}")
 endif()
 
 if(NOT WIN32)

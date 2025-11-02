@@ -138,7 +138,7 @@ set(TEMP_LIB "${ORIGINAL_LIB}.tmp")
 set(MRI_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/safetynet_static.dir/merge.mri")
 
 # Write MRI script (deferred so paths are expanded at build-time)
-add_custom_command(TARGET safetynet_static PRE_LINK
+add_custom_target(gen_mri_merge_script
         COMMAND ${CMAKE_COMMAND} -E echo "CREATE ${MERGED_LIB_PATH}" > ${MRI_SCRIPT}
         COMMAND ${CMAKE_COMMAND} -E echo "ADDLIB ${BASE_LIB_PATH}" >> ${MRI_SCRIPT}
         COMMAND ${CMAKE_COMMAND} -E echo "ADDLIB ${TEMP_LIB}" >> ${MRI_SCRIPT}
@@ -148,18 +148,21 @@ add_custom_command(TARGET safetynet_static PRE_LINK
 )
 
 # Merge the base library into safetynet_static
-add_custom_command(TARGET safetynet_static POST_BUILD
+add_custom_target(safetynet_static_post_proc ALL
         COMMAND ${CMAKE_COMMAND} -E rename ${ORIGINAL_LIB} ${TEMP_LIB}
         COMMAND ${CMAKE_AR} -M < ${MRI_SCRIPT}
         COMMAND ${CMAKE_COMMAND} -E remove ${TEMP_LIB}
-        COMMAND ${CMAKE_AR} -s $<TARGET_FILE:safetynet_static>
-        COMMENT "Merging safetynet_base into safetynet_static"
+        COMMAND ${CMAKE_RANLIB} $<TARGET_FILE:safetynet_static>
+        COMMAND python3 ${CMAKE_CURRENT_BINARY_DIR}/scripts/smart_strip.py --silent --objcopy ${PLAT_OBJCOPY} --nm ${PLAT_NM} $<TARGET_FILE:safetynet_static>
+        DEPENDS safetynet_static
+        DEPENDS gen_mri_merge_script
+        COMMENT "Finalizing and post processing static library"
 )
 
-add_custom_command(TARGET safetynet_static POST_BUILD
-        COMMAND ${PLAT_OBJCOPY} -S --keep-symbols=${CMAKE_CURRENT_SOURCE_DIR}/public.sym $<TARGET_FILE:safetynet_static> $<TARGET_FILE:safetynet_static>
-        COMMENT "Stripping static library symbols with objcopy"
-)
+#add_custom_command(TARGET safetynet_static POST_BUILD
+#        COMMAND ${PLAT_OBJCOPY} -S --keep-symbols=${CMAKE_CURRENT_SOURCE_DIR}/public.sym $<TARGET_FILE:safetynet_static> $<TARGET_FILE:safetynet_static>
+#        COMMENT "Stripping static library symbols with objcopy"
+#)
 
 endif ()
 
