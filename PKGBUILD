@@ -25,7 +25,7 @@ provides=()
 arch=('x86_64')
 #PACKAGER="${USER}"
 license=('GPL3')
-makedepends=('gcc' 'binutils' 'valgrind')
+makedepends=('cmake' 'gcc' 'binutils' 'valgrind')
 depends=('glibc')
 options=('!strip' 'docs' 'libtool' '!staticlibs' 'emptydirs' '!purge' '!debug' '!lto')
 

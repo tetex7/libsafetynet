@@ -141,7 +141,12 @@ function clean()
     rm -rfv ./libsafetynet-deployment-package
     rm -rfv ./Testing/Temporary
     rm -rfv ./docs
-    rm -fv ./libsafetynet-deployment-package.zip
+    rm -fv ./libsafetynet-*.zip
+    rm -rfv ./_CPack_Packages
+    rm -fv install_manifest.txt
+    rm -fv CPackConfig.cmake
+    rm -fv CPackSourceConfig.cmake
+    rm -fv libsafetynet-*.tar.gz
 
     find "." -maxdepth 20 -type d -name "CMakeFiles" -exec rm -vrf {} +
 
@@ -152,6 +157,8 @@ function clean()
     find "." -maxdepth 20 -type f -name "*\[*\]_include.cmake" -exec rm -vf {} +
 
     find "." -maxdepth 20 -type f -name "*\[*\]_test.cmake" -exec rm -vf {} +
+
+    find "." -maxdepth 20 -type f -name "cmake_install.cmake" -exec rm -vf {} +
 
     return 0
 }

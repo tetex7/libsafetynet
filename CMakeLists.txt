@@ -22,12 +22,9 @@ if(NOT DEFINED SN_CONFIG_VERSION)
     set(SN_CONFIG_VERSION 0.0.0)
 endif()
 
-project(safetynet VERSION ${SN_CONFIG_VERSION} LANGUAGES C)
+project(libsafetynet VERSION ${SN_CONFIG_VERSION} LANGUAGES C)
 
 include(BuildOptions.cmake)
-
-set(CMAKE_SKIP_INSTALL_RULES ON)
-
 
 # Set output directory
 set(BIN_DIR ${CMAKE_BINARY_DIR}/build)
@@ -88,10 +85,24 @@ set_target_properties(safetynet_shared PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}"
 )
 
+set_target_properties(safetynet_shared PROPERTIES
+        VERSION ${PROJECT_VERSION}        # Full version, makes the file libsafetynet.so.1.2.0
+        SOVERSION ${PROJECT_VERSION_MAJOR}          # ABI version, makes SONAME libsafetynet.so.1
+)
+
 if (WIN32)
     set_target_properties(safetynet_shared PROPERTIES
             PREFIX "lib"
             SUFFIX ".dll"
+    )
+endif ()
+
+
+if (SN_CONFIG_SHARED_LIBRARY_POST_PROCESSING)
+    add_custom_target(safetynet_shared_post_proc ALL
+            DEPENDS safetynet_shared
+            COMMAND python3 ${CMAKE_CURRENT_BINARY_DIR}/scripts/smart_strip.py --silent --objcopy ${PLAT_OBJCOPY} --nm ${PLAT_NM} $<TARGET_FILE:safetynet_shared>
+            COMMENT "Finalizing and post processing shared library"
     )
 endif ()
 
@@ -144,6 +155,7 @@ add_custom_target(gen_mri_merge_script
         COMMAND ${CMAKE_COMMAND} -E echo "ADDLIB ${TEMP_LIB}" >> ${MRI_SCRIPT}
         COMMAND ${CMAKE_COMMAND} -E echo "SAVE" >> ${MRI_SCRIPT}
         COMMAND ${CMAKE_COMMAND} -E echo "END" >> ${MRI_SCRIPT}
+        BYPRODUCTS ${MRI_SCRIPT}
         COMMENT "Generating MRI merge script"
 )
 
@@ -173,4 +185,12 @@ if (NOT SN_CONFIG_NO_TESTING_SUITE)
     add_subdirectory(Testing)
 else ()
     message(STATUS "gTesting suite disabled")
+endif ()
+
+if (SN_USE_CPACK_PACKAGING)
+    message(STATUS "Loading Cpack Component")
+    include(Packaging.cmake)
+else ()
+    message(STATUS "Cpack Component disabled")
+    set(CMAKE_SKIP_INSTALL_RULES ON)
 endif ()

@@ -87,3 +87,9 @@ libsafetynet-deployment-package.*
 *.zip
 CTestTestfile.cmake
 package-staging/
+cmake_install.cmake
+/CPackConfig.cmake
+/install_manifest.txt
+/CPackSourceConfig.cmake
+/_CPack_Packages
+*.tar.gz

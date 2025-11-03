@@ -50,6 +50,8 @@ extern plat_mutex_c alloc_mutex;
 extern alloc_manager_m memory_manager;
 extern SN_FLAG doFree;
 
+SN_BOOL file_exists(const char* path);
+
 /*
  * This thing is horrid, but we keep it around because it is simple
  * And of course it is only for back end use

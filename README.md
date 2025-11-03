@@ -26,6 +26,7 @@ The one thing it won't do though is stop you from blowing past the edge of an ar
   - CMake
   - Ninja *or* Make
   - Bash
+  - Python3
 
 ---
 ## C Example

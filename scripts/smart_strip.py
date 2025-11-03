@@ -86,7 +86,7 @@ def get_defined_symbols(nm_path: str, archive: str) -> str:
         if len(parts) >= 3:
             name = parts[0]
             # Skip compiler internals and metadata
-            if not name.startswith((".", "__")):
+            if not name.startswith((".", "__", "_")):
                 symbols.add(name)
     return symbols
 

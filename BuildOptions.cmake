@@ -14,6 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+if(CMAKE_SYSTEM_NAME MATCHES ".*BSD")
+    set(IS_BSD ON)
+else()
+    set(IS_BSD OFF)
+endif()
 
 execute_process(
         COMMAND ${CMAKE_C_COMPILER} -dumpmachine
@@ -71,6 +76,10 @@ else ()
     option(SN_CONFIG_NO_TESTING_SUITE "Disable the test suite if set" ON)
 endif ()
 
+option(SN_CONFIG_VERBOSE_LOGGING_FACILITIES_FEATURE "If enabled Adds software facilities for verbose logging of memory actions" ON)
+
+option(SN_CONFIG_SHARED_LIBRARY_POST_PROCESSING "Mangles private symbols in the shared library" OFF)
+
 option(SN_NO_STD_BOOL "Does not uses stdbool.h" OFF)
 
 option(SN_CONFIG_SANITIZE_MEMORY_ON_FREE "pressure wash the block of memory with zeros on free" ON)
@@ -86,6 +95,8 @@ option(SN_CONFIG_ENABLE_DUMP_LIST_CRASH "On library crash it will All the linked
 string(TIMESTAMP SN_CONFIG_GENERATION_DATE "%m-%d-%Y(%H:%M:%S)")
 string(TIMESTAMP SN_CONFIG_GENERATION_YEAR "%Y")
 
+
+option(SN_USE_CPACK_PACKAGING "If CPAC packaging should be enabled" ON)
 
 function(set_target_output target_name out_path)
     set_target_properties(${target_name} PROPERTIES

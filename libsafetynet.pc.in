@@ -1,6 +1,5 @@
-#!/usr/bin/env bash
 #
-# Copyright (C) 2025  Tetex7
+# Copyright (C) @SN_CONFIG_GENERATION_YEAR@   Tetex7
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,19 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-set -e
+prefix=@SN_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
 
-readonly PAK_NAME="libsafetynet-deployment-package"
-
-rm -rf ./${PAK_NAME}
-
-cp -rv ./include ./${PAK_NAME}
-cp -v ./build/libsafetynet.* ./${PAK_NAME}
-
-readonly GIT_COMMIT_HASH=$(git rev-parse --short HEAD)
-readonly GIT_BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-
-echo "Built: $(date)" > "${PAK_NAME}/build-info.txt"
-echo "Commit: ${GIT_COMMIT_HASH}" >> "${PAK_NAME}/build-info.txt"
-echo "Branch: ${GIT_BRANCH_NAME}" >> "${PAK_NAME}/build-info.txt"
-echo "Generated ${PAK_NAME}/build-info.txt"
+Name: libsafetynet
+Description: libsafetynet Passive garbage collector for C and C++
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -lsafetynet
+Cflags: -I${includedir}

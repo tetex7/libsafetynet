@@ -24,16 +24,7 @@
 #include "sn_crash.h"
 #include "_pri_api.h"
 
-static SN_BOOL file_exists(const char* path)
-{
-    FILE* f = fopen(path, "rb"); // try to open for reading
-    if (f)
-    {
-        fclose(f);
-        return SN_TRUE; // file exists
-    }
-    return SN_FALSE; // file doesn't exist
-}
+
 
 SN_PUB_API_OPEN SN_FLAG sn_dump_to_file(const char* file, void* block)
 {
