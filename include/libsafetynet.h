@@ -434,6 +434,13 @@ SN_PUB_API_OPEN sn_mem_metadata_t* sn_mem_metadata_for_each(sn_metadata_for_each
 SN_PUB_API_OPEN SN_NO_RETURN void sn_debug_crash();
 #endif
 
+#ifdef SN_CONFIG_VERBOSE_LOGGING_FACILITIES_FEATURE
+
+SN_PUB_API_OPEN SN_BOOL sn_enable_verbose_logging(const char* path);
+SN_PUB_API_OPEN SN_BOOL sn_disable_verbose_logging();
+
+#endif
+
 
 SN_CPP_NAMESPACE_END
 SN_CPP_COMPAT_END

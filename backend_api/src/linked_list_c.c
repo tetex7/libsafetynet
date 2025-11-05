@@ -63,6 +63,21 @@ linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* da
     return self;
 }
 
+linked_list_entry_c linked_list_entry_copy(linked_list_entry_c entry)
+{
+    if (!entry) return NULL;
+    linked_list_entry_c self = plat_malloc(sizeof(linked_list_entry_t));
+
+    if (self == NULL)
+    {
+        return NULL;
+    }
+
+    memset(self, 0, sizeof(linked_list_entry_t));
+    memcpy(self, entry, sizeof(linked_list_entry_t));
+    return self;
+}
+
 linked_list_entry_c linked_list_entry_getPreviousEntry(const linked_list_entry_c self)
 {
     if (self == NULL) return NULL;

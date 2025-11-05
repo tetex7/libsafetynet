@@ -88,7 +88,7 @@ option(SN_CONFIG_SANITIZE_MEMORY_ON_FREE "pressure wash the block of memory with
 option(SN_CONFIG_DEBUG "Enable debug mode" ON)
 
 option(SN_CONFIG_ENABLE_MUTEX "Use thread safety mechanisms" ON)
-option(SN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE "On library crash it will show you a primitive stack trace" ON)
+option(SN_CONFIG_ENABLE_STACK_TRACE "On library crash it will show you a primitive stack trace" OFF)
 option(SN_CONFIG_ENABLE_DUMP_LIST_CRASH "On library crash it will All the linked list nodes which can get big" ON)
 
 
@@ -96,7 +96,11 @@ string(TIMESTAMP SN_CONFIG_GENERATION_DATE "%m-%d-%Y(%H:%M:%S)")
 string(TIMESTAMP SN_CONFIG_GENERATION_YEAR "%Y")
 
 
-option(SN_USE_CPACK_PACKAGING "If CPAC packaging should be enabled" ON)
+option(SN_USE_CPACK_PACKAGING "If Cpack packaging should be enabled" ON)
+
+if(SN_CONFIG_ENABLE_STACK_TRACE AND SN_CONFIG_STATIC_ONLY)
+    message(FATAL_ERROR "Producing a static build with stack trace enabled Is an invalid state")
+endif ()
 
 function(set_target_output target_name out_path)
     set_target_properties(${target_name} PROPERTIES
@@ -108,3 +112,44 @@ endfunction()
 
 execute_process(COMMAND git rev-parse --short HEAD OUTPUT_VARIABLE GIT_COMMIT_HASH OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND git rev-parse --abbrev-ref HEAD OUTPUT_VARIABLE GIT_BRANCH_NAME OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+
+if(SN_CONFIG_STATIC_ONLY AND SN_CONFIG_SHARED_LIBRARY_POST_PROCESSING)
+    message(WARNING "Can't have both static-only and shared-library post-processing enabled. Ignored SN_CONFIG_SHARED_LIBRARY_POST_PROCESSING")
+endif()
+
+#if(SN_CONFIG_ENABLE_STACK_TRACE)
+#    message(WARNING "Stack trace may be unstable.")
+#endif()
+
+# --- Create a custom "config_info" target ---
+set(CONFIG_SUMMARY "${CMAKE_BINARY_DIR}/CMakeFiles/config_summary.txt")
+
+file(WRITE ${CONFIG_SUMMARY} "========= libsafetynet Build Configuration =========\n")
+file(APPEND ${CONFIG_SUMMARY} "Compiler: ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}\n")
+file(APPEND ${CONFIG_SUMMARY} "Platform: ${CMAKE_SYSTEM_NAME}\n")
+file(APPEND ${CONFIG_SUMMARY} "Platform Triple: ${PLATFORM_TRIPLE}\n")
+file(APPEND ${CONFIG_SUMMARY} "Platform C Compiler: ${CMAKE_C_COMPILER}\n")
+file(APPEND ${CONFIG_SUMMARY} "Platform Objcopy Binary: ${PLAT_OBJCOPY}\n")
+file(APPEND ${CONFIG_SUMMARY} "Platform NM Binary: ${PLAT_NM}\n")
+file(APPEND ${CONFIG_SUMMARY} "Git: ${GIT_BRANCH_NAME} (${GIT_COMMIT_HASH})\n\n")
+file(APPEND ${CONFIG_SUMMARY} "Feature Flags:\n")
+foreach(flag
+        SN_CONFIG_STATIC_ONLY
+        SN_CONFIG_DEBUG
+        SN_CONFIG_ENABLE_MUTEX
+        SN_CONFIG_VERBOSE_LOGGING_FACILITIES_FEATURE
+        SN_CONFIG_SANITIZE_MEMORY_ON_FREE
+        SN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE
+        SN_CONFIG_ENABLE_DUMP_LIST_CRASH
+)
+    file(APPEND ${CONFIG_SUMMARY} "  ${flag} = ${${flag}}\n")
+endforeach()
+file(APPEND ${CONFIG_SUMMARY} "====================================================\n")
+
+# target to print it using cmake -E cat (no shell parsing)
+add_custom_target(config_info
+        COMMAND ${CMAKE_COMMAND} -E cat ${CONFIG_SUMMARY}
+        COMMENT "Display the current libsafetynet configuration"
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)

@@ -17,7 +17,6 @@
 
 option(SN_STAND_ALONE_PACKAGE_BUNDLE "Produces a simple bundle package Default Packaging style" ON)
 option(SN_PACKAGE_DEB "Produces a simple deb" OFF)
-option(SN_WIN32_NON_BUNDLE_OVERRIDE "Allows the production of non bundle style packages for Windows" OFF)
 
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
@@ -43,7 +42,7 @@ else ()
     set(CPACK_GENERATOR "TGZ")
 endif ()
 
-if(SN_STAND_ALONE_PACKAGE_BUNDLE OR (WIN32 AND NOT SN_WIN32_NON_BUNDLE_OVERRIDE))
+if(SN_STAND_ALONE_PACKAGE_BUNDLE)
     # only install headers + libs for bundle
     install(TARGETS ${safetynet_out_lib}
             ARCHIVE DESTINATION .

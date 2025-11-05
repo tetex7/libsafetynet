@@ -40,6 +40,18 @@ else()
     set(DEBUG_FLAGS -g -O1)
 endif()
 
+if(SN_CONFIG_ENABLE_STACK_TRACE)
+    if (WIN32)
+        message(WARNING "If you are cross compiling on Linux please set PKG_CONFIG_EXECUTABLE to a Cross compiler wrapper")
+    endif ()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(BACKTRACE REQUIRED libbacktrace)
+    message(STATUS "Stacktrace component enabled")
+    message(STATUS "Using backtrace for stacktrace")
+    include_directories(${BACKTRACE_INCLUDES})
+    link_libraries(${BACKTRACE_LIBRARIES})
+endif ()
+
 
 add_library(defs_interface INTERFACE)
 target_compile_definitions(defs_interface INTERFACE BUILDING_SAFETYNET)
@@ -83,12 +95,16 @@ set_target_properties(safetynet_shared PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${BIN_DIR}"
     LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}"
+
 )
+set(CMAKE_PLATFORM_NO_VERSIONED_SONAME  ON)
 
 set_target_properties(safetynet_shared PROPERTIES
         VERSION ${PROJECT_VERSION}        # Full version, makes the file libsafetynet.so.1.2.0
         SOVERSION ${PROJECT_VERSION_MAJOR}          # ABI version, makes SONAME libsafetynet.so.1
 )
+
+
 
 if (WIN32)
     set_target_properties(safetynet_shared PROPERTIES

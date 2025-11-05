@@ -64,6 +64,7 @@ typedef struct linked_list_entry_s
 } *linked_list_entry_c, linked_list_entry_t;
 
 linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* data, size_t size, sn_tid_t tid);
+linked_list_entry_c linked_list_entry_copy(linked_list_entry_c entry);
 
 linked_list_entry_c linked_list_entry_getPreviousEntry(const linked_list_entry_c self);
 void linked_list_entry_setPreviousEntry(linked_list_entry_c self, linked_list_entry_c new_previous);

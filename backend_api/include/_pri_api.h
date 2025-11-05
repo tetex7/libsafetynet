@@ -41,6 +41,9 @@
 #include "linked_list_c.h"
 #include "platform_independent/plat_threading.h"
 #include "allocation_manager/alloc_manager_c.h"
+#ifdef SN_CONFIG_ENABLE_STACK_TRACE
+#   include <backtrace.h>
+#endif
 
 SN_PUB_API_OPEN
 void sn_set_last_error(const sn_error_codes_e err);

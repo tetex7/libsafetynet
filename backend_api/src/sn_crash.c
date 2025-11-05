@@ -81,7 +81,7 @@ static linked_list_entry_c list_nodeas(linked_list_c self, linked_list_entry_c c
 
 //Yes this does do something unsafe,
 //but it is not working with those addresses just displaying
-#ifdef SN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE
+#ifdef SN_CONFIG_ENABLE_STACK_TRACE
 #if defined(__clang__)
 #   pragma clang diagnostic push
 #   pragma clang diagnostic ignored "-Wframe-address"
@@ -120,7 +120,7 @@ SN_NO_RETURN void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t 
 #elif defined(SN_ON_WIN32)
     sn_crash_print("crash on tid %llu\n\n", plat_getTid());
 #endif
-#ifdef SN_CONFIG_ENABLE_PRIMITIVE_STACK_TRACE
+#ifdef SN_CONFIG_ENABLE_STACK_TRACE
     sn_crash_print("\nStock trace:\n");
     print_stack_trace();
     sn_crash_print("\n");
