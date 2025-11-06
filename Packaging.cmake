@@ -43,11 +43,15 @@ else ()
 endif ()
 
 if(SN_STAND_ALONE_PACKAGE_BUNDLE)
+
+    message(STATUS "Disabling Shared object versioning Suffix")
+    set(CMAKE_PLATFORM_NO_VERSIONED_SONAME  ON)
     # only install headers + libs for bundle
     install(TARGETS ${safetynet_out_lib}
             ARCHIVE DESTINATION .
             LIBRARY DESTINATION .
             RUNTIME DESTINATION .
+            LIBRARY NAMELINK_COMPONENT Dev
     )
     install(DIRECTORY include/ DESTINATION .)
 

@@ -97,7 +97,6 @@ set_target_properties(safetynet_shared PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}"
 
 )
-set(CMAKE_PLATFORM_NO_VERSIONED_SONAME  ON)
 
 set_target_properties(safetynet_shared PROPERTIES
         VERSION ${PROJECT_VERSION}        # Full version, makes the file libsafetynet.so.1.2.0
@@ -209,4 +208,6 @@ if (SN_USE_CPACK_PACKAGING)
 else ()
     message(STATUS "Cpack Component disabled")
     set(CMAKE_SKIP_INSTALL_RULES ON)
+    message(STATUS "Disabling Shared object versioning Suffix")
+    set(CMAKE_PLATFORM_NO_VERSIONED_SONAME  ON)
 endif ()
