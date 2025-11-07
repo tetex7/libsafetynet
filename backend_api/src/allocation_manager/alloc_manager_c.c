@@ -106,7 +106,7 @@ linked_list_entry_c memman_TryCacheHit(alloc_manager_m self, void* key)
     return MEMMAN_CACHE_MISS;
 }
 
-linked_list_entry_c memman_TryCacheHitById(alloc_manager_m self, uint16_t id)
+linked_list_entry_c memman_TryCacheHitById(alloc_manager_m self, sn_block_id_t id)
 {
     if (!self) return MEMMAN_CACHE_MISS;
     if (!self->use_cache) return MEMMAN_CACHE_MISS;

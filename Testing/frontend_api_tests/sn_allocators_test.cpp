@@ -38,6 +38,7 @@ TEST(SafetynetAllocatorTests, AllocateAndFree)
     EXPECT_NE(sn_get_last_error(), SN_ERR_BAD_ALLOC);
     EXPECT_EQ(sn_get_last_error(), SN_ERR_OK);
     sn_reset_last_error();
+
     sn_free(buff);
     EXPECT_NE(sn_get_last_error(), SN_ERR_NO_ADDER_FOUND);
     EXPECT_EQ(sn_get_last_error(), SN_ERR_OK);

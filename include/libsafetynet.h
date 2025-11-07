@@ -276,7 +276,7 @@ SN_PUB_API_OPEN sn_block_id_t sn_get_block_id(void* block);
  * @param id An id for a block of tracked memory
  * @return A pointer to the block of tracked memory
  */
-SN_PUB_API_OPEN void* sn_query_block_id(uint16_t id);
+SN_PUB_API_OPEN void* sn_query_block_id(sn_block_id_t id);
 
 /**
  * @brief calculates a checksum for the block of tracked memory
@@ -346,6 +346,34 @@ SN_PUB_API_OPEN void sn_do_fast_caching(SN_FLAG val);
  */
 SN_PUB_API_OPEN void sn_fast_cache_clear();
 
+/**
+ * @brief Dumps the contents of a track block memory to a file
+ * @param file Path to a nonexistent file
+ * @param block A pointer to a tracked block of memory
+ * @return If 0 failure, if 1 successful
+ */
+SN_PUB_API_OPEN SN_FLAG sn_dump_to_file(const char* file, void* block);
+
+/**
+ * @brief It copies a files data to block memory of the same size
+ * @param file Path to a pre-existing file (This file will be treated as read only)
+ * @return A pointer to a Pre-allocated tracked block of memory
+ */
+SN_PUB_API_OPEN void* sn_mount_file_to_ram(const char* file);
+
+
+/**
+ * @brief Returns the number of elements within an array based off of the block_size
+ * @param ptr A pointer to a tracked block of memory
+ * @param block_size Size of blocks eg `sizeof(int)'
+ * @return Returns the number of elements within an array based off of the block_size
+ */
+SN_FORCE_INLINE size_t sn_query_size_in_block_size(void* ptr, size_t block_size)
+{
+    size_t raw_size = sn_query_size(ptr);
+    if (!raw_size) return 0;
+    return SN_GET_ARR_SIZE(raw_size, block_size);
+}
 
 #ifdef __SN_WIP_CALLS__
 
@@ -373,21 +401,6 @@ SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_metadata(void* ptr);
 SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_static_metadata(void* ptr);
 
 /**
- * @brief Dumps the contents of a track block memory to a file
- * @param file Path to a nonexistent file
- * @param block A pointer to a tracked block of memory
- * @return If 0 failure, if 1 successful
- */
-SN_PUB_API_OPEN SN_FLAG sn_dump_to_file(const char* file, void* block);
-
-/**
- * @brief It copies a files data to block memory of the same size
- * @param file Path to a pre-existing file (This file will be treated as read only)
- * @return A pointer to a Pre-allocated tracked block of memory
- */
-SN_PUB_API_OPEN void* sn_mount_file_to_ram(const char* file);
-
-/**
  * @brief Set a software limit on how many bytes that can be allocated
  * When the Alloc limit is hit a error of SN_ERR_ALLOC_LIMIT_HIT is produced and null is returned
  * @param limit The bytes limit If given zero no limit is applied
@@ -406,19 +419,6 @@ SN_PUB_API_OPEN size_t sn_query_thread_memory_usage(sn_tid_t tid);
  * @return Total memory currently tracked.
  */
 SN_PUB_API_OPEN size_t sn_query_total_memory_usage();
-
-/**
- * @brief Returns the number of elements within an array based off of the block_size
- * @param ptr A pointer to a tracked block of memory
- * @param block_size Size of blocks eg `sizeof(int)'
- * @return Returns the number of elements within an array based off of the block_size
- */
-SN_FORCE_INLINE size_t sn_query_size_in_block_size(void* ptr, size_t block_size)
-{
-    size_t raw_size = sn_query_size(ptr);
-    if (!raw_size) return 0;
-    return SN_GET_ARR_SIZE(raw_size, block_size);
-}
 
 
 typedef sn_mem_metadata_t* (*sn_metadata_for_each_worker_f)(sn_mem_metadata_t* ctx, size_t index, void* generic_arg);

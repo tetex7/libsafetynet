@@ -29,6 +29,7 @@
 #include "linked_list_c.h"
 
 #include "platform_independent/plat_threading.h"
+#include "allocation_manager/alloc_manager_c.h"
 
 #include "_pri_api.h"
 
@@ -39,7 +40,7 @@ static int print_node(const linked_list_entry_c node)
     int pcc = 0;
     if (!node)
     {
-        pcc += sn_crash_print("NODE IS NULL");
+        pcc += sn_crash_print("NODE IS NULL\n");
         return pcc;
     }
     pcc += sn_crash_print("node@%p(head=%i)\n", node, node->isHead);
@@ -79,33 +80,34 @@ static linked_list_entry_c list_nodeas(linked_list_c self, linked_list_entry_c c
     return NULL;
 }
 
-//Yes this does do something unsafe,
-//but it is not working with those addresses just displaying
+
 #ifdef SN_CONFIG_ENABLE_STACK_TRACE
-#if defined(__clang__)
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wframe-address"
-#elif defined(__GNUC__)
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wframe-address"
-#endif
+
+static void error_callback(void *data, const char *msg, int errnum)
+{
+    sn_crash_print("libbacktrace error: %s (err %d)\n", msg, errnum);
+}
+
+static int full_callback(void *data, uintptr_t pc,
+                         const char *filename, int lineno,
+                         const char *function)
+{
+    sn_crash_print("  %s:%d: %s (pc = %p)\n",
+           filename ? filename : "??",
+           lineno,
+           function ? function : "??",
+           (void *)pc);
+    return 0; // 0 = continue
+}
 
 static void print_stack_trace()
 {
-#define print_trace_ent(x) sn_crash_print("Frame %d: %p\n", x, __builtin_return_address(x))
-    print_trace_ent(0);
-    print_trace_ent(1);
-    print_trace_ent(2);
-    print_trace_ent(3);
-    print_trace_ent(4);
-#undef print_trace_ent
-}
+    struct backtrace_state *state =
+        backtrace_create_state(NULL, 1, error_callback, NULL);
 
-#if defined(__clang__)
-#   pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#   pragma GCC diagnostic pop
-#endif
+    //printf("Stack trace:\n");
+    backtrace_full(state, 0, full_callback, error_callback, NULL);
+}
 #endif
 
 
@@ -116,9 +118,9 @@ SN_NO_RETURN void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t 
     sn_crash_print("ERROR_NAME: %s\n", sn_get_error_name(err));
     sn_crash_print("ERROR_MSG: %s\n", sn_get_error_msg(err));
 #ifdef SN_ON_UNIX
-    sn_crash_print("crash on tid %lu\n\n", plat_getTid());
+    sn_crash_print("crash on tid 0x%lx\n\n", plat_getTid());
 #elif defined(SN_ON_WIN32)
-    sn_crash_print("crash on tid %llu\n\n", plat_getTid());
+    sn_crash_print("crash on tid 0x%llx\n\n", plat_getTid());
 #endif
 #ifdef SN_CONFIG_ENABLE_STACK_TRACE
     sn_crash_print("\nStock trace:\n");
@@ -132,10 +134,31 @@ SN_NO_RETURN void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t 
     sn_crash_print("Memory tracking list state:\n");
     sn_crash_print("\nlast_access_node:\n");
     print_node(mem_list->lastAccess);
+
+    sn_crash_print("\nNode Fast cache\n");
+    sn_crash_print("Cache Enabled: %d\n", memory_manager->use_cache);
+    sn_crash_print("Cache Locked: %d\n", memory_manager->cache_lock);
+    sn_crash_print("Number of Baked-in Cache Slots: %d\n", MEMMAN_MAX_CACHE_SLOTS);
+    sn_crash_print("Available Cache Slots: %d\n", memory_manager->available_cache_slots);
+    if (memory_manager->available_cache_slots != MEMMAN_MAX_CACHE_SLOTS)
+    {
+        for (size_t i = 0; i < MEMMAN_MAX_CACHE_SLOTS; i++)
+        {
+            if (memory_manager->cache_list[i].key != NULL)
+            {
+                print_node(memory_manager->cache_list[i].value);
+            }
+        }
+    }
+    else sn_crash_print("Nothing in the Cache\n");
+
 #ifdef SN_CONFIG_ENABLE_DUMP_LIST_CRASH
-    sn_crash_print("\n\n");
-    sn_crash_print("nodes:\n");
-    linked_list_forEach(mem_list, &list_nodeas, NULL);
+    if (linked_list_getSize(mem_list) != 0)
+    {
+        sn_crash_print("\n\n");
+        sn_crash_print("nodes:\n");
+        linked_list_forEach(mem_list, &list_nodeas, NULL);
+    }
 #endif
 
 EX1:

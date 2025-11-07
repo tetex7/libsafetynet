@@ -22,6 +22,8 @@ target_link_libraries(backend_api PUBLIC base_interface)
 target_include_directories(backend_api PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_include_directories(backend_api PRIVATE "${CMAKE_SOURCE_DIR}/include")
 target_link_libraries(backend_api PRIVATE defs_interface)
+target_link_libraries(backend_api PRIVATE pic_base)
+set_target_properties(backend_api PROPERTIES CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set_target_properties(backend_api PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${BIN_DIR}

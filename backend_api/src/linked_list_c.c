@@ -135,13 +135,13 @@ void linked_list_entry_setTid(linked_list_entry_c self, uint64_t new_tid)
     plat_mutex_unlock(self->mutex);
 }
 
-uint16_t linked_list_entry_getBlockId(const linked_list_entry_c self)
+sn_block_id_t linked_list_entry_getBlockId(const linked_list_entry_c self)
 {
     if (self == NULL) return 0;
     return self->block_id;
 }
 
-void linked_list_entry_setBlockId(linked_list_entry_c self, uint16_t new_id)
+void linked_list_entry_setBlockId(linked_list_entry_c self, sn_block_id_t new_id)
 {
     if (self == NULL) return;
     plat_mutex_lock(self->mutex);
@@ -297,6 +297,8 @@ void linked_list_pop(linked_list_c self)
     linked_list_entry_c temp = self->lastEntry;
     self->lastEntry = temp->previous;
     self->lastEntry->next = NULL;
+    if (self->lastAccess == temp)
+        self->lastAccess = NULL;
 
     linked_list_entry_destroy(temp);
 
@@ -368,7 +370,7 @@ SN_BOOL linked_list_hasPtr(linked_list_c self, void* key)
     return SN_FALSE;
 }
 
-SN_BOOL linked_list_hasId(linked_list_c self, uint16_t id)
+SN_BOOL linked_list_hasId(linked_list_c self, sn_block_id_t id)
 {
     if (!self) return SN_FALSE;
     linked_list_entry_c temp = linked_list_getById(self, id);
@@ -424,18 +426,18 @@ linked_list_entry_c linked_list_getByIndex(linked_list_c self, size_t index)
 static linked_list_entry_c linked_list_searchForId(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg)
 {
     if (!generic_arg) return NULL;
-    if (linked_list_entry_getBlockId(ctx) == *((const uint16_t*)generic_arg))
+    if (linked_list_entry_getBlockId(ctx) == *((const sn_block_id_t*)generic_arg))
     {
         return ctx;
     }
     return NULL;
 }
 
-linked_list_entry_c linked_list_getById(linked_list_c self, uint16_t id)
+linked_list_entry_c linked_list_getById(linked_list_c self, sn_block_id_t id)
 {
     if (!self) return NULL;
     plat_mutex_lock(self->mutex);
-    linked_list_entry_c temp = linked_list_forEach(self, &linked_list_searchForId, (uint16_t*)&id);
+    linked_list_entry_c temp = linked_list_forEach(self, &linked_list_searchForId, (sn_block_id_t*)&id);
     if (temp)
     {
         self->lastAccess = temp;
@@ -480,6 +482,9 @@ SN_BOOL linked_list_removeEntry(linked_list_c self, linked_list_entry_c entry_re
         pre->next = nxt;
     if(nxt)
         nxt->previous = pre;
+
+    if (self->lastAccess == entry_ref)
+        self->lastAccess = NULL;
 
     linked_list_entry_destroy(entry_ref);
 

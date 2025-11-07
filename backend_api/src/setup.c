@@ -134,3 +134,15 @@ SN_BOOL file_exists(const char* path)
     (*(size_t*)&node->size) = 88;
     (*(void**)&node->data) = malloc(88);
 }*/
+
+/*int main()
+{
+    char* test_str = NULL;
+    SN_ERR_CODE err_code = SnAllocatePreInitializedTrackedMemoryBlock(sizeof(char) * 4, 0, &test_str)
+    if (err_code != SN_ERR_OK)
+    {
+        //Some error message
+    }
+
+
+}*/

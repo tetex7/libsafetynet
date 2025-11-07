@@ -55,7 +55,7 @@ typedef struct linked_list_entry_s
     size_t size;          // size of the data
     sn_tid_t tid;         // The tid of the thread that allocated this chunk
     SN_FLAG cached;       // The denotes if it's been cached by the memory manager
-    uint16_t block_id;    // An optional block id
+    sn_block_id_t block_id;    // An optional block id
     // Do not create a getter nor a setter for this treat this as private
     SN_BOOL isHead;       // To be determined
     uint8_t _weight;      // For used for caching(private)
@@ -78,8 +78,8 @@ void linked_list_entry_setSize(linked_list_entry_c self, size_t new_size);
 uint64_t linked_list_entry_getTid(const linked_list_entry_c self);
 void linked_list_entry_setTid(linked_list_entry_c self, uint64_t new_tid);
 
-uint16_t linked_list_entry_getBlockId(const linked_list_entry_c self);
-void linked_list_entry_setBlockId(linked_list_entry_c self, uint16_t new_id);
+sn_block_id_t linked_list_entry_getBlockId(const linked_list_entry_c self);
+void linked_list_entry_setBlockId(linked_list_entry_c self, sn_block_id_t new_id);
 
 linked_list_entry_c linked_list_entry_getNextEntry(const linked_list_entry_c self);
 void linked_list_entry_setNextEntry(linked_list_entry_c self, linked_list_entry_c new_next);
@@ -116,10 +116,10 @@ void linked_list_pop(linked_list_c self);
 
 linked_list_entry_c linked_list_getByPtr(linked_list_c self, void* key);
 linked_list_entry_c linked_list_getByIndex(linked_list_c self, size_t index);
-linked_list_entry_c linked_list_getById(linked_list_c self, uint16_t id);
+linked_list_entry_c linked_list_getById(linked_list_c self, sn_block_id_t id);
 
 SN_BOOL linked_list_hasPtr(linked_list_c self, void* key);
-SN_BOOL linked_list_hasId(linked_list_c self, uint16_t id);
+SN_BOOL linked_list_hasId(linked_list_c self, sn_block_id_t id);
 
 size_t linked_list_getSize(linked_list_c self);
 

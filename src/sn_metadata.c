@@ -147,7 +147,7 @@ SN_PUB_API_OPEN sn_block_id_t sn_get_block_id(void* block)
     return linked_list_entry_getBlockId(entry);
 }
 
-SN_PUB_API_OPEN void* sn_query_block_id(uint16_t id)
+SN_PUB_API_OPEN void* sn_query_block_id(sn_block_id_t id)
 {
     memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!id)

@@ -93,3 +93,4 @@ cmake_install.cmake
 /CPackSourceConfig.cmake
 /_CPack_Packages
 *.tar.gz
+pri_notes.txt

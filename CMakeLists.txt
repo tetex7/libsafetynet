@@ -30,9 +30,6 @@ include(BuildOptions.cmake)
 set(BIN_DIR ${CMAKE_BINARY_DIR}/build)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 
-# Enable position-independent code (like -fPIC)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 # Compiler flags
 if (SN_CONFIG_DEBUG)
     set(DEBUG_FLAGS -g -O0)
@@ -58,6 +55,9 @@ target_compile_definitions(defs_interface INTERFACE BUILDING_SAFETYNET)
 target_compile_definitions(defs_interface INTERFACE __SN_WIP_CALLS__)
 target_compile_definitions(defs_interface INTERFACE __SN_DEBUG_CALLS__)
 
+add_library(pic_base INTERFACE)
+target_compile_options(pic_base INTERFACE -fPIC)
+
 include(base_interface.cmake)
 add_subdirectory(backend_api)
 
@@ -80,6 +80,7 @@ target_include_directories(
 target_sources(safetynet_base INTERFACE ${C_SOURCES})
 target_link_libraries(safetynet_base INTERFACE defs_interface)
 target_link_libraries(safetynet_base INTERFACE backend_api)
+target_link_libraries(safetynet_base INTERFACE pic_base)
 
 if (NOT SN_CONFIG_STATIC_ONLY)
 # Shared library
