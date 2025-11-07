@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
@@ -179,6 +180,7 @@ typedef enum
 
 typedef uint64_t sn_tid_t;
 typedef uintptr_t sn_mem_address_t;
+typedef uint16_t sn_block_id_t;
 
 /**
  * @brief Allocates memory and tracks it for cleanup at program exit.
@@ -260,14 +262,14 @@ SN_PUB_API_OPEN SN_FLAG sn_is_tracked_block(const void* const ptr);
  * @brief set's a numerical id for the memory block
  * @param id An integer ID for the block
  */
-SN_PUB_API_OPEN void sn_set_block_id(void* block, uint16_t id);
+SN_PUB_API_OPEN void sn_set_block_id(void* block, sn_block_id_t id);
 
 /**
  * @brief Get The Associated ID with a tracked block of memory
  * @param block A pointer to a tracked block memory
  * @return Returns the ID associated with the block
  */
-SN_PUB_API_OPEN uint16_t sn_get_block_id(void* block);
+SN_PUB_API_OPEN sn_block_id_t sn_get_block_id(void* block);
 
 /**
  * @brief query by id to get a pointer to block of tracked memory

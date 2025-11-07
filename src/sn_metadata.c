@@ -102,7 +102,7 @@ SN_PUB_API_OPEN SN_FLAG sn_is_tracked_block(const void* const ptr)
     return linked_list_hasPtr(mem_list, (void*)ptr);
 }
 
-SN_PUB_API_OPEN void sn_set_block_id(void* block, uint16_t id)
+SN_PUB_API_OPEN void sn_set_block_id(void* block, sn_block_id_t id)
 {
     memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!block)
@@ -127,7 +127,7 @@ SN_PUB_API_OPEN void sn_set_block_id(void* block, uint16_t id)
     linked_list_entry_setBlockId(entry, id);
 }
 
-SN_PUB_API_OPEN uint16_t sn_get_block_id(void* block)
+SN_PUB_API_OPEN sn_block_id_t sn_get_block_id(void* block)
 {
     memman_work(memory_manager, mem_list); // Let's Steal some CPU time
     if (!block)

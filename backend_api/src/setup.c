@@ -22,6 +22,7 @@
 
 #include "libsafetynet.h"
 #include "_pri_api.h"
+#include "libsafetynet32.h"
 
 #ifdef SN_ON_WIN32
 #   define WIN32_LEAN_AND_MEAN
