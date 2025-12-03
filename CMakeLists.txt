@@ -111,6 +111,7 @@ if (WIN32)
             PREFIX "lib"
             SUFFIX ".dll"
     )
+    target_link_options(safetynet_shared PUBLIC "-static-libgcc")
 endif ()
 
 

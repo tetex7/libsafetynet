@@ -40,7 +40,6 @@
 #   endif
 #endif
 
-
 #ifndef SN_DEPRECATED
 #   if defined(SN_ON_MSVC) || defined(SN_ON_WIN32)
 #       define SN_DEPRECATED __declspec(deprecated)
@@ -73,6 +72,16 @@
 #   endif
 #endif
 
+#ifndef SN_WEAK
+#   if defined(SN_ON_MSVC)
+#       define SN_WEAK
+#   elif  defined(SN_ON_WIN32) && defined(SN_ON_GCC) && defined(SN_CONFIG_STATIC_ONLY)
+#       define SN_WEAK __declspec(weak)
+#   else
+#       define SN_WEAK __attribute__ ((weak))
+#   endif
+#endif
+
 /*#ifndef SN_VERY_VOLATILE
 #   define SN_VERY_VOLATILE __attribute__((optimize("O0")))
 #endif
@@ -100,6 +109,18 @@
 #   endif
 #endif
 
+#ifndef SN_STATIC_ASSERT
+#   ifdef SN_HAS_C_STATIC_ASSERT
+#       define SN_STATIC_ASSERT(boolean_expression, string_literal) _Static_assert(boolean_expression, string_literal)
+#   elif defined(SN_CPP_COMPAT_MODE)
+#       define SN_STATIC_ASSERT(boolean_expression, string_literal) static_assert(boolean_expression, string_literal)
+#   else
+#       define __SN_STATIC_ASSERT_MIX_EXPAND(name, line) name##line
+#       define __SN_STATIC_ASSERT_MIX(name, line) __SN_STATIC_ASSERT_MIX_EXPAND(name, line)
+#       define SN_STATIC_ASSERT(boolean_expression, string_literal) typedef char __SN_STATIC_ASSERT_MIX(__sn_c_static_assert, __LINE__)[(boolean_expression) ? 1 : -1]
+#   endif
+#endif
+
 #ifndef SN_BLOCK_NAME_MAX_LEN
 #   define SN_BLOCK_NAME_MAX_LEN 100
 #endif
@@ -107,7 +128,6 @@
 #ifdef __cplusplus
 #define SN_CPP_COMPAT_START extern "C" {
 #define SN_CPP_COMPAT_END }
-#define SN_CPP_COMPAT_MODE __cplusplus
 #   ifdef SN_ENABLE_CPP_NAMESPACE
 #       define SN_CPP_NAMESPACE_START namespace safetynet {
 #       define SN_CPP_NAMESPACE_END }
@@ -135,7 +155,6 @@
 #   warning "Compiler appears to not support __has_include Defaulting to SN_FANCY_HAS_BOOL_CHECK to 0"
 #   define SN_FANCY_HAS_BOOL_CHECK 0
 #endif
-
 
 SN_CPP_NAMESPACE_START
 #if (defined(SN_NO_STD_BOOL) || !SN_FANCY_HAS_BOOL_CHECK) && !defined(SN_CPP_COMPAT_MODE)

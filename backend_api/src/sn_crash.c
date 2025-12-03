@@ -105,7 +105,6 @@ static void print_stack_trace()
     struct backtrace_state *state =
         backtrace_create_state(NULL, 1, error_callback, NULL);
 
-    //printf("Stack trace:\n");
     backtrace_full(state, 0, full_callback, error_callback, NULL);
 }
 #endif

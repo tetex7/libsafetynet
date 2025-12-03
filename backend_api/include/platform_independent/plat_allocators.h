@@ -23,6 +23,7 @@
 #ifndef SN_PLAT_ALLOCATORS_H
 #define SN_PLAT_ALLOCATORS_H
 #include <stddef.h>
+#include <libsafetynet.h>
 
 void* plat_malloc(size_t size);
 void* plat_realloc(void* ptr, size_t new_size);

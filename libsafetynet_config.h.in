@@ -61,20 +61,39 @@
 
 #define SN_C_COMPILER_ID "@CMAKE_C_COMPILER_ID@"
 #if defined(__clang__)
-#   define SN_ON_CLANG
+#   define SN_ON_CLANG 1
 #   define SN_C_COMPILER "CLANG"
 #elif defined(__GNUC__)
-#   define SN_ON_GCC
+#   define SN_ON_GCC 1
 #   define SN_C_COMPILER "GCC"
 #elif defined(_MSC_VER)
-#   define SN_ON_MSVC
+#   define SN_ON_MSVC 1
 #   define SN_C_COMPILER "MSVC"
 #endif
 
 #if defined(__unix__) || defined(__unix) || defined(__APPLE__)
-#   define SN_ON_UNIX
+#   define SN_ON_UNIX 1
 #elif defined(_WIN32)
-#   define SN_ON_WIN32
+#   define SN_ON_WIN32 1
+#else
+#   define SN_ON_UNKNOW_OS 1
+#endif
+
+#ifdef __cplusplus
+#   define SN_CPP_COMPAT_MODE __cplusplus
+#endif
+
+#if defined(__STDC_VERSION__)
+#   define SN_ON_STD_C 1
+#endif
+
+#if defined(SN_ON_STD_C) && __STDC_VERSION__ > 201112L
+#   define SN_ON_C11_OR_NEWER 1
+#endif
+
+// gcc and clang backport's _Static_assert to C99
+#if defined(SN_ON_C11_OR_NEWER) || defined(SN_ON_GCC) || defined(SN_ON_CLANG)
+#   define SN_HAS_C_STATIC_ASSERT 1
 #endif
 
 #endif //LIBSAFETYNET_CONFIG_H
