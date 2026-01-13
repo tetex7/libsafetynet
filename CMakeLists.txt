@@ -34,7 +34,7 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 if (SN_CONFIG_DEBUG)
     set(DEBUG_FLAGS -g -O0)
 else()
-    set(DEBUG_FLAGS -g -O1)
+    set(DEBUG_FLAGS -g -O2)
 endif()
 
 if(SN_CONFIG_ENABLE_STACK_TRACE)
@@ -112,6 +112,9 @@ if (WIN32)
             SUFFIX ".dll"
     )
     target_link_options(safetynet_shared PUBLIC "-static-libgcc")
+    if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+        #target_link_options(safetynet_shared PUBLIC "-fms-compatibility-version=19.36 -fms-compatibility")
+    endif ()
 endif ()
 
 

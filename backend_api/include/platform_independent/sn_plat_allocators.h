@@ -16,11 +16,23 @@
  */
 
 //
-// Created by tete on 10/22/2025.
+// Created by tete on 06/30/2025.
 //
-#include "sn_crash.h"
+#pragma once
 
-SN_API SN_NO_RETURN void sn_debug_crash()
-{
-    sn_crash(SN_ERR_DEBUG);
-}
+#ifndef SN_PLAT_ALLOCATORS_H
+#define SN_PLAT_ALLOCATORS_H
+#include <stddef.h>
+#include <libsafetynet.h>
+
+#ifndef __SN_PLAT_ALLOC
+#define __SN_PLAT_ALLOC
+
+SN_API SN_REDEFINE_ELIGIBLE void* sn_plat_malloc(size_t size);
+SN_API SN_REDEFINE_ELIGIBLE void* sn_plat_realloc(void* ptr, size_t new_size);
+SN_API SN_REDEFINE_ELIGIBLE void* sn_plat_calloc(size_t num, size_t size);
+SN_API SN_REDEFINE_ELIGIBLE void  sn_plat_free(void* ptr);
+#endif
+
+
+#endif //SN_PLAT_ALLOCATORS_H

@@ -15,23 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * Copyright (C) 2025  Tetex7
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 //
 // Created by tete on 06/15/2025.
 //
@@ -59,6 +42,8 @@ typedef struct linked_list_entry_s
     // Do not create a getter nor a setter for this treat this as private
     SN_BOOL isHead;       // To be determined
     uint8_t _weight;      // For used for caching(private)
+    void* ext;            // Generic extended data
+    uint32_t ref_count;
     plat_mutex_c mutex;   // A mutex inherited from the list container
     struct linked_list_entry_s* next;
 } *linked_list_entry_c, linked_list_entry_t;
@@ -87,6 +72,12 @@ void linked_list_entry_setNextEntry(linked_list_entry_c self, linked_list_entry_
 uint8_t linked_list_entry_pri_getWeight(linked_list_entry_c self);
 void linked_list_entry_pri_setWeight(linked_list_entry_c self, uint8_t weight);
 
+void linked_list_entry_setExt(linked_list_entry_c self, void* ext);
+void* linked_list_entry_getExtData(const linked_list_entry_c self);
+
+void linked_list_entry_setRefCount(linked_list_entry_c self, uint32_t ref_count);
+uint32_t linked_list_entry_getRefCount(const linked_list_entry_c self);
+
 void linked_list_entry_destroy(linked_list_entry_c self);
 
 
@@ -103,7 +94,7 @@ typedef struct linked_list_s
 } *linked_list_c, linked_list_t;
 
 
-#define LIST_FOR_EACH_LOOP_BRAKE ((linked_list_entry_c)-44)
+#define LIST_FOR_EACH_LOOP_BRAKE ((linked_list_entry_c)SIZE_MAX)
 typedef linked_list_entry_c(*linked_list_for_each_worker_f)(linked_list_c self, linked_list_entry_c ctx, size_t index, void* generic_arg);
 
 linked_list_c linked_list_new();

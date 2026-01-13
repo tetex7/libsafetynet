@@ -22,7 +22,7 @@
 #include "libsafetynet.h"
 #include "_pri_api.h"
 
-SN_PUB_API_OPEN SN_FLAG sn_request_to_fast_cache(const void* ptr)
+SN_API SN_FLAG sn_request_to_fast_cache(const void* ptr)
 {
     if (!ptr)
     {
@@ -38,22 +38,22 @@ SN_PUB_API_OPEN SN_FLAG sn_request_to_fast_cache(const void* ptr)
     return ret;
 }
 
-SN_PUB_API_OPEN void sn_lock_fast_cache()
+SN_API void sn_lock_fast_cache()
 {
     memory_manager->cache_lock = 1;
 }
 
-SN_PUB_API_OPEN void sn_unlock_fast_cache()
+SN_API void sn_unlock_fast_cache()
 {
     memory_manager->cache_lock = 0;
 }
 
-SN_PUB_API_OPEN void sn_do_fast_caching(SN_FLAG val)
+SN_API void sn_do_fast_caching(SN_FLAG val)
 {
     memory_manager->use_cache = val;
 }
 
-SN_PUB_API_OPEN void sn_fast_cache_clear()
+SN_API void sn_fast_cache_clear()
 {
     memman_cacheClear(memory_manager);
 }

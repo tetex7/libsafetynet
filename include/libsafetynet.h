@@ -24,19 +24,19 @@
 #include <stdint.h>
 #include <libsafetynet_config.h>
 
-#if !defined(SN_PUB_API_OPEN)
+#if !defined(SN_API)
 #   ifndef SN_CONFIG_STATIC_ONLY
 #       ifdef SN_ON_UNIX
-#           define SN_PUB_API_OPEN __attribute__((visibility("default")))
+#           define SN_API __attribute__((visibility("default")))
 #       elif defined(SN_ON_WIN32)
 #           ifdef BUILDING_SAFETYNET
-#               define SN_PUB_API_OPEN __declspec(dllexport)
+#               define SN_API __declspec(dllexport) __fastcall
 #           else
-#               define SN_PUB_API_OPEN __declspec(dllimport)
+#               define SN_API __declspec(dllimport) __fastcall
 #           endif
 #       endif
 #   else
-#       define SN_PUB_API_OPEN
+#       define SN_API
 #   endif
 #endif
 
@@ -75,19 +75,44 @@
 #ifndef SN_WEAK
 #   if defined(SN_ON_MSVC)
 #       define SN_WEAK
-#   elif  defined(SN_ON_WIN32) && defined(SN_ON_GCC) && defined(SN_CONFIG_STATIC_ONLY)
+#   elif  defined(SN_ON_WIN32)
 #       define SN_WEAK __declspec(weak)
 #   else
 #       define SN_WEAK __attribute__ ((weak))
 #   endif
 #endif
 
-/*#ifndef SN_VERY_VOLATILE
-#   define SN_VERY_VOLATILE __attribute__((optimize("O0")))
+/*
+ * Windows cannot support weak functions in a dynamic context
+ * And cannot support it using on MSVC in a static context
+ */
+#ifndef SN_REDEFINE_ELIGIBLE
+#   ifdef SN_ON_WIN32
+#       define SN_REDEFINE_ELIGIBLE
+#   else
+#       define  SN_REDEFINE_ELIGIBLE SN_WEAK
+#   endif
 #endif
+
+#ifndef SN_VERY_VOLATILE
+#   if defined(SN_ON_GCC)
+#       define SN_VERY_VOLATILE __attribute__((optimize("O0")))
+#   elif defined(SN_ON_CLANG)
+#       define SN_VERY_VOLATILE __attribute__((optnone))
+#   else
+#       define SN_VERY_VOLATILE
+#   endif
+#endif
+
 #ifndef SN_VERY_OPTIMIZED
+#   if defined(SN_ON_GCC)
 #   define SN_VERY_OPTIMIZED __attribute__((optimize("O3")))
-#endif*/
+#   elif defined(SN_ON_CLANG)
+#   define SN_VERY_OPTIMIZED __attribute__((__optimize__("0")))
+#   else
+#   define SN_VERY_OPTIMIZED
+#   endif
+#endif
 
 #ifndef SN_GET_ARR_SIZE
 #   define SN_GET_ARR_SIZE(byte_size, type_size) ((size_t)(byte_size / type_size))
@@ -115,9 +140,26 @@
 #   elif defined(SN_CPP_COMPAT_MODE)
 #       define SN_STATIC_ASSERT(boolean_expression, string_literal) static_assert(boolean_expression, string_literal)
 #   else
-#       define __SN_STATIC_ASSERT_MIX_EXPAND(name, line) name##line
-#       define __SN_STATIC_ASSERT_MIX(name, line) __SN_STATIC_ASSERT_MIX_EXPAND(name, line)
-#       define SN_STATIC_ASSERT(boolean_expression, string_literal) typedef char __SN_STATIC_ASSERT_MIX(__sn_c_static_assert, __LINE__)[(boolean_expression) ? 1 : -1]
+#       define __SN_STATIC_ASSERT_MIX_EXPAND(a, b, c) a##_##b##_##c
+#       define __SN_STATIC_ASSERT_MIX(a, b, c) __SN_STATIC_ASSERT_MIX_EXPAND(a, b, c)
+#       define SN_STATIC_ASSERT(boolean_expression, string_literal) typedef char __SN_STATIC_ASSERT_MIX(__sn_c_static_assert, __LINE__, __COUNTER__)[(boolean_expression) ? 1 : -1]
+#   endif
+#endif
+
+
+#if defined(SN_ON_CLANG)
+#   ifndef SN_OVERLOAD_ELIGIBLE
+#       define SN_OVERLOAD_ELIGIBLE __attribute__((overloadable))
+#   endif
+#endif
+
+// So I can produce 16 bit enum types
+// Too bad I can't trust Windows compilers to support this (Cough-Cough to maintain MSVC compatibility)
+#ifndef SN_I16_ENUM
+#   if (defined(SN_ON_GCC) || defined(SN_ON_CLANG)) && !defined(SN_ON_WIN32)
+#       define SN_I16_ENUM __attribute__((mode(HI)))
+#   else
+#       define SN_I16_ENUM
 #   endif
 #endif
 
@@ -166,6 +208,7 @@ typedef bool SN_BOOL;
 typedef bool SN_FLAG;
 #endif
 SN_CPP_NAMESPACE_END
+
 #ifndef SN_TRUE
 #   define SN_TRUE 1
 #   define SN_FALSE 0
@@ -176,7 +219,7 @@ SN_CPP_NAMESPACE_END
 SN_CPP_NAMESPACE_START
 SN_CPP_COMPAT_START
 
-typedef enum
+typedef enum SN_I16_ENUM
 {
     SN_ERR_OK = 0,                       /**< No error */
     SN_ERR_NULL_PTR = 5,                 /**< Null pointer passed to function */
@@ -190,12 +233,19 @@ typedef enum
     SN_ERR_FILE_IO = 70,                 /**< Libc file IO error */
     SN_ERR_FILE_NOT_EXIST = 110,         /**< file Does not exist */
     SN_ERR_ALLOC_LIMIT_HIT = 120,        /**< User defined alloc limit has been hit */
-    SN_WARN_DUB_FREE = 180,              /**< Double free detected (warning) */
+    SN_ERR_ASSERT_FAILED = 130,          /**< assertion has failed */
     SN_ERR_SYS_FAIL = 185,               /**< generic system failure (Start praying) */
     SN_ERR_CATASTROPHIC = 187,           /**< Catastrophic system error (like I said before pick a god and start praying) */
     SN_ERR_DEBUG = 180,                  /**< A debug error used in debug crashes */
     SN_INFO_PLACEHOLDER = 190,           /**< This is a generic placeholder For Yet undefined errors */
 } sn_error_codes_e;
+
+#ifdef SN_ON_CLANG
+#define SN_DIAG_IN_ERROR_RANGE(val) __attribute__((diagnose_if((((val) < SN_ERR_OK) || ((val) > SN_INFO_PLACEHOLDER)), "Error code not within range", "error")))
+#else
+#define SN_DIAG_IN_ERROR_RANGE(val)
+#endif
+
 
 typedef uint64_t sn_tid_t;
 typedef uintptr_t sn_mem_address_t;
@@ -206,7 +256,7 @@ typedef uint16_t sn_block_id_t;
  * @param size The size of the memory block to allocate.
  * @return Pointer to the allocated memory, or NULL on failure.
  */
-SN_PUB_API_OPEN void* sn_malloc(size_t size) SN_MALLOC_ATTR SN_ALLOC_SIZE_ATTR(1);
+SN_API void* sn_malloc(size_t size) SN_MALLOC_ATTR SN_ALLOC_SIZE_ATTR(1);
 
 /**
  * @brief Allocates memory and track it for an array of num objects of size and initializes it to all bits zero
@@ -214,7 +264,7 @@ SN_PUB_API_OPEN void* sn_malloc(size_t size) SN_MALLOC_ATTR SN_ALLOC_SIZE_ATTR(1
  * @param size size of each object
  * @return Pointer to the allocated memory, or NULL on failure.
  */
-SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size);
+SN_API void* sn_calloc(size_t num, size_t size);
 
 /**
  * @brief reAllocates memory and tracks it for cleanup at program exit.
@@ -222,7 +272,7 @@ SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size);
  * @param new_size The size of the memory block to reallocate.
  * @return Pointer to the allocated memory, or NULL on failure.
  */
-SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size);
+SN_API void* sn_realloc(void* ptr, size_t new_size);
 
 /**
  * @brief Allocates memory and initializes it to a specified value.
@@ -230,13 +280,13 @@ SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size);
  * @param initial_byte_value The value to initialize each byte of the allocated memory.
  * @return Pointer to the allocated memory, or NULL if allocation fails.
  */
-SN_PUB_API_OPEN void* sn_malloc_pre_initialized(size_t size, uint8_t initial_byte_value);
+SN_API void* sn_malloc_pre_initialized(size_t size, uint8_t initial_byte_value);
 
 /**
 * @brief Frees a tracked memory block.
 * @param ptr Pointer to the memory block.
 */
-SN_PUB_API_OPEN void sn_free(void* const ptr);
+SN_API void sn_free(void* const ptr);
 
 /**
  * @brief Registers a memory block for tracking.
@@ -246,7 +296,7 @@ SN_PUB_API_OPEN void sn_free(void* const ptr);
  * @note You can do some weird things with this thing to create an extension API
  * in conjunction with \ref sn_query_metadata
  */
-SN_PUB_API_OPEN SN_MSG_DEPRECATED("unsafe due to lack of The definition of size") void* sn_register(void* const ptr);
+//SN_PUB_API_OPEN void* sn_register(void* const ptr) SN_MSG_DEPRECATED("unsafe due to lack of The definition of size");
 
 /**
  * @brief Registers a memory block with a specified size for tracking.
@@ -254,116 +304,116 @@ SN_PUB_API_OPEN SN_MSG_DEPRECATED("unsafe due to lack of The definition of size"
  * @param size Size of the memory block.
  * @return The same pointer, or NULL on failure.
  */
-SN_PUB_API_OPEN void* sn_register_size(void* ptr, size_t size);
+SN_API void* sn_register_size(void* ptr, size_t size);
 
 /**
  * @brief Queries the size in Bytes of a tracked memory block.
  * @param ptr Pointer to the memory block.
  * @return The size of the memory block, or 0 on failure.
  */
-SN_PUB_API_OPEN size_t sn_query_size(void* const ptr);
+SN_API size_t sn_query_size(void* const ptr);
 
 /**
 * @brief Queries the thread ID associated with a memory block.
 * @param ptr Pointer to the memory block.
 * @return The thread ID, or 0 on failure.
 */
-SN_PUB_API_OPEN sn_tid_t sn_query_tid(void* const ptr);
+SN_API sn_tid_t sn_query_tid(void* const ptr);
 
 /**
  * @brief Checks if a block is being tracked by the safety net system;
  * @param ptr Pointer to the block of memory
  * @return A flag to which it exists (a bool)
  */
-SN_PUB_API_OPEN SN_FLAG sn_is_tracked_block(const void* const ptr);
+SN_API SN_FLAG sn_is_tracked_block(const void* const ptr);
 
 /**
  * @brief set's a numerical id for the memory block
  * @param id An integer ID for the block
  */
-SN_PUB_API_OPEN void sn_set_block_id(void* block, sn_block_id_t id);
+SN_API void sn_set_block_id(void* block, sn_block_id_t id);
 
 /**
  * @brief Get The Associated ID with a tracked block of memory
  * @param block A pointer to a tracked block memory
  * @return Returns the ID associated with the block
  */
-SN_PUB_API_OPEN sn_block_id_t sn_get_block_id(void* block);
+SN_API sn_block_id_t sn_get_block_id(void* block);
 
 /**
  * @brief query by id to get a pointer to block of tracked memory
  * @param id An id for a block of tracked memory
  * @return A pointer to the block of tracked memory
  */
-SN_PUB_API_OPEN void* sn_query_block_id(sn_block_id_t id);
+SN_API void* sn_query_block_id(sn_block_id_t id);
 
 /**
  * @brief calculates a checksum for the block of tracked memory
  * @param block pointer to a block of tracked memory
  * @return a checksum
  */
-SN_PUB_API_OPEN uint64_t sn_calculate_checksum(void* block);
+SN_API uint64_t sn_calculate_checksum(void* block);
 
 /**
  * @brief Provide you a human-readable error message
  * @param err The error code
  * @return A pointer to the string containing the error message (Do not manipulate the string Treat it as immutable)
  */
-SN_PUB_API_OPEN const char* sn_get_error_msg(sn_error_codes_e err);
+SN_API const char* sn_get_error_msg(sn_error_codes_e err) SN_DIAG_IN_ERROR_RANGE(err);
 
 /**
  * @brief get you the human-readable version the error code
  * @param err error codes
  * @return The human-readable version the error code
  */
-SN_PUB_API_OPEN const char* sn_get_error_name(const sn_error_codes_e err);
+SN_API const char* sn_get_error_name(const sn_error_codes_e err) SN_DIAG_IN_ERROR_RANGE(err);
 
 /**
 * @brief Retrieves the last error code.
 * @return The last error code.
 */
-SN_PUB_API_OPEN sn_error_codes_e sn_get_last_error();
+SN_API sn_error_codes_e sn_get_last_error();
 
 /**
 * @brief Resets the last error code to SN_ERR_OK.
 */
-SN_PUB_API_OPEN void sn_reset_last_error();
+SN_API void sn_reset_last_error();
 
 /**
  * @brief Disables/enables the auto free on exit system (Library memory will be freed though)
  * @param val If 0 turns off this feature or 1 turns it on
  * @note This system is on by default
  */
-SN_PUB_API_OPEN void sn_do_auto_free_at_exit(SN_FLAG val);
+SN_API void sn_do_auto_free_at_exit(SN_FLAG val);
 
 /**
  * @brief Adds the metadata associated with this block of memory to the fast cache
  * @param ptr A pointer to a Tracked block memory
  * @return Returns 1 if successfully added to fast cash 0 if it did not
  */
-SN_PUB_API_OPEN SN_FLAG sn_request_to_fast_cache(const void* ptr);
+SN_API SN_FLAG sn_request_to_fast_cache(const void* ptr);
 
 /**
  * @brief Disables automatic fast caching of tracking metadata But the fast cash is still Queryed
  */
-SN_PUB_API_OPEN void sn_lock_fast_cache();
+SN_API void sn_lock_fast_cache();
 
 /**
  * @brief enables automatic fast caching of tracking metadata But the fast cash is still Queryed
  */
-SN_PUB_API_OPEN void sn_unlock_fast_cache();
+SN_API void sn_unlock_fast_cache();
 
 /**
  * @brief Disables/enables the fast caching system entirely
  * @param val Is set to 1 enables it if set to 0 disables it
  * @note This system is on by default
  */
-SN_PUB_API_OPEN void sn_do_fast_caching(SN_FLAG val);
+SN_API void sn_do_fast_caching(SN_FLAG val);
 
 /**
  * @brief Clears out the fast cache
  */
-SN_PUB_API_OPEN void sn_fast_cache_clear();
+SN_API void sn_fast_cache_clear();
 
 /**
  * @brief Dumps the contents of a track block memory to a file
@@ -371,14 +421,14 @@ SN_PUB_API_OPEN void sn_fast_cache_clear();
  * @param block A pointer to a tracked block of memory
  * @return If 0 failure, if 1 successful
  */
-SN_PUB_API_OPEN SN_FLAG sn_dump_to_file(const char* file, void* block);
+SN_API SN_FLAG sn_dump_to_file(const char* file, void* block);
 
 /**
  * @brief It copies a files data to block memory of the same size
  * @param file Path to a pre-existing file (This file will be treated as read only)
  * @return A pointer to a Pre-allocated tracked block of memory
  */
-SN_PUB_API_OPEN void* sn_mount_file_to_ram(const char* file);
+SN_API void* sn_mount_file_to_ram(const char* file);
 
 
 /**
@@ -410,39 +460,39 @@ typedef struct sn_mem_metadata_s
  * @param ptr A pointer to a register block memory
  * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
  */
-SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_metadata(void* ptr);
+SN_API const sn_mem_metadata_t* sn_query_metadata(void* ptr);
 
 /**
  * @brief This function provides a copy view of the metadata structure for this memory block
  * @param ptr A pointer to a register block memory
  * @return returns null If nothing can be found otherwise it will return a pointer to the metadata
  */
-SN_PUB_API_OPEN const sn_mem_metadata_t* sn_query_static_metadata(void* ptr);
+SN_API const sn_mem_metadata_t* sn_query_static_metadata(void* ptr);
 
 /**
  * @brief Set a software limit on how many bytes that can be allocated
  * When the Alloc limit is hit a error of SN_ERR_ALLOC_LIMIT_HIT is produced and null is returned
  * @param limit The bytes limit If given zero no limit is applied
  */
-SN_PUB_API_OPEN void sn_set_alloc_limit(size_t limit);
+SN_API void sn_set_alloc_limit(size_t limit);
 
 /**
  * @brief Queries memory usage for a specific thread.
  * @param tid The thread ID.
  * @return Total memory used by the thread, or 0 if no memory is tracked for this thread.
  */
-SN_PUB_API_OPEN size_t sn_query_thread_memory_usage(sn_tid_t tid);
+SN_API size_t sn_query_thread_memory_usage(sn_tid_t tid);
 
 /**
  * @brief Queries total memory usage across all threads.
  * @return Total memory currently tracked.
  */
-SN_PUB_API_OPEN size_t sn_query_total_memory_usage();
+SN_API size_t sn_query_total_memory_usage();
 
 
 typedef sn_mem_metadata_t* (*sn_metadata_for_each_worker_f)(sn_mem_metadata_t* ctx, size_t index, void* generic_arg);
 
-SN_PUB_API_OPEN sn_mem_metadata_t* sn_mem_metadata_for_each(sn_metadata_for_each_worker_f worker, void* generic_arg);
+SN_API sn_mem_metadata_t* sn_mem_metadata_for_each(sn_metadata_for_each_worker_f worker, void* generic_arg);
 
 #endif
 
@@ -450,18 +500,46 @@ SN_PUB_API_OPEN sn_mem_metadata_t* sn_mem_metadata_for_each(sn_metadata_for_each
 /**
  * @brief Intentionally Crashes the program using the internal crash handler
  * This is to help with dumping state for the internal link list
- * @note A library crash is or should be extraordinarily rare
+ * @note A library crash true should be extraordinarily rare
  */
-SN_PUB_API_OPEN SN_NO_RETURN void sn_debug_crash();
+SN_API SN_NO_RETURN void sn_debug_crash();
 #endif
 
 #ifdef SN_CONFIG_VERBOSE_LOGGING_FACILITIES_FEATURE
 
-SN_PUB_API_OPEN SN_BOOL sn_enable_verbose_logging(const char* path);
-SN_PUB_API_OPEN SN_BOOL sn_disable_verbose_logging();
+SN_API SN_BOOL sn_enable_verbose_logging(const char* path);
+SN_API SN_BOOL sn_disable_verbose_logging();
 
 #endif
 
+typedef struct sn_mem_stack_s* sn_mem_stack_c;
+typedef void* (*sn_mem_stack_for_each_worker_f)(void* ctx, size_t index, void* generic_arg);
+#define SN_MEM_STACK_FOR_EACH_LOOP_BRAKE ((void*)SIZE_MAX)
+
+SN_API sn_mem_stack_c sn_mem_stack_new();
+SN_API size_t sn_mem_stack_getSize(sn_mem_stack_c self);
+SN_API void* sn_mem_stack_peek(sn_mem_stack_c self);
+SN_API size_t sn_mem_stack_peekSizeOfNextPop(sn_mem_stack_c self);
+SN_API void* sn_mem_stack_getIndex(sn_mem_stack_c self, size_t index);
+SN_API void* sn_mem_stack_pop(sn_mem_stack_c self);
+SN_API void  sn_mem_stack_push(sn_mem_stack_c self, void* data);
+SN_API void sn_mem_stack_npush(sn_mem_stack_c self, void* data, size_t size);
+
+#ifdef SN_ON_CLANG
+SN_API SN_OVERLOAD_ELIGIBLE void sn_mem_stack_push(sn_mem_stack_c self, void* data, size_t size);
+#endif
+
+SN_API void* sn_mem_stack_forEach(sn_mem_stack_c self, sn_mem_stack_for_each_worker_f worker, void* generic_arg);
+SN_API void  sn_mem_stack_destroy(sn_mem_stack_c self);
+
+
+#ifndef __SN_PLAT_ALLOC
+#define __SN_PLAT_ALLOC
+SN_API SN_REDEFINE_ELIGIBLE void* sn_plat_malloc(size_t size);
+SN_API SN_REDEFINE_ELIGIBLE void* sn_plat_realloc(void* ptr, size_t new_size);
+SN_API SN_REDEFINE_ELIGIBLE void* sn_plat_calloc(size_t num, size_t size);
+SN_API SN_REDEFINE_ELIGIBLE void  sn_plat_free(void* ptr);
+#endif
 
 SN_CPP_NAMESPACE_END
 SN_CPP_COMPAT_END

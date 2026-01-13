@@ -21,12 +21,12 @@
 #include <string.h>
 
 #include "allocation_manager/alloc_manager_c.h"
-#include "../../include/platform_independent/plat_allocators.h"
+#include "../../include/platform_independent/sn_plat_allocators.h"
 #include "sn_crash.h"
 
 alloc_manager_m memman_new(plat_mutex_c mutex_ref)
 {
-    alloc_manager_m self = plat_malloc(sizeof(alloc_manager_t));
+    alloc_manager_m self = sn_plat_malloc(sizeof(alloc_manager_t));
     if (!self) sn_crash(SN_ERR_CATASTROPHIC);
     memset(self, 0, sizeof(alloc_manager_t));
 
@@ -42,7 +42,7 @@ alloc_manager_m memman_new(plat_mutex_c mutex_ref)
 void memman_destroy(alloc_manager_m self)
 {
     if (!self) return;
-    plat_free(self);
+    sn_plat_free(self);
 }
 
 // ReSharper disable once CppDFAConstantFunctionResult

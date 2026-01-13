@@ -16,19 +16,29 @@
  */
 
 //
-// Created by tete on 06/30/2025.
+// Created by tete on 06/22/2025.
 //
-#pragma once
-
-#ifndef SN_PLAT_ALLOCATORS_H
-#define SN_PLAT_ALLOCATORS_H
-#include <stddef.h>
-#include <libsafetynet.h>
-
-void* plat_malloc(size_t size);
-void* plat_realloc(void* ptr, size_t new_size);
-void* plat_calloc(size_t num, size_t size);
-void  plat_free(void* ptr);
 
 
-#endif //SN_PLAT_ALLOCATORS_H
+#include <stdlib.h>
+#include "platform_independent/sn_plat_allocators.h"
+
+SN_API SN_REDEFINE_ELIGIBLE void* sn_plat_malloc(size_t size)
+{
+    return malloc(size);
+}
+
+SN_API SN_REDEFINE_ELIGIBLE void* sn_plat_realloc(void* ptr, size_t new_size)
+{
+    return realloc(ptr, new_size);
+}
+
+SN_API SN_REDEFINE_ELIGIBLE void* sn_plat_calloc(size_t num, size_t size)
+{
+    return calloc(num, size);
+}
+
+SN_API SN_REDEFINE_ELIGIBLE void sn_plat_free(void* ptr)
+{
+    free(ptr);
+}

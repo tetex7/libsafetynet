@@ -23,7 +23,7 @@
 #ifndef PLAT_THREADING_H
 #define PLAT_THREADING_H
 #include <stdint.h>
-
+#include <libsafetynet.h>
 typedef struct plat_mutex_s* plat_mutex_c, plat_mutex_t;
 
 plat_mutex_c plat_mutex_new();
@@ -31,6 +31,6 @@ void plat_mutex_lock(plat_mutex_c self);
 void plat_mutex_unlock(plat_mutex_c self);
 void plat_mutex_destroy(plat_mutex_c self);
 
-uint64_t plat_getTid();
+sn_tid_t plat_getTid();
 
 #endif //PLAT_THREADING_H

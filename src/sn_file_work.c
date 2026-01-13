@@ -24,9 +24,7 @@
 #include "sn_crash.h"
 #include "_pri_api.h"
 
-
-
-SN_PUB_API_OPEN SN_FLAG sn_dump_to_file(const char* file, void* block)
+SN_API SN_FLAG sn_dump_to_file(const char* file, void* block)
 {
     if (!file || !block)
     {
@@ -44,11 +42,14 @@ SN_PUB_API_OPEN SN_FLAG sn_dump_to_file(const char* file, void* block)
     {
         entry = linked_list_getByPtr(mem_list, block);
         if (!entry)
+        {
             sn_error(SN_ERR_NO_ADDER_FOUND, 0);
+        }
     }
 
     FILE* f = fopen(file, "wb");
-    if (!f) {
+    if (!f)
+    {
         sn_error(SN_ERR_FILE_IO, 0);
     }
 
@@ -63,7 +64,7 @@ SN_PUB_API_OPEN SN_FLAG sn_dump_to_file(const char* file, void* block)
     return 1;
 }
 
-SN_PUB_API_OPEN void* sn_mount_file_to_ram(const char* file)
+SN_API void* sn_mount_file_to_ram(const char* file)
 {
     if (!file)
     {

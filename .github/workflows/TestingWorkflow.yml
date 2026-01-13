@@ -24,6 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # GitHub runners a little weird sometimes
       - run: sudo systemctl start docker
       - run: ./docker_dev_setup.sh
       - run: ./docker_dev_setup.sh mk

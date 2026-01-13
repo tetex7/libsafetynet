@@ -47,6 +47,7 @@ SN32_CPP_COMPAT_START
 #       define SN_API32 static inline
 #   endif
 #endif
+typedef void* SN_HANDLE;
 typedef sn_error_codes_e SN_ERR_CODE;
 typedef void* SN_TRACKED_BLOCK_HANDLE;
 typedef size_t SN_SIZE;
@@ -54,17 +55,20 @@ typedef sn_tid_t SN_TID;
 typedef sn_block_id_t SN_BLOCK_ID;
 typedef size_t SN_BLOCK_ELEMENT_SIZE;
 typedef const char* SN_CHAR_STRING;
+typedef sn_mem_stack_c SN_MEM_STACK_HANDLE;
 
 typedef uint8_t SN_BYTE;
 typedef uint16_t SN_WORD;
 typedef uint32_t SN_DWORD;
 typedef uint64_t SN_QWORD;
+typedef void* SN_LPVOID;
+typedef void SN_VOID;
 
 #define SN32_OUT
 #define SN32_IN
 #define SN32_OPTIONAL
 
-SN_API32 SN_ERR_CODE SnAllocateTrackedMemoryBlock(SN_SIZE size, SN_TRACKED_BLOCK_HANDLE*  out_block)
+SN_API32 SN_ERR_CODE SnAllocateTrackedMemoryBlock(SN32_IN SN_SIZE size, SN32_OUT SN_TRACKED_BLOCK_HANDLE*  out_block)
 {
     sn_reset_last_error();
     if (!out_block) return SN_ERR_NULL_PTR;
@@ -72,7 +76,7 @@ SN_API32 SN_ERR_CODE SnAllocateTrackedMemoryBlock(SN_SIZE size, SN_TRACKED_BLOCK
     return sn_get_last_error();
 }
 
-SN_API32 SN_ERR_CODE SnReallocateTrackedMemoryBlock(SN_SIZE new_size, SN_TRACKED_BLOCK_HANDLE* out_block)
+SN_API32 SN_ERR_CODE SnReallocateTrackedMemoryBlock(SN32_IN SN_SIZE new_size, SN32_OUT SN_TRACKED_BLOCK_HANDLE* out_block)
 {
     sn_reset_last_error();
     if (!out_block) return SN_ERR_NULL_PTR;
@@ -81,9 +85,9 @@ SN_API32 SN_ERR_CODE SnReallocateTrackedMemoryBlock(SN_SIZE new_size, SN_TRACKED
 }
 
 SN_API32 SN_ERR_CODE SnAllocateTrackedMemoryBlockByArrayElementSize(
-    SN_SIZE arr_size,
-    SN_BLOCK_ELEMENT_SIZE element_size,
-    SN_TRACKED_BLOCK_HANDLE* out_block)
+    SN32_IN SN_SIZE arr_size,
+    SN32_IN SN_BLOCK_ELEMENT_SIZE element_size,
+    SN32_OUT SN_TRACKED_BLOCK_HANDLE* out_block)
 {
     sn_reset_last_error();
     if (!out_block) return SN_ERR_NULL_PTR;
@@ -193,6 +197,50 @@ SN_API32 SN_ERR_CODE SnMountBinFileAsTrackedMemoryBlock(SN_CHAR_STRING file, SN_
     sn_reset_last_error();
     if (!out_block) return SN_ERR_NULL_PTR;
     *out_block = sn_mount_file_to_ram(file);
+    return sn_get_last_error();
+}
+
+SN_API32 SN_ERR_CODE SnNewMemStack(SN_MEM_STACK_HANDLE* out_This)
+{
+    sn_reset_last_error();
+    if (!out_This) return SN_ERR_NULL_PTR;
+    *out_This = sn_mem_stack_new();
+    return sn_get_last_error();
+}
+
+SN_API32 SN_ERR_CODE SnPeekMemStack(
+    SN32_IN SN_MEM_STACK_HANDLE This,
+    SN32_OUT SN_LPVOID* data)
+{
+    sn_reset_last_error();
+    if (!This || !data) return SN_ERR_NULL_PTR;
+    *data = sn_mem_stack_peek(This);
+    return sn_get_last_error();
+}
+
+SN_API32 SN_ERR_CODE SnPushMemStack(
+    SN32_IN SN_MEM_STACK_HANDLE This,
+    SN32_IN SN_LPVOID data)
+{
+    sn_reset_last_error();
+    if (!This) return SN_ERR_NULL_PTR;
+    sn_mem_stack_push(This, data);
+    return sn_get_last_error();
+}
+
+SN_API32 SN_ERR_CODE SnPopMemStack(SN32_IN SN_MEM_STACK_HANDLE This)
+{
+    sn_reset_last_error();
+    if (!This) return SN_ERR_NULL_PTR;
+    (void)sn_mem_stack_pop(This);
+    return sn_get_last_error();
+}
+
+SN_API32 SN_ERR_CODE SnDestroyMemStack(SN_MEM_STACK_HANDLE This)
+{
+    sn_reset_last_error();
+    if (!This) return SN_ERR_NULL_PTR;
+    sn_mem_stack_destroy(This);
     return sn_get_last_error();
 }
 

@@ -59,7 +59,7 @@
 #include <string.h>
 #include "libsafetynet_config.h"
 
-#include <platform_independent/plat_allocators.h>
+#include <platform_independent/sn_plat_allocators.h>
 
 #include "sn_crash.h"
 
@@ -67,6 +67,7 @@
 #   ifdef SN_ON_UNIX
 #       include <pthread.h>
 #   elif defined(SN_ON_WIN32)
+#       define WIN32_LEAN_AND_MEAN
 #       include <windows.h>
 #   else
 #       error "Unsupported platform for plat_threading"
@@ -81,7 +82,7 @@ struct plat_mutex_s
 #   elif defined(SN_ON_WIN32)
     HANDLE plat_mutex;
 #   endif
-    uint64_t locker_tid;
+    sn_tid_t locker_tid;
 #else
     uint8_t pad; // This is here because C With an empty struct return's zero for sizeof
 #endif
@@ -89,8 +90,7 @@ struct plat_mutex_s
 
 plat_mutex_c plat_mutex_new()
 {
-    plat_mutex_c self = plat_malloc(sizeof(plat_mutex_t));
-
+    plat_mutex_c self = sn_plat_malloc(sizeof(plat_mutex_t));
 
     if (!self)
     {
@@ -102,7 +102,7 @@ plat_mutex_c plat_mutex_new()
 #   ifdef SN_ON_UNIX
     if (pthread_mutex_init(&self->plat_mutex, NULL) != 0)
     {
-        plat_free(self);
+        sn_plat_free(self);
         return NULL;
     }
 #   elif defined(SN_ON_WIN32)
@@ -158,16 +158,16 @@ void plat_mutex_destroy(plat_mutex_c self)
 #   endif
 #endif
 
-    plat_free(self);
+    sn_plat_free(self);
 }
 
-uint64_t plat_getTid()
+sn_tid_t plat_getTid()
 {
 #ifdef SN_CONFIG_ENABLE_MUTEX
 #   ifdef SN_ON_UNIX
     return (uint64_t)(uintptr_t)pthread_self();
 #   elif defined(SN_ON_WIN32)
-    return (uint64_t)GetCurrentThreadId();
+    return (sn_tid_t)GetCurrentThreadId();
 #   endif
 #else
     return 0;

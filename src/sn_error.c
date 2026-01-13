@@ -23,13 +23,13 @@
 
 static sn_error_codes_e error_code = SN_ERR_OK;
 
-SN_PUB_API_OPEN
+SN_API
 sn_error_codes_e sn_get_last_error()
 {
     return error_code;
 }
 
-SN_PUB_API_OPEN
+SN_API
 void sn_reset_last_error()
 {
     error_code = SN_ERR_OK;
@@ -48,12 +48,14 @@ static const char* const human_readable_messages[191] = {
     [SN_ERR_FILE_IO] = "Libc Generic file IO error",
     [SN_ERR_FILE_NOT_EXIST] = "file Does not exist",
     [SN_ERR_ALLOC_LIMIT_HIT] = "User defined alloc limit has been hit",
-    //[SN_WARN_DUB_FREE] = "Possible double free, but not found in registry",
+    [SN_ERR_ASSERT_FAILED] = "assertion has failed",
     [SN_ERR_SYS_FAIL] = "generic system failure",
     [SN_ERR_CATASTROPHIC] = "Catastrophic system error",
     [SN_ERR_DEBUG] = "A debug error used in debug crashes",
     [SN_INFO_PLACEHOLDER] = "Undefined error Error code implementation coming soon"
 };
+
+SN_STATIC_ASSERT((sizeof(human_readable_messages) / sizeof(*human_readable_messages)) == SN_INFO_PLACEHOLDER+1, "array too big");
 
 static const char* const err_name_tap[191] = {
     [SN_ERR_OK] = "SN_ERR_OK",
@@ -68,14 +70,16 @@ static const char* const err_name_tap[191] = {
     [SN_ERR_FILE_IO] = "SN_ERR_FILE_IO",
     [SN_ERR_FILE_NOT_EXIST] = "SN_ERR_FILE_NOT_EXIST",
     [SN_ERR_ALLOC_LIMIT_HIT] = "SN_ERR_ALLOC_LIMIT_HIT",
-    //[SN_WARN_DUB_FREE] = "SN_WARN_DUB_FREE",
+    [SN_ERR_ASSERT_FAILED] = "SN_ERR_ASSERT_FAILED",
     [SN_ERR_SYS_FAIL] = "SN_ERR_SYS_FAIL",
     [SN_ERR_CATASTROPHIC] = "SN_ERR_CATASTROPHIC",
     [SN_ERR_DEBUG] = "SN_ERR_DEBUG",
     [SN_INFO_PLACEHOLDER] = "SN_INFO_PLACEHOLDER"
 };
 
-SN_PUB_API_OPEN const char* sn_get_error_msg(sn_error_codes_e err)
+SN_STATIC_ASSERT((sizeof(err_name_tap) / sizeof(*err_name_tap)) == SN_INFO_PLACEHOLDER+1, "array too big");
+
+SN_API const char* sn_get_error_msg(sn_error_codes_e err)
 {
     const size_t tab_size = (sizeof(human_readable_messages) / sizeof(*human_readable_messages));
 
@@ -97,7 +101,7 @@ E1:
     return "Unknown error";
 }
 
-SN_PUB_API_OPEN
+SN_API
 const char* sn_get_error_name(const sn_error_codes_e err)
 {
     const size_t tab_size = (sizeof(err_name_tap) / sizeof(*err_name_tap));
@@ -120,9 +124,10 @@ E1:
     return "SN_SOFT_FAKE_ERR_UNKNOWN";
 }
 
-SN_PUB_API_OPEN
+SN_API
 void sn_set_last_error(const sn_error_codes_e err)
 {
+
     plat_mutex_lock(alloc_mutex);
     error_code = err;
     plat_mutex_unlock(alloc_mutex);

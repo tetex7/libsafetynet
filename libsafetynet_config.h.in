@@ -87,6 +87,14 @@
 #   define SN_ON_STD_C 1
 #endif
 
+#if defined(SN_ON_STD_C)
+#   if __STDC_VERSION__ == 199901L
+#       define SN_ON_C99
+#   elif BUILDING_SAFETYNET
+#       error "Attempting to build safetynet not on C99(Most likely improper build system config)"
+#   endif
+#endif
+
 #if defined(SN_ON_STD_C) && __STDC_VERSION__ > 201112L
 #   define SN_ON_C11_OR_NEWER 1
 #endif

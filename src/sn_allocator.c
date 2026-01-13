@@ -23,10 +23,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../backend_api/include/platform_independent/plat_allocators.h"
+#include "../backend_api/include/platform_independent/sn_plat_allocators.h"
 
 
-SN_PUB_API_OPEN void* sn_malloc(size_t size)
+SN_API void* sn_malloc(size_t size)
 {
     if (size == 0)
     {
@@ -38,7 +38,7 @@ SN_PUB_API_OPEN void* sn_malloc(size_t size)
         sn_error(SN_ERR_ALLOC_LIMIT_HIT, NULL);
     }
 
-    void* pr = plat_malloc(size);
+    void* pr = sn_plat_malloc(size);
 
     if (!pr)
     {
@@ -57,7 +57,7 @@ SN_PUB_API_OPEN void* sn_malloc(size_t size)
 
 
 
-SN_PUB_API_OPEN void sn_free(void* const ptr)
+SN_API void sn_free(void* const ptr)
 {
     if (!ptr)
     {
@@ -79,14 +79,14 @@ SN_PUB_API_OPEN void sn_free(void* const ptr)
 #endif
     memory_manager->global_memory_usage -= entry->size;
     memman_cacheInvalidate(memory_manager, ptr);
-    plat_free(linked_list_entry_getData(entry));
+    sn_plat_free(linked_list_entry_getData(entry));
 
     linked_list_removeEntryByPtr(mem_list, ptr);
 }
 
-SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size)
+SN_API void* sn_calloc(size_t num, size_t size)
 {
-    if (!size | !num)
+    if (!size || !num)
     {
         sn_error(SN_ERR_BAD_SIZE, NULL);
     }
@@ -96,19 +96,19 @@ SN_PUB_API_OPEN void* sn_calloc(size_t num, size_t size)
         sn_error(SN_ERR_ALLOC_LIMIT_HIT, NULL);
     }
 
-    void* pr = plat_calloc(num, size);
+    void* pr = sn_plat_calloc(num, size);
 
     if (!pr)
     {
         sn_error(SN_ERR_BAD_ALLOC, NULL);
     }
     memory_manager->global_memory_usage += (size * num);
-    linked_list_push(mem_list, pr, size, plat_getTid());
+    linked_list_push(mem_list, pr, (size * num), plat_getTid());
 
     return pr;
 }
 
-SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
+SN_API void* sn_realloc(void* ptr, size_t new_size)
 {
     if (!ptr)
     {
@@ -134,7 +134,7 @@ SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
         }
     }
 
-    void* new_ptr = plat_realloc(ptr, new_size);
+    void* new_ptr = sn_plat_realloc(ptr, new_size);
 
     if (!new_ptr)
     {
@@ -148,7 +148,7 @@ SN_PUB_API_OPEN void* sn_realloc(void* ptr, size_t new_size)
     return new_ptr;
 }
 
-SN_PUB_API_OPEN void* sn_malloc_pre_initialized(size_t size, uint8_t initial_byte_value)
+SN_API void* sn_malloc_pre_initialized(size_t size, uint8_t initial_byte_value)
 {
     void* ptr = sn_malloc(size);
     if (!ptr) return ptr;
@@ -157,7 +157,7 @@ SN_PUB_API_OPEN void* sn_malloc_pre_initialized(size_t size, uint8_t initial_byt
     return ptr;
 }
 
-SN_PUB_API_OPEN void sn_do_auto_free_at_exit(SN_FLAG val)
+SN_API void sn_do_auto_free_at_exit(SN_FLAG val)
 {
     plat_mutex_lock(alloc_mutex);
     doFree = val;

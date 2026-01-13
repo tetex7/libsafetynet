@@ -66,7 +66,7 @@ static linked_list_entry_c list_nodeas(linked_list_c self, linked_list_entry_c c
 #ifdef SN_ON_UNIX
         sn_crash_print("node: %lu is NULL@%p\n", index, ctx);
 #elif defined(SN_ON_WIN32)
-        sn_crash_print("node: %lluis NULL@%p\n", index, ctx);
+        sn_crash_print("node: %llu is NULL@%p\n", index, ctx);
 #endif
         return LIST_FOR_EACH_LOOP_BRAKE;
     }
@@ -102,7 +102,7 @@ static int full_callback(void *data, uintptr_t pc,
 
 static void print_stack_trace()
 {
-    struct backtrace_state *state =
+    struct backtrace_state* state =
         backtrace_create_state(NULL, 1, error_callback, NULL);
 
     backtrace_full(state, 0, full_callback, error_callback, NULL);
@@ -110,12 +110,14 @@ static void print_stack_trace()
 #endif
 
 
-SN_NO_RETURN void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t line, const char* file, const char* func_call_name)
+SN_NO_RETURN void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t line, const char* file, const char* func_call_name, const char* message)
 {
     sn_crash_print("Crash in libsafetynet/%s:%i(%s) :-(\n\n", file, line, func_call_name);
     sn_crash_print("ERROR: %i\n", err);
     sn_crash_print("ERROR_NAME: %s\n", sn_get_error_name(err));
     sn_crash_print("ERROR_MSG: %s\n", sn_get_error_msg(err));
+    if (message)
+        sn_crash_print("MESSAGE \"%s\"\n", message);
 #ifdef SN_ON_UNIX
     sn_crash_print("crash on tid 0x%lx\n\n", plat_getTid());
 #elif defined(SN_ON_WIN32)
@@ -127,7 +129,7 @@ SN_NO_RETURN void __sn__pri__crash__(const sn_error_codes_e err, const uint32_t 
     sn_crash_print("\n");
 #endif
 
-    if (err == SN_ERR_CATASTROPHIC) abort();
+    if (err == SN_ERR_CATASTROPHIC || err == SN_ERR_ASSERT_FAILED) abort();
     if (err == SN_ERR_SYS_FAIL) goto EX1;
 
     sn_crash_print("Memory tracking list state:\n");

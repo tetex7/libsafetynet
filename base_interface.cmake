@@ -25,6 +25,7 @@ target_compile_options(base_interface INTERFACE $<$<COMPILE_LANGUAGE:C>:${DEBUG_
 
 if (CMAKE_C_COMPILER_ID MATCHES "Clang")
     message(STATUS "Disabling clang specific warnings")
+    #target_compile_options(base_interface INTERFACE -fms-compatibility-version=19.36 -fms-compatibility)
 else ()
     target_compile_options(base_interface INTERFACE $<$<COMPILE_LANGUAGE:C>:-Wno-multistatement-macros>)
 endif ()

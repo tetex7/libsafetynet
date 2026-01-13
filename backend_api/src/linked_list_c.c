@@ -28,13 +28,13 @@
 #include "sn_crash.h"
 
 #include "platform_independent/plat_threading.h"
-#include "platform_independent/plat_allocators.h"
+#include "platform_independent/sn_plat_allocators.h"
 
 #pragma region "linked_list_entry_c code"
 
 linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* data, size_t size, sn_tid_t tid)
 {
-    linked_list_entry_c self = plat_malloc(sizeof(linked_list_entry_t));
+    linked_list_entry_c self = sn_plat_malloc(sizeof(linked_list_entry_t));
 
     if (self == NULL)
     {
@@ -66,7 +66,7 @@ linked_list_entry_c linked_list_entry_new(linked_list_entry_c previous, void* da
 linked_list_entry_c linked_list_entry_copy(linked_list_entry_c entry)
 {
     if (!entry) return NULL;
-    linked_list_entry_c self = plat_malloc(sizeof(linked_list_entry_t));
+    linked_list_entry_c self = sn_plat_malloc(sizeof(linked_list_entry_t));
 
     if (self == NULL)
     {
@@ -176,10 +176,36 @@ void linked_list_entry_pri_setWeight(linked_list_entry_c self, uint8_t weight)
     plat_mutex_unlock(self->mutex);
 }
 
+void linked_list_entry_setExt(linked_list_entry_c self, void* ext)
+{
+    if (!self || !ext) return;
+    plat_mutex_lock(self->mutex);
+    self->ext = ext;
+    plat_mutex_unlock(self->mutex);
+}
+
+void linked_list_entry_setRefCount(linked_list_entry_c self, uint32_t ref_count)
+{
+    if (!self) return;
+    plat_mutex_lock(self->mutex);
+    self->ref_count = ref_count;
+    plat_mutex_unlock(self->mutex);
+}
+
+uint32_t linked_list_entry_getRefCount(const linked_list_entry_c self)
+{
+    if (!self) return 0;
+    return self->ref_count;
+}
+
 void linked_list_entry_destroy(linked_list_entry_c self)
 {
     if (self == NULL) return;
-    plat_free(self);
+    if (self->ext)
+    {
+        sn_plat_free(self->ext);
+    }
+    sn_plat_free(self);
 }
 
 static SN_BOOL linked_list_entry_pri_isHead(linked_list_entry_c self)
@@ -218,12 +244,13 @@ static void linked_list_entry_pri_weight_increase(linked_list_entry_c self)
 
 linked_list_c linked_list_new()
 {
-    linked_list_c self = plat_malloc(sizeof(linked_list_t));
+    linked_list_c self = sn_plat_malloc(sizeof(linked_list_t));
 
     if (self == NULL)
     {
         sn_crash(SN_ERR_CATASTROPHIC);
     }
+
     memset(self, 0, sizeof(linked_list_t));
 
     //heads of lists are dummies They should be treated as Slightly immutable
@@ -256,7 +283,7 @@ void linked_list_destroy(linked_list_c self)
     linked_list_forEach(self, pri_listDestroyer, NULL);
     linked_list_entry_destroy(self->head);
     plat_mutex_destroy(self->mutex);
-    plat_free(self);
+    sn_plat_free(self);
 }
 
 void linked_list_push(linked_list_c self, void* data, size_t size, uint64_t tid)

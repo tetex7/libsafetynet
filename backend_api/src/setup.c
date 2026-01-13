@@ -23,6 +23,7 @@
 #include "libsafetynet.h"
 #include "_pri_api.h"
 #include "libsafetynet32.h"
+#include "sn_crash.h"
 
 #ifdef SN_ON_WIN32
 #   define WIN32_LEAN_AND_MEAN
@@ -81,12 +82,6 @@ BOOL WINAPI DllMain(
             doinit();
             break;
         case DLL_PROCESS_DETACH:
-
-            if (lpvReserved != NULL)
-            {
-                break; // do not do cleanup if process termination scenario
-            }
-
             // Perform any necessary cleanup.
             doexit();
             break;

@@ -21,12 +21,13 @@
 #include "libsafetynet.h"
 
 #ifdef SN_CONFIG_VERBOSE_LOGGING_FACILITIES_FEATURE
-SN_PUB_API_OPEN SN_BOOL sn_enable_verbose_logging(const char* path)
+SN_API SN_BOOL sn_enable_verbose_logging(const char* path)
 {
     return SN_TRUE;
 }
-SN_PUB_API_OPEN SN_BOOL sn_disable_verbose_logging()
+SN_API SN_BOOL sn_disable_verbose_logging()
 {
     return SN_TRUE;
 }
+
 #endif
